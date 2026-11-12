@@ -1,0 +1,342 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Liberation Serif}
+\usepackage[portuguese, bidi=basic, provide=*]{babel}
+\babelprovide[import, onchar=ids fonts]{portuguese}
+\babelprovide[import, onchar=ids fonts]{english}
+
+\usepackage{enumitem}
+\setlist[itemize]{label=-}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+
+\definecolor{spaceblue}{RGB}{24, 43, 73}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=spaceblue,
+    urlcolor=blue,
+    pdftitle={Nabuus - Especificacao e Modelagem de Sistema},
+    pdfauthor={Grupo Nabuus}
+}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+% -------------------------------------------------------------------
+% CAPA
+% -------------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{2.5cm}
+    
+    {\large \textsc{Universidade Federal de Juiz de Fora}}\\[0.2cm]
+    {\normalsize \textsc{Trabalho de Modelagem de Sistemas}}\\[3cm]
+    
+    \rule{\textwidth}{1.5pt}\\[0.6cm]
+    {\Huge \textbf{\textcolor{spaceblue}{NABUUS}}}\\[0.3cm]
+    {\Large \textit{Como seria viajar pelas estrelas?}}\\[0.4cm]
+    \rule{\textwidth}{1.5pt}\\[2cm]
+    
+    {\LARGE \textbf{Documento de Arquitetura, Requisitos e Modelagem}}\\[1.5cm]
+    
+    \begin{flushright}
+        \large
+        \textbf{Equipe:}\\
+        Davi Monção Fernandes\\
+        David Élder Rodrigues Fraga\\
+        Gabriel Andrioli Fonseca\\
+        Gabriel Parreira Ferreira\\
+        Pedro Miana Amaral
+    \end{flushright}
+    \vspace{1cm}
+    
+    \begin{tabular}{p{4.5cm}p{6.5cm}}
+        \toprule
+        \textbf{Entregável:} & Especificação Técnica e Modelagem UML \\
+        \textbf{Data:} & Novembro de 2026 \\
+        \bottomrule
+    \end{tabular}
+    
+    \vfill
+    
+    {\small Juiz de Fora --- MG \\ 2026}
+\end{titlepage}
+
+% -------------------------------------------------------------------
+% SUMÁRIO
+% -------------------------------------------------------------------
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\tableofcontents
+\newpage
+
+% -------------------------------------------------------------------
+% 1. CONTEXTUALIZAÇÃO E CONCEITO DO PROJETO
+% -------------------------------------------------------------------
+\section{Contextualização e Conceito do Projeto}
+
+\subsection{A Proposta do Nabuus}
+O projeto \textbf{Nabuus} nasce de uma especulação: \textit{``Como seria viajar pelas estrelas?''}. A aplicação tem por objetivo permitir que usuários compreendam as escalas de tempo, distância e custo que a humanidade terá de enfrentar caso parta em viagens interestelares e intergalácticas. Para tornar esse conceito palpável, o sistema traduz a experiência de navegação espacial para uma interface cotidiana de compra de passagens rodoviárias, operando de forma muito similar ao \textbf{ClickBus}.
+
+Na plataforma, a gestão da malha é coordenada por diferentes agentes. O \textbf{Astrônomo} atua mapeando o cosmos e parametrizando a ciência: ele cadastra sistemas solares (com coordenadas equatoriais e distância ao Sol), planetas (com distância à estrela em UA e indicação de posto de recarga), rotas lúmicas partindo do Sistema Solar (hipótese futurística de trânsito rápido com pedágio elevado) e os tipos de propulsão das naves. Já o \textbf{Fretista} opera comercialmente essas rotas, disponibilizando ônibus espaciais vinculados aos tipos de propulsão, ajustando preços sugeridos pelo motor físico e publicando viagens. Todos os cálculos físicos da viagem são processados uma única vez no ato da publicação e persistidos no banco de dados.
+
+Por fim, o \textbf{Usuário (Passageiro)} consulta as linhas já calculadas e adquire sua passagem. O diferencial central está nas informações apresentadas e comparadas em cada card: além do preço, da categoria de conforto da nave e dos pontos de embarque e desembarque, o passageiro compara os cenários \textbf{Com Rota Lúmica} e \textbf{Sem Rota Lúmica}, visualizando o tempo de duração a bordo, a \textbf{dívida temporal} --- o tempo adicional que passará fora da nave para qualquer pessoa estacionária --- e o \textbf{Mapa Galáctico 2D}. Na escolha de assento, a lotação reflete a tecnologia e o custo da propulsão: naves econômicas aparecem mais lotadas, enquanto naves tecnológicas de alto padrão possuem mais assentos livres.
+
+É importante compreender que essa aplicação não tem por objetivo ser de todo prática sob os padrões atuais, especialmente porque a maioria dos valores simulados serão consideravelmente grandes. O objetivo do simulador é demonstrar didaticamente que, mesmo com hipóteses futurísticas como rotas lúmicas e propulsão avançada, viagens interestelares impõem enormes custos financeiros e temporais.
+
+\subsection{Limites do Sistema e Premissas Físicas}
+O escopo do Nabuus concentra-se na simulação interativa de viagens entre sistemas estelares tendo o nosso Sol como origem referencial. O projeto adota cinemática relativística simplificada (aceleração própria constante, velocidade de cruzeiro e frenagem simétrica, parando apenas para reabastecimento ou portais lúmicos), preservando ordens de grandeza fisicamente coerentes sem exigir integração orbital de N-corpos.
+
+\subsection{Glossário de Domínio}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{>{\bfseries}l X}
+\toprule
+Conceito & Descrição no Contexto do Nabuus \\
+\midrule
+Dívida Temporal & Tempo decorrido nos referenciais estacionários (planeta de saída/chegada) que excede o tempo vivido pelo passageiro dentro da nave, resultante da dilatação temporal relativística. \\
+Rota Lúmica & Ligação especial partindo do Sistema Solar rumo a outro sistema estelar cadastrada pelo astrônomo. Representa uma hipótese sci-fi (como um corredor ou buraco de minhoca sub-lúmico, ex.: $0{,}8c$) que dispensa paradas de recarga, mas cobra alto pedágio e gera maior dívida temporal pela velocidade elevada. \\
+Tipo de Propulsão & Tecnologia cadastrada pelo astrônomo (ex.: vela solar, fissão pulsada, fusão, antimatéria) que define aceleração própria em $g$, velocidade de cruzeiro em fração de $c$, autonomia em anos-luz, categoria de conforto e preços de referência. \\
+Ônibus Espacial & Veículo cadastrado pelo fretista e equipado com um Tipo de Propulsão específico e capacidade total de assentos. \\
+Ocupação Inicial por Conforto & Distribuição determinística de assentos já ocupados gerada na publicação da viagem segundo a categoria de conforto da propulsão (viagens econômicas são mais lotadas; viagens tecnológicas/luxo são mais vazias). \\
+Referencial da Nave & Tempo próprio ($\tau$) medido pelos relógios de bordo durante as etapas de aceleração, cruzeiro e frenagem. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------------------
+% 2. VISÃO ARQUITETURAL E PAPÉIS DO SISTEMA
+% -------------------------------------------------------------------
+\section{Visão Arquitetural e Papéis do Sistema}
+
+\subsection{Atores e Perfis de Acesso}
+A operação do Nabuus é estruturada em torno de três perfis de usuários autenticados (RNF-01) e um subsistema computacional dedicado:
+\begin{enumerate}
+    \item \textbf{Astrônomo:} Responsável pela base cartográfica e tecnológica do universo. Possui permissão para criar, editar e remover sistemas solares, planetas (habilitando postos de recarga), rotas lúmicas e tipos de propulsão.
+    \item \textbf{Fretista:} Responsável pela malha logística e comercial. Gerencia sua frota de ônibus espaciais, ajusta os preços sugeridos pelo motor físico, publica viagens e controla a disponibilidade das linhas.
+    \item \textbf{Usuário (Passageiro):} Consumidor final que pesquisa trajetos pré-calculados entre planetas, compara os cenários Com e Sem Rota Lúmica, filtra opções por custo, duração, dívida temporal ou conforto, explora o Mapa Galáctico 2D e adquire sua passagem escolhendo poltrona livre.
+    \item \textbf{Motor de Cálculo Físico:} Subsistema autônomo invocado pelo servidor principal no momento da publicação da viagem para sugerir tarifas, validar autonomia, definir paradas de recarga (regra gulosa), calcular cinemática relativística e rota 2D nos cenários Com e Sem Rota Lúmica, e gerar a ocupação inicial de assentos.
+\end{enumerate}
+
+\subsection{Frameworks e Tecnologias de Processo}
+Optamos por trabalhar na ótica SCRUM com reuniões semanais na segunda-feira e tarefas delegadas para todos os membros durante a semana. De início, o membro Gabriel atuou como Product Owner elencando as especificidades do projeto a ser desenvolvido em formato de texto corrido. Ademais, todos os membros atuaram de forma conjunta no desenvolvimento e não houve divisão rígida em diferentes funções. Decidiu-se por essa lógica a fim de minimizar o processo burocrático sem perder a precisão do método SCRUM.
+
+Recursos tecnológicos primários utilizados no projeto:
+\begin{enumerate}
+    \item \textbf{Gerenciamento do projeto}: Trello
+    \item \textbf{Gerência de configuração}: GitHub
+    \item \textbf{Prototipação e UI/UX}: Figma
+    \item \textbf{Linguagens de Front-end}: CSS, HTML, JavaScript
+    \item \textbf{Linguagem de Back-end}: Java
+    \item \textbf{Linguagem do motor de cálculo}: Python
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Camada} & \textbf{Tecnologia} & \textbf{Responsabilidade Principal} \\
+\midrule
+Interface (Front-End) & HTML, CSS, JS & Experiência de busca e checkout no estilo ClickBus, comparação Com/Sem Rota Lúmica, mapa de poltronas e exibição do Mapa Galáctico 2D. \\
+Núcleo de Negócios & Java (Spring Boot) & Controle de acesso por papéis (Spring Security + JWT), gerenciamento de cadastros astronômicos, propulsões, frotas, publicação de viagens e persistência. \\
+Motor Científico & Python (FastAPI) & Microsserviço stateless acionado na publicação para cálculo de duração a bordo, dívida temporal, paradas de recarga, sugestão/cálculo de preço e ocupação inicial de assentos. \\
+Persistência & PostgreSQL & Armazenamento relacional de usuários, catálogo estelar, propulsões, rotas lúmicas, viagens pré-calculadas e passagens emitidas. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------------------
+% 3. ESPECIFICAÇÃO DE REQUISITOS DO SISTEMA
+% -------------------------------------------------------------------
+\section{Especificação de Requisitos do Sistema}
+
+\subsection{Requisitos Funcionais (RF)}
+Os requisitos funcionais do Nabuus estão organizados segundo o agente ou subsistema responsável por sua execução.
+
+\subsubsection{Agente: Astrônomo}
+\begin{itemize}
+    \item \textbf{RF-01 --- Cadastrar sistemas solares:} Permite registrar sistemas estelares informando nome, estrela principal, ascensão reta (RA), declinação (Dec) e distância ao Sol em anos-luz.
+    \item \textbf{RF-02 --- Cadastrar planetas e postos de recarga:} Permite vincular planetas a um sistema solar informando nome, raio, massa, zona habitável, distância fixa à estrela em UA e se possui posto de recarga (\texttt{possuiPostoRecarga}).
+    \item \textbf{RF-03 --- Definir rotas lúmicas:} Permite estabelecer ligações partindo do Sistema Solar rumo a outros sistemas, informando velocidade em fração de $c$, valor de pedágio e status ativa.
+    \item \textbf{RF-04 --- Cadastrar tipos de propulsão:} Permite registrar tecnologias de propulsão definindo aceleração própria ($g$), velocidade de cruzeiro ($c$), autonomia (anos-luz), categoria de conforto (\texttt{ECONOMICA}, \texttt{EXECUTIVA}, \texttt{LUXO}), preço base de referência e custo por ano-luz de referência.
+    \item \textbf{RF-05 --- Editar e remover cadastros cartográficos:} Permite atualizar ou desativar registros, suspendendo automaticamente (\texttt{status = SUSPENSA}) as viagens ativas afetadas pela remoção ou desativação de rotas lúmicas ou postos.
+\end{itemize}
+
+\subsubsection{Agente: Fretista}
+\begin{itemize}
+    \item \textbf{RF-06 --- Cadastrar ônibus espaciais:} Permite registrar veículos informando identificação, total de assentos e vinculando-os a um Tipo de Propulsão cadastrado.
+    \item \textbf{RF-07 --- Criar e publicar viagens:} Permite disponibilizar uma viagem associando planeta de embarque, planeta de desembarque, ônibus espacial e data de partida, acionando o motor físico para validar a autonomia e persistir todos os resultados dos cenários Com e Sem Rota Lúmica.
+    \item \textbf{RF-08 --- Definir preço base e custo por ano-luz:} Permite confirmar ou ajustar o preço base e o custo por ano-luz da viagem a partir dos valores sugeridos pelo motor físico segundo o Tipo de Propulsão.
+    \item \textbf{RF-09 --- Gerenciar disponibilidade:} Permite alterar o estado operacional de uma viagem (publicada, suspensa ou cancelada).
+    \item \textbf{RF-10 --- Editar e remover naves:} Permite atualizar dados operacionais ou inativar ônibus espaciais da frota.
+\end{itemize}
+
+\subsubsection{Agente: Usuário (Passageiro)}
+\begin{itemize}
+    \item \textbf{RF-11 --- Buscar viagens por origem e destino:} Permite consultar no banco de dados as viagens publicadas entre os planetas de embarque e desembarque.
+    \item \textbf{RF-12 --- Filtrar e ordenar resultados:} Permite classificar a listagem conforme prioridade (preço, duração a bordo, dívida temporal ou categoria de conforto).
+    \item \textbf{RF-13 --- Visualizar card de viagem e comparar cenários:} Apresenta o resumo da viagem comparando as opções \textbf{Com Rota Lúmica} e \textbf{Sem Rota Lúmica} (preço final, duração a bordo, dívida temporal e número de paradas de recarga).
+    \item \textbf{RF-14 --- Comprar passagem escolhendo modalidade e poltrona:} Permite selecionar a viagem (nave/propulsão), a modalidade (\texttt{usaRotaLumica}), escolher um assento livre no mapa da nave (que já exibe os assentos ocupados conforme o conforto) e emitir o comprovante.
+    \item \textbf{RF-15 --- Visualizar rota no Mapa Galáctico 2D:} Exibe graficamente em 2D o trajeto pré-calculado da viagem, destacando o ponto de origem, paradas de reabastecimento, destino e rota lúmica.
+\end{itemize}
+
+\subsubsection{Subsistema: Módulos de Cálculo Físico}
+\begin{itemize}
+    \item \textbf{RF-16 --- Sugerir tarifação por propulsão:} Calcula o preço base e o custo por ano-luz sugeridos a partir dos valores de referência e da categoria de conforto do Tipo de Propulsão.
+    \item \textbf{RF-17 --- Calcular duração no referencial da nave:} Determina o tempo próprio vivido a bordo ($\Delta t_{\text{bordo}}$) somando etapas de aceleração constante, cruzeiro e frenagem simétrica em cada salto (e trechos intrasistema em UA + trânsito lúmico quando aplicável).
+    \item \textbf{RF-18 --- Calcular dívida temporal:} Estima o avanço temporal no referencial estacionário em relação ao tempo de bordo:
+    \begin{equation}
+        D_{\text{temporal}} = \Delta t_{\text{estacionário}} - \Delta t_{\text{bordo}}
+    \end{equation}
+    \item \textbf{RF-19 --- Validar autonomia e calcular paradas pela regra gulosa:} Avalia a distância frente à autonomia da nave e seleciona paradas sucessivas no posto de recarga alcançável mais avançado em direção ao destino, gerando os trechos para o Mapa 2D.
+    \item \textbf{RF-20 --- Calcular preços finais dos cenários:} Determina o preço final de cada modalidade somando preço base, custo por ano-luz multiplicado pela distância, custo fixo por parada de recarga e pedágio lúmico.
+    \item \textbf{RF-21 --- Gerar ocupação inicial de assentos:} Seleciona de forma determinística (semente = \texttt{viagemId}) os assentos inicialmente ocupados em função da categoria de conforto (\texttt{ECONOMICA} mais lotada; \texttt{LUXO} mais vazia).
+    \item \textbf{RF-22 --- Converter escalas de distância e tempo:} Transforma grandezas astronômicas e temporais em texto legível para o público leigo (UA, anos-luz, dias, meses, anos, milhares ou milhões de anos).
+\end{itemize}
+
+\subsection{Requisitos Não-Funcionais (RNF)}
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Código} & \textbf{Categoria} & \textbf{Especificação do Requisito} \\
+\midrule
+RNF-01 & Segurança & Autenticação e autorização por papel (astrônomo, fretista, passageiro) via JWT. \\
+RNF-02 & Modelagem & Física relativística simplificada, porém internamente coerente nas ordens de grandeza. \\
+RNF-03 & Arquitetura & Módulos de cálculo físico stateless, isolados e substituíveis independentemente. \\
+RNF-04 & Desempenho & Simulação na publicação responde em até 3 segundos; buscas consultam resultados já persistidos no banco. \\
+RNF-05 & Usabilidade & Fluxo de busca, comparação e checkout familiar ao padrão ClickBus. \\
+RNF-06 & Usabilidade & Grandezas físicas e visualização de rota apresentadas de forma leve (Mapa 2D) e acessível ao público geral. \\
+RNF-07 & Interface & Interface responsiva (mobile e desktop). \\
+RNF-08 & Escalabilidade & Catálogo de planetas e postos extensível com indexação espacial (\texttt{cKDTree}) sem degradação de desempenho. \\
+RNF-09 & Manutenibilidade & Novos tipos de propulsão incorporáveis via cadastro e padrão Strategy sem refatoração ampla. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Matriz de Dependências e Rastreabilidade}
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X l l}
+\toprule
+\textbf{Código} & \textbf{Título do Requisito} & \textbf{Pré-requisitos} & \textbf{Caso de Uso} \\
+\midrule
+RF-01 & Cadastrar sistemas solares & --- & UC-01 \\
+RF-02 & Cadastrar planetas e postos de recarga & RF-01 & UC-01 \\
+RF-03 & Definir rotas lúmicas & RF-01 & UC-01 \\
+RF-04 & Cadastrar tipos de propulsão & --- & UC-01 \\
+RF-05 & Editar/remover cadastros e suspender viagens & RF-01 a RF-04 & UC-01 \\
+RF-06 & Cadastrar ônibus espaciais & RF-04 & UC-02 \\
+RF-07 & Criar e publicar viagens (cálculo único) & RF-02, RF-06, RF-17 a RF-21 & UC-02 \\
+RF-08 & Definir preço base e custo por ano-luz & RF-04, RF-16 & UC-02 \\
+RF-09 & Gerenciar disponibilidade de viagens & RF-07 & UC-02 \\
+RF-11 & Buscar viagens por origem e destino & RF-07, RF-09 & UC-03 \\
+RF-13 & Visualizar card e comparar Com/Sem Lúmica & RF-11, RF-22 & UC-03 \\
+RF-14 & Comprar passagem (modalidade e assento) & RF-13, RF-21 & UC-04 \\
+RF-15 & Visualizar rota no Mapa Galáctico 2D & RF-11, RF-19 & UC-03 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% -------------------------------------------------------------------
+% 4. DIRETRIZES DE DOMÍNIO E CENÁRIOS DE USO
+% -------------------------------------------------------------------
+\section{Diretrizes de Domínio e Cenários de Uso}
+
+\subsection{Diretrizes e Invariantes de Modelagem}
+\begin{enumerate}
+    \item \textbf{Dinâmica de Propulsão e Paradas:} Cada salto entre paradas é dividido em aceleração própria constante, cruzeiro e frenagem simétrica. A nave só freia quando efetivamente para (posto de recarga, portal lúmico na estrela ou planeta de destino), sendo o tempo de parada desprezível frente ao tempo de voo.
+    \item \textbf{Dois Cenários por Viagem:} Sem rota lúmica, o trajeto vai de planeta a planeta diretamente (com paradas de recarga se necessário). Com rota lúmica, a nave vai do planeta de origem até sua estrela (em UA), atravessa o portal lúmico até a estrela de destino e segue até o planeta de destino (em UA).
+    \item \textbf{Viabilidade de Combustível (Regra Gulosa):} A distância de cada salto propulsado deve ser menor ou igual à autonomia do Tipo de Propulsão. Quando a distância excede a autonomia, a nave avança até o posto de recarga alcançável mais próximo do destino e repete o processo.
+    \item \textbf{Cálculo Único na Publicação:} Duração a bordo, dívida temporal, preços finais, paradas/rota 2D e ocupação inicial de assentos são calculados uma única vez na publicação da viagem e persistidos no banco de dados.
+\end{enumerate}
+
+\subsection{Especificação de Casos de Uso (UC)}
+
+\subsubsection{UC-01 --- Gerenciar Malha Cartográfica e Propulsões}
+\begin{itemize}
+    \item \textbf{Ator:} Astrônomo.
+    \item \textbf{Resumo:} O astrônomo autenticado registra sistemas solares (RF-01), planetas com indicação de posto de recarga (RF-02), rotas lúmicas partindo do Sol (RF-03) e tipos de propulsão (RF-04). Ao remover ou desativar rotas ou postos em uso, o sistema suspende as viagens afetadas (RF-05).
+\end{itemize}
+
+\subsubsection{UC-02 --- Operar Frota e Publicar Viagens Espaciais}
+\begin{itemize}
+    \item \textbf{Ator:} Fretista e Motor de Cálculo Físico.
+    \item \textbf{Resumo:} O fretista cadastra ônibus espaciais associados a um Tipo de Propulsão (RF-06). Ao publicar uma viagem (RF-07), o motor físico sugere o preço base e o custo por ano-luz (RF-08, RF-16), valida a autonomia e calcula paradas gulosas e rota 2D (RF-19), simula duração, dívida temporal e preços finais nos cenários Com e Sem Rota Lúmica (RF-17, RF-18, RF-20) e gera a ocupação inicial de assentos (RF-21). Sendo viável, a viagem é persistida como \texttt{PUBLICADA} (RF-09).
+\end{itemize}
+
+\subsubsection{UC-03 --- Consultar Viagens, Comparar Cenários e Visualizar Mapa 2D}
+\begin{itemize}
+    \item \textbf{Ator:} Usuário (Passageiro).
+    \item \textbf{Resumo:} O passageiro pesquisa trajetos entre planetas consultando os dados já persistidos no banco (RF-11), filtra e ordena opções (RF-12), compara nos cards os custos, durações e dívidas temporais dos cenários Com e Sem Rota Lúmica (RF-13) e visualiza o trajeto no Mapa Galáctico 2D (RF-15).
+\end{itemize}
+
+\subsubsection{UC-04 --- Escolher Modalidade, Assento e Adquirir Passagem}
+\begin{itemize}
+    \item \textbf{Ator:} Usuário (Passageiro).
+    \item \textbf{Resumo:} O passageiro escolhe a opção de viagem (nave/propulsão) e a modalidade (Com ou Sem Rota Lúmica), visualiza o mapa de poltronas da nave (com lotação proporcional à categoria de conforto), seleciona um assento disponível e conclui a compra recebendo o comprovante (RF-14).
+\end{itemize}
+
+% -------------------------------------------------------------------
+% 5. METODOLOGIA DE TRABALHO E GESTÃO DO PROJETO
+% -------------------------------------------------------------------
+\section{Metodologia de Trabalho e Gestão do Projeto}
+
+\subsection{Identificação do Framework de Processos}
+Optamos por trabalhar segundo uma lógica baseada no método \textbf{Scrum}, realizando reuniões semanais toda \textbf{segunda-feira} com tarefas delegadas para todos os membros ao longo da semana.
+
+De início, o membro \textbf{Gabriel Andrioli} atuou como \textit{Product Owner} (PO), elencando a visão do sistema e as especificidades técnicas. Ademais, todos os integrantes atuaram de forma conjunta nas etapas de modelagem e desenvolvimento, não havendo divisão engessada em diferentes funções. Decidimos por essa estrutura horizontal a fim de minimizar burocracia sem perder a cadência de entregas do método Scrum.
+
+\subsection{Ciclo de Desenvolvimento}
+O trabalho foi organizado em iterações semanais rigorosamente alinhadas ao quadro Kanban (Trello) da equipe, distribuindo a carga de modelagem, prototipação e codificação:
+
+\begin{enumerate}
+    \item \textbf{Semana 1 --- Escopo, Processo e Requisitos:} Definição do conceito do Nabuus (nome, propósito e escopo), identificação da metodologia de processo (Scrum horizontal), mapeamento dos Requisitos Não-Funcionais e esboço preliminar do Diagrama de Casos de Uso.
+    \item \textbf{Semana 2 --- Modelagem Estrutural e Arquitetural:} Construção refinada da arquitetura de software via Modelo C4, identificação dos perfis de usuário, elaboração dos Diagramas de Classes, Atividades e Sequência, e especificação detalhada dos RFs.
+    \item \textbf{Semana 3 --- Dados, Motor Físico e Prototipação (Figma):} Levantamento e coleta estruturada de dados astronômicos planetários, desenvolvimento isolado do núcleo algorítmico (Motor de cálculo físico em Python), e, crucialmente, a \textbf{criação do protótipo de alta fidelidade no Figma}. Esta prototipação garantiu a validação visual da identidade "ClickBus intergaláctico" antes da escrita de qualquer componente front-end.
+    \item \textbf{Semana 4 --- Codificação e Integração:} Com os cálculos e protótipos validados, foco absoluto no desenvolvimento da Interface Front-end (HTML/CSS/JS) consumindo as especificações do Figma, paralelo à implementação do Back-end de Negócios (Java), finalizando com a revisão geral de escopo.
+\end{enumerate}
+
+\subsection{Recursos Tecnológicos Utilizados}
+\begin{itemize}
+    \item \textbf{Gerenciamento do Projeto:} Trello (acompanhamento Kanban das sprints semanais);
+    \item \textbf{Gerência de Configuração:} GitHub (controle de versão e colaboração em código);
+    \item \textbf{Design e Prototipação:} Figma (desenvolvimento de wireframes e layout de interface de usuário);
+    \item \textbf{Linguagens de Front-End:} HTML, CSS e JavaScript;
+    \item \textbf{Linguagem de Back-End:} Java (Framework Spring Boot);
+    \item \textbf{Linguagem do Motor de Cálculo:} Python (FastAPI);
+    \item \textbf{Banco de Dados:} PostgreSQL.
+\end{itemize}
+
+% -------------------------------------------------------------------
+% 6. MODELAGEM UML DO SISTEMA
+% -------------------------------------------------------------------
+\section{Modelagem UML do Sistema}
+
+Esta seção reúne os artefatos visuais de modelagem estrutural, comportamental e arquitetural do sistema Nabuus:
+
+\begin{itemize}
+    \item \textbf{Diagrama de Classes:} Representação das entidades persistentes (\texttt{SistemaSolar}, \texttt{Planeta}, \texttt{RotaLumica}, \texttt{TipoPropulsao}, \texttt{OnibusEspacial}, \texttt{Viagem}, \texttt{Passagem}), enums de domínio, hierarquia de usuários e contrato de DTOs do \texttt{MotorCalculoClient};
+    \item \textbf{Diagrama de Casos de Uso:} Visão geral das interações dos agentes (\texttt{Astrônomo}, \texttt{Fretista} e \texttt{Passageiro}) e do subsistema \texttt{Motor de Cálculo Físico} com os módulos do Nabuus;
+    \item \textbf{Diagramas de Atividades (AD01, AD02 e AD03):} Demonstração do fluxo de controle para pesquisa/compra de passagem, gestão da malha cartográfica/propulsões e publicação de viagem com cálculo único;
+    \item \textbf{Diagrama de Sequência:} Orquestração das chamadas entre Front-End, Controllers, Services, Repositories/PostgreSQL e Motor de Cálculo Físico;
+    \item \textbf{Diagrama de Contexto (Arquitetura C4):} Visão de nível 1 do sistema Nabuus e de suas interações com os três perfis de usuário.
+\end{itemize}
+
+\end{document}
