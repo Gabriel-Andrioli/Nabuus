@@ -1,0 +1,39 @@
+# Artefatos gerados automaticamente pelos scripts de documentação e diagramas
+*.pdf
+context/**/*.png
+context/**/*.svg
+context/**/plantuml.jar
+context/docs/*.aux
+context/docs/*.log
+context/docs/*.out
+context/docs/*.toc
+context/docs/*.synctex.gz
+
+# Manter catálogo de dados astronômicos no versionamento
+!data/*.csv
+
+# Python / Motor de Cálculo Físico
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+env/
+*.egg-info/
+.coverage
+
+# Java / Spring Boot (futuro back-end)
+target/
+build/
+.gradle/
+*.jar
+*.war
+*.class
+
+# IDEs e Sistema Operacional
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
