@@ -1,0 +1,83 @@
+@startuml Diagrama_Casos_de_Uso_Nabuus
+skinparam actorStyle awesome
+left to right direction
+
+title Diagrama de Casos de Uso - Sistema Nabuus
+
+' Definição dos Atores
+actor "Astrônomo" as Astronomo
+actor "Fretista" as Fretista
+actor "Passageiro" as Passageiro
+actor "Motor de Cálculo Físico" as MotorFisico <<Subsistema>>
+
+rectangle "Sistema Nabuus" {
+
+  ' Casos de Uso do Astrônomo (UC-01)
+  package "UC-01: Malha Cartográfica e Propulsões" {
+    usecase "Gerenciar Malha Cartográfica" as UC01
+    usecase "Cadastrar Sistemas Solares e Planetas\n(com Postos de Recarga)" as UC_CadastrarSistemas
+    usecase "Definir Rotas Lúmicas\n(partindo do Sol)" as UC_DefinirRotas
+    usecase "Cadastrar Tipos de Propulsão" as UC_CadastrarPropulsao
+    usecase "Editar/Remover Registros Cartográficos" as UC_ManterMalha
+    usecase "Suspender Viagens Afetadas" as UC_SuspenderViagens
+  }
+
+  ' Casos de Uso do Fretista (UC-02) — concentra os cálculos do Motor Físico
+  package "UC-02: Gestão de Frota e Publicação de Viagens" {
+    usecase "Cadastrar Ônibus Espacial\n(vinculado a Tipo de Propulsão)" as UC_CadastrarNave
+    usecase "Publicar Viagem Espacial" as UC_PublicarViagem
+    usecase "Sugerir Preço Base e Custo por Ano-Luz" as UC_SugerirPreco
+    usecase "Validar Autonomia e Calcular Rota 2D\n(Paradas de Recarga)" as UC_ValidarRota
+    usecase "Simular Duração, Dívida Temporal e Preços\n(Com e Sem Rota Lúmica)" as UC_SimularMetricas
+    usecase "Gerar Ocupação Inicial de Assentos\n(por Conforto da Propulsão)" as UC_GerarOcupacao
+    usecase "Gerenciar Disponibilidade de Viagens" as UC_DisponibilidadeViagens
+  }
+
+  ' Casos de Uso do Passageiro (UC-03 e UC-04) — 100% consulta em banco
+  package "UC-03: Consulta de Viagens (Pré-calculadas)" {
+    usecase "Pesquisar Viagens por Origem e Destino" as UC_BuscarViagens
+    usecase "Filtrar e Ordenar Viagens\n(Preço, Duração, Dívida, Conforto)" as UC_FiltrarViagens
+    usecase "Comparar Cenários Com e Sem Rota Lúmica" as UC_CompararLumica
+    usecase "Visualizar Rota no Mapa Galáctico 2D" as UC_VisualizarMapa
+  }
+
+  package "UC-04: Reserva e Aquisição" {
+    usecase "Comprar Passagem Intergaláctica\n(Escolhendo Nave, Modalidade Lúmica e Assento)" as UC_ComprarPassagem
+  }
+}
+
+' Relacionamentos do Astrônomo
+Astronomo --> UC01
+UC01 <|-- UC_CadastrarSistemas
+UC01 <|-- UC_DefinirRotas
+UC01 <|-- UC_CadastrarPropulsao
+UC01 <|-- UC_ManterMalha
+UC_ManterMalha ..> UC_SuspenderViagens : <<include>>
+
+' Relacionamentos do Fretista
+Fretista --> UC_CadastrarNave
+Fretista --> UC_PublicarViagem
+Fretista --> UC_DisponibilidadeViagens
+
+' Inclusões de Publicação e Interação com o Motor Físico (feito uma única vez no UC-02)
+UC_PublicarViagem ..> UC_SugerirPreco : <<include>>
+UC_PublicarViagem ..> UC_ValidarRota : <<include>>
+UC_PublicarViagem ..> UC_SimularMetricas : <<include>>
+UC_PublicarViagem ..> UC_GerarOcupacao : <<include>>
+
+UC_SugerirPreco <-- MotorFisico
+UC_ValidarRota <-- MotorFisico
+UC_SimularMetricas <-- MotorFisico
+UC_GerarOcupacao <-- MotorFisico
+
+' Relacionamentos do Passageiro
+Passageiro --> UC_BuscarViagens
+Passageiro --> UC_ComprarPassagem
+
+' Extensões do UC-03
+UC_FiltrarViagens ..> UC_BuscarViagens : <<extend>>
+UC_CompararLumica ..> UC_BuscarViagens : <<extend>>
+UC_VisualizarMapa ..> UC_BuscarViagens : <<extend>>
+
+@enduml
+

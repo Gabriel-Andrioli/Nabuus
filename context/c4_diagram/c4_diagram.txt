@@ -1,0 +1,33 @@
+@startuml Nabuus_C4_Diagrama_de_Contexto
+!include <C4/C4_Context>
+
+LAYOUT_LEFT_RIGHT()
+skinparam nodesep 70
+skinparam ranksep 140
+
+UpdateElementStyle("person", $bgColor="#08427B", $fontColor="#FFFFFF", $borderColor="#073B6F", $shape=RoundedBoxShape())
+UpdateElementStyle("system", $bgColor="#1168BD", $fontColor="#FFFFFF", $borderColor="#0E5AA7", $shape=RoundedBoxShape())
+UpdateRelStyle($textColor="#222222", $lineColor="#555555")
+
+title Diagrama de contexto de sistema: Nabuus\n<size:12><color:#666666>Modelo C4, nível 1. Visão do sistema e das pessoas que interagem com ele.</color></size>
+
+Person(astronomo, "Astrônomo", "Mapeia o cosmos, mantém a base cartográfica e define as tecnologias de propulsão.")
+
+Person(fretista, "Fretista", "Opera a frota de ônibus espaciais e publica as viagens comerciais.")
+
+Person(passageiro, "Usuário (passageiro)", "Pesquisa viagens e adquire passagens intergalácticas.")
+
+System(nabuus, "Nabuus", "Simulador interativo de viagens intergalácticas apresentado como compra de passagens rodoviárias. Calcula na publicação e exibe duração a bordo, dívida temporal, custos Com/Sem Rota Lúmica, ocupação por conforto e rota no Mapa Galáctico 2D.")
+
+Lay_R(astronomo, fretista)
+Lay_R(fretista, passageiro)
+
+Rel(astronomo, nabuus, "Cadastra sistemas solares, planetas (com recarga), rotas lúmicas e tipos de propulsão", "UC-01")
+Rel(fretista, nabuus, "Cadastra naves (por propulsão), ajusta preço sugerido, publica viagens e gerencia disponibilidade", "UC-02")
+Rel(passageiro, nabuus, "Busca viagens, escolhe nave, modalidade (Com/Sem Lúmica), poltrona e compra a passagem", "UC-03, UC-04")
+Rel_Back(passageiro, nabuus, "Exibe cards de viagem (Com/Sem Lúmica), Mapa Galáctico 2D, ocupação da nave e comprovante", "RF-14 a RF-17")
+
+SHOW_LEGEND()
+
+footer \n<i>O sistema não depende de serviços externos: o pagamento é simulado e o Motor de Cálculo Físico é um contêiner interno (nível 2), acionado na publicação da viagem.</i>\nUniversidade Federal de Juiz de Fora  |  Trabalho de Modelagem de Sistemas  |  Novembro de 2026
+@enduml

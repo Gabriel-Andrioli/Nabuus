@@ -1,0 +1,44 @@
+@startuml AD02_Gerenciar_Malha
+title AD02 - Gerenciar Malha Cartográfica e Propulsões
+
+|Astrônomo|
+start
+:Acessar Gerenciar Malha Cartográfica;
+:Escolher tipo de operação;
+
+switch (Operação?)
+case (Sistemas Solares)
+  :Cadastrar Sistema Solar\n(estrela principal, RA, Dec, distância ao Sol);
+case (Planetas e Recarga)
+  :Cadastrar Planeta vinculado a Sistema Solar\n(distância à estrela em UA e flag possuiPostoRecarga);
+case (Rotas Lúmicas)
+  :Cadastrar Rota Lúmica partindo do Sol\n(sistema destino, velocidadeC, pedágio, ativa);
+case (Tipos de Propulsão)
+  :Cadastrar Tipo de Propulsão\n(aceleraçãoG, velocidadeCruzeiroC, autonomiaAnosLuz,\ncategoriaConforto e preços de referência);
+case (Editar/Remover)
+  :Selecionar cadastro existente;
+  :Editar ou remover/desativar cadastro;
+endswitch
+
+|Sistema Nabuus|
+:Validar dados (coordenadas, limites físicos e consistência);
+
+if (Dados válidos?) then (sim)
+  |Sistema Nabuus|
+  :Persistir alterações no banco de dados;
+  if (Rota lúmica ou posto usado em viagem ativa foi removido/desativado?) then (sim)
+    :Atualizar status das viagens afetadas para SUSPENSA;
+  endif
+  :Confirmar operação;
+  |Astrônomo|
+  stop
+else (não)
+  |Sistema Nabuus|
+  :Exibir erros de validação;
+  |Astrônomo|
+  :Corrigir dados;
+  stop
+endif
+
+@enduml
+

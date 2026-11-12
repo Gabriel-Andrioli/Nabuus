@@ -1,0 +1,356 @@
+@startuml Nabuus_Diagrama_Classes_Atualizado
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 45
+skinparam ranksep 50
+skinparam packageStyle rectangle
+
+' ==================================================
+' PACOTE: AUTENTICAÇÃO E PERFIS
+' ==================================================
+
+package "Entities :: Autenticação" {
+
+    abstract class Usuario {
+        - id: UUID
+        - nome: String
+        - email: String
+        - hashSenha: String
+        - tipoUsuario: Role
+        + realizarLogin(): Boolean
+    }
+
+    enum Role {
+        ASTRONOMO
+        FRETISTA
+        PASSAGEIRO
+    }
+
+    class Astronomo {
+        - credencialCientifica: String
+    }
+
+    class Fretista {
+        - cnpjIntergalactico: String
+        - razaoSocial: String
+    }
+
+    class Passageiro {
+        - cpf: String
+        - dataNascimento: LocalDate
+    }
+
+    Usuario <|-- Astronomo
+    Usuario <|-- Fretista
+    Usuario <|-- Passageiro
+    Usuario ..> Role
+}
+
+' ==================================================
+' PACOTE: CARTOGRAFIA GALÁCTICA
+' ==================================================
+
+package "Entities :: Cartografia Galáctica" {
+
+    class SistemaSolar {
+        - id: Long
+        - nome: String
+        - estrelaPrincipal: String
+        - coordenadaRA: Double
+        - coordenadaDec: Double
+        - distanciaSolAnosLuz: Double
+    }
+
+    class Planeta {
+        - id: Long
+        - nome: String
+        - raioBase: Double
+        - massaBase: Double
+        - zonaHabitavel: Boolean
+        - distanciaEstrelaUA: Double
+        - possuiPostoRecarga: Boolean
+        - descricaoNabuus: String
+    }
+
+    class RotaLumica {
+        - id: Long
+        - velocidadeC: Double
+        - pedagio: BigDecimal
+        - ativa: Boolean
+    }
+
+    SistemaSolar "1" *-- "0..*" Planeta : "contém"
+
+    RotaLumica "*" --> "1" SistemaSolar : "origem (Sol)"
+    RotaLumica "*" --> "1" SistemaSolar : "destino"
+
+    Astronomo "1" -- "*" SistemaSolar : "cadastra"
+    Astronomo "1" -- "*" RotaLumica : "define"
+
+    note bottom of SistemaSolar
+      A posição da estrela principal é obtida
+      por RA, Dec e distância ao Sol.
+      Permite calcular distâncias entre estrelas.
+    end note
+
+    note bottom of Planeta
+      A distância planeta-estrela é considerada fixa.
+      Não são calculadas posições orbitais.
+    end note
+
+    note bottom of RotaLumica
+      Toda rota lúmica parte do Sistema Solar (Sol)
+      em direção a outro sistema (foco na ida).
+    end note
+}
+
+' ==================================================
+' PACOTE: PROPULSÃO
+' ==================================================
+
+package "Entities :: Propulsão" {
+
+    class TipoPropulsao {
+        - id: Long
+        - nome: String
+        - aceleracaoG: Double
+        - velocidadeCruzeiroC: Double
+        - autonomiaAnosLuz: Double
+        - categoriaConforto: CategoriaConforto
+        - precoBaseReferencia: BigDecimal
+        - custoAnoLuzReferencia: BigDecimal
+    }
+
+    enum CategoriaConforto {
+        ECONOMICA
+        EXECUTIVA
+        LUXO
+    }
+
+    TipoPropulsao ..> CategoriaConforto
+    Astronomo "1" -- "*" TipoPropulsao : "cadastra"
+}
+
+' ==================================================
+' PACOTE: LOGÍSTICA E RESERVAS
+' ==================================================
+
+package "Entities :: Logística e Reservas" {
+
+    class OnibusEspacial {
+        - id: Long
+        - identificacao: String
+        - totalAssentos: Integer
+        - ativo: Boolean
+    }
+
+    class Viagem {
+        - id: Long
+        - dataPartida: LocalDateTime
+        - status: StatusViagem
+        - precoBase: BigDecimal
+        - custoAnoLuz: BigDecimal
+        - duracaoBordoAnosComLumica: Double
+        - dividaTemporalAnosComLumica: Double
+        - precoComLumica: BigDecimal
+        - duracaoBordoAnosSemLumica: Double
+        - dividaTemporalAnosSemLumica: Double
+        - precoSemLumica: BigDecimal
+        - paradasReabastecimento: Integer
+    }
+
+    class Passagem {
+        - id: Long
+        - assentoEscolhido: String
+        - valorPago: BigDecimal
+        - dataCompra: LocalDateTime
+        - codigoComprovante: String
+        - usaRotaLumica: Boolean
+    }
+
+    enum StatusViagem {
+        PUBLICADA
+        SUSPENSA
+        CANCELADA
+    }
+
+    Viagem ..> StatusViagem
+
+    Fretista "1" -- "0..*" OnibusEspacial : "frota"
+    Fretista "1" -- "0..*" Viagem : "publica"
+
+    TipoPropulsao "1" -- "0..*" OnibusEspacial : "equipamento"
+
+    OnibusEspacial "1" -- "*" Viagem : "alocado"
+
+    Viagem "*" --> "1" Planeta : "embarque"
+    Viagem "*" --> "1" Planeta : "desembarque"
+
+    Viagem "1" *-- "*" Passagem : "reservas"
+
+    Passageiro "1" -- "*" Passagem : "titular"
+
+    Viagem "*" -- "0..1" RotaLumica : "rota utilizada"
+
+    note bottom of Viagem
+      Publicação calcula e armazena os dois cenários.
+      A passagem registra qual cenário foi comprado.
+      Assentos ocupados são regerados pelo viagemId.
+    end note
+}
+
+' ==================================================
+' PACOTE: SERVIÇOS E INTEGRAÇÃO (LAYOUT VERTICAL)
+' ==================================================
+
+package "Services :: Integração Motor Físico" {
+
+    interface MotorCalculoClient <<Interface>> {
+        + simularViagem(req: SimulacaoRequestDTO): ResultadoCenariosDTO
+        + sugerirPreco(req: SugestaoPrecoRequestDTO): SugestaoPrecoDTO
+        + tracarRota(req: SimulacaoRequestDTO): RotaDetalhadaDTO
+        + gerarPerfis(req: PerfisRequestDTO): List<PerfilPassageiroDTO>
+    }
+
+    note top of MotorCalculoClient
+      Microsserviço stateless: recebe DTOs prontos
+      (montados pelo Java) e devolve os resultados.
+    end note
+
+    ' ---------- Coluna 1: DTOs de Entrada (empilhados) ----------
+
+    class SimulacaoRequestDTO <<DTO>> {
+        + viagemId: Long
+        + origem: PlanetaDTO
+        + destino: PlanetaDTO
+        + nave: NaveDTO
+        + precoBase: BigDecimal
+        + custoAnoLuz: BigDecimal
+        + postosRecarga: List<PlanetaDTO>
+        + rotaLumica: RotaLumicaDTO [0..1]
+    }
+
+    class PlanetaDTO <<DTO>> {
+        + planetaId: Long
+        + sistemaId: Long
+        + ra: Double
+        + dec: Double
+        + distanciaSolAnosLuz: Double
+        + distanciaEstrelaUA: Double
+    }
+
+    class NaveDTO <<DTO>> {
+        + aceleracaoG: Double
+        + velocidadeCruzeiroC: Double
+        + autonomiaAnosLuz: Double
+        + categoriaConforto: CategoriaConforto
+        + totalAssentos: Integer
+    }
+
+    class RotaLumicaDTO <<DTO>> {
+        + id: Long
+        + velocidadeC: Double
+        + pedagio: BigDecimal
+        + ativa: Boolean
+    }
+
+    class SugestaoPrecoRequestDTO <<DTO>> {
+        + precoBaseReferencia: BigDecimal
+        + custoAnoLuzReferencia: BigDecimal
+        + categoriaConforto: CategoriaConforto
+    }
+
+    class PerfisRequestDTO <<DTO>> {
+        + viagemId: Long
+        + categoriaConforto: CategoriaConforto
+        + totalAssentos: Integer
+    }
+
+    ' ---------- Coluna 2: DTOs de Saída (empilhados) ----------
+
+    class ResultadoCenariosDTO <<DTO>> {
+        + viagemId: Long
+        + semLumica: CenarioDTO
+        + comLumica: CenarioDTO
+        + assentosOcupados: List<String>
+    }
+
+    class CenarioDTO <<DTO>> {
+        + viavel: Boolean
+        + motivoInviabilidade: String
+        + duracaoBordoAnos: Double
+        + tempoExternoAnos: Double
+        + dividaTemporalAnos: Double
+        + distanciaAnosLuz: Double
+        + paradas: Integer
+        + precoFinal: BigDecimal
+        + rotaLumicaId: Long
+        + texto: TextoFormatadoDTO
+    }
+
+    class TextoFormatadoDTO <<DTO>> {
+        + duracaoBordo: String
+        + tempoExterno: String
+        + dividaTemporal: String
+        + distancia: String
+    }
+
+    class RotaDetalhadaDTO <<DTO>> {
+        + semLumica: List<TrechoDTO>
+        + comLumica: List<TrechoDTO>
+    }
+
+    class TrechoDTO <<DTO>> {
+        + ordem: Integer
+        + tipo: String
+        + origemId: Long
+        + destinoId: Long
+        + distanciaAnosLuz: Double
+        + duracaoBordoAnos: Double
+        + dividaTemporalAnos: Double
+        + origemPos: Double[3]
+        + destinoPos: Double[3]
+    }
+
+    class SugestaoPrecoDTO <<DTO>> {
+        + precoBaseSugerido: BigDecimal
+        + custoAnoLuzSugerido: BigDecimal
+        + custoPorParada: BigDecimal
+    }
+
+    class PerfilPassageiroDTO <<DTO>> {
+        + poltrona: String
+        + nomeGerado: String
+        + tracoPersonalidade: String
+    }
+
+    ' Relações de topo com a interface
+    MotorCalculoClient ..> SimulacaoRequestDTO : "entradas"
+    MotorCalculoClient ..> ResultadoCenariosDTO : "saídas"
+
+    ' Empilhamento vertical da Coluna 1 (Entradas)
+    SimulacaoRequestDTO *-- PlanetaDTO
+    SimulacaoRequestDTO *-- NaveDTO
+    SimulacaoRequestDTO *-- RotaLumicaDTO
+    PlanetaDTO -[hidden]down-> NaveDTO
+    NaveDTO -[hidden]down-> RotaLumicaDTO
+    RotaLumicaDTO ..> SugestaoPrecoRequestDTO
+    SugestaoPrecoRequestDTO ..> PerfisRequestDTO
+
+    ' Empilhamento vertical da Coluna 2 (Saídas)
+    ResultadoCenariosDTO *-- CenarioDTO
+    CenarioDTO *-- TextoFormatadoDTO
+    TextoFormatadoDTO ..> RotaDetalhadaDTO
+    RotaDetalhadaDTO *-- TrechoDTO
+    TrechoDTO ..> SugestaoPrecoDTO
+    SugestaoPrecoDTO ..> PerfilPassageiroDTO
+}
+
+' ==================================================
+' RELAÇÕES ARQUITETURAIS
+' ==================================================
+
+Viagem ..> MotorCalculoClient : "<<consumido via API Python>>"
+
+@enduml

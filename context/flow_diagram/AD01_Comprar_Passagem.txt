@@ -1,0 +1,65 @@
+@startuml AD01_Comprar_Passagem
+title AD01 - Pesquisar Viagem e Comprar Passagem Intergaláctica
+
+|Passageiro|
+start
+:Informar planeta de origem e destino;
+
+|Sistema Nabuus|
+:Consultar viagens publicadas no banco de dados\n(tempos, dívida temporal, preços, rota 2D e ocupação já calculados);
+
+if (Existem viagens disponíveis?) then (não)
+  |Sistema Nabuus|
+  :Exibir "Nenhuma viagem encontrada";
+  |Passageiro|
+  stop
+else (sim)
+  |Sistema Nabuus|
+  :Exibir cards de viagens (diferentes naves/propulsões,\ncustos, conforto e cenários Com/Sem Rota Lúmica);
+endif
+
+|Passageiro|
+if (Deseja filtrar ou ordenar?) then (sim)
+  :Filtrar/ordenar por preço, duração a bordo,\ndívida temporal ou conforto da nave;
+endif
+
+if (Deseja ver a rota no mapa?) then (sim)
+  |Sistema Nabuus|
+  :Consultar rota salva no banco e exibir\nMapa Galáctico 2D (paradas e rota lúmica);
+endif
+
+|Passageiro|
+:Escolher viagem (nave/propulsão) e\nmodalidade (Com ou Sem Rota Lúmica);
+
+|Sistema Nabuus|
+:Exibir mapa de poltronas da nave\n(naves econômicas mais lotadas;\nnaves tecnológicas/caras mais vazias);
+
+|Passageiro|
+:Selecionar assento disponível e confirmar compra;
+
+|Sistema Nabuus|
+if (Assento ainda disponível?) then (não)
+  |Sistema Nabuus|
+  :Notificar indisponibilidade do assento;
+  |Passageiro|
+  stop
+else (sim)
+  |Sistema Nabuus|
+  :Processar pagamento (simulado);
+  if (Pagamento aprovado?) then (sim)
+    |Sistema Nabuus|
+    :Emitir passagem (registrando modalidade\nCom/Sem Rota Lúmica e valor pago);
+    :Atualizar assentos ocupados da viagem no banco;
+    |Passageiro|
+    :Visualizar comprovante da passagem;
+    stop
+  else (não)
+    |Sistema Nabuus|
+    :Informar falha no pagamento;
+    |Passageiro|
+    stop
+  endif
+endif
+
+@enduml
+

@@ -1,0 +1,157 @@
+@startuml Diagrama_de_Sequencia_Nabuus
+title Diagrama de Sequência — Sistema Nabuus (Publicação com Cálculo Único e Compra de Passagem)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 220
+autonumber
+
+actor "Astrônomo" as Astronomo
+actor "Fretista" as Fretista
+actor "Passageiro" as Passageiro
+
+box "Front-End (Cliente Estático)" #F8FAFC
+  participant "Interface Web\n(HTML / CSS / JS)" as UI
+end box
+
+box "Back-End de Negócios (Java / Spring Boot)" #EEF2FF
+  participant "Controllers REST" as Controller
+  participant "Services\n(Regras de Negócio)" as Service
+  participant "MotorCalculoClient" as Client
+  participant "Repositories\n(Spring Data JPA)" as Repo
+end box
+
+database "PostgreSQL" as DB #E0F2FE
+
+box "Contêiner Científico" #FEF3C7
+  participant "Motor de Cálculo Físico\n(Python / FastAPI)" as Motor
+end box
+
+' =====================================================================
+' FASE 1 — ASTRÔNOMO: MALHA CARTOGRÁFICA E PROPULSÕES (RESUMO)
+' =====================================================================
+== 1. Gestão da Malha Cartográfica e Propulsões (UC-01) ==
+
+Astronomo -> UI : Cadastra SistemaSolar (RA, Dec, distSol),\nPlaneta (distUA, possuiPostoRecarga),\nRotaLumica (velocidadeC, pedágio) e TipoPropulsao
+UI -> Controller : POST /api/cartografia (JSON + JWT)
+Controller -> Service : validarECadastrar(dados)
+Service -> Repo : save(SistemaSolar / Planeta / RotaLumica / TipoPropulsao)
+Repo -> DB : INSERT
+DB --> Repo : OK
+Repo --> Service : Entidade persistida
+
+opt Remoção ou desativação de Rota Lúmica / Posto em uso
+  Service -> Repo : suspenderViagensAfetadas(rotaLumicaId)
+  Repo -> DB : UPDATE viagem SET status = 'SUSPENSA'
+end
+
+Service --> Controller : 201 Created / 200 OK
+Controller --> UI : Confirmação JSON
+UI --> Astronomo : Exibe confirmação na tela
+
+' =====================================================================
+' FASE 2 — FRETISTA: PUBLICAÇÃO COM CÁLCULO ÚNICO NO MOTOR FÍSICO
+' =====================================================================
+== 2. Publicação de Viagem Espacial e Cálculo Único no Motor Físico (UC-02) ==
+
+Fretista -> UI : Seleciona Planeta origem, Planeta destino,\nOnibusEspacial (com TipoPropulsao) e dataPartida
+UI -> Controller : POST /api/viagens/sugerir-preco
+Controller -> Service : sugerirPreco(tipoPropulsaoId)
+Service -> Repo : findById(tipoPropulsaoId)
+Repo -> DB : SELECT TipoPropulsao
+DB --> Repo : TipoPropulsao (precoBaseRef, custoAnoLuzRef, conforto)
+Service -> Client : sugerirPreco(SugestaoPrecoRequestDTO)
+Client -> Motor : POST /v1/precos/sugerir
+Motor --> Client : SugestaoPrecoDTO (precoBaseSugerido, custoAnoLuzSugerido)
+Client --> Service : SugestaoPrecoDTO
+Service --> Controller : 200 OK (preços sugeridos)
+Controller --> UI : Exibe valores sugeridos
+UI --> Fretista : Permite confirmar ou ajustar precoBase e custoAnoLuz
+
+Fretista -> UI : Confirma/ajusta preços e solicita publicação
+UI -> Controller : POST /api/viagens/publicar
+Controller -> Service : publicarViagem(dadosViagem)
+
+Service -> Repo : buscarMalhaParaSimulacao(origemId, destinoId)
+Repo -> DB : SELECT Planetas, Sistemas, PostosRecarga, RotaLumica
+DB --> Repo : Dados cartográficos e técnicos da nave
+Repo --> Service : Entidades carregadas
+
+Service -> Client : simularViagem(SimulacaoRequestDTO)
+Client -> Motor : POST /v1/viagens/simular
+activate Motor
+note right of Motor
+  Executado **uma única vez** na publicação:
+  1. Valida autonomia e calcula paradas (regra gulosa)
+  2. Calcula duração a bordo, dívida temporal,
+     preços finais e rota 2D (Com e Sem Rota Lúmica)
+  3. Gera ocupação inicial de assentos conforme
+     categoriaConforto do TipoPropulsao
+end note
+Motor --> Client : ResultadoCenariosDTO (semLumica, comLumica, assentosOcupados)
+deactivate Motor
+Client --> Service : ResultadoCenariosDTO
+
+alt Trajetória viável dentro da autonomia da nave
+  Service -> Repo : save(Viagem com status=PUBLICADA,\ncenários Com/Sem Lúmica, rota 2D e ocupação inicial)
+  Repo -> DB : INSERT INTO viagem
+  DB --> Repo : Viagem persistida
+  Service --> Controller : 201 Created (Viagem publicada)
+  Controller --> UI : JSON da viagem publicada
+  UI --> Fretista : Confirma publicação da linha
+else Autonomia insuficiente (sem posto de recarga alcançável)
+  Service --> Controller : 422 Unprocessable Entity (motivoInviabilidade)
+  Controller --> UI : Erro de viabilidade
+  UI --> Fretista : Informa motivo e solicita ajuste de nave ou destino
+end
+
+' =====================================================================
+' FASE 3 — PASSAGEIRO: BUSCA, MAPA 2D E COMPRA (100% VIA BANCO)
+' =====================================================================
+== 3. Pesquisa de Viagens, Mapa Galáctico 2D e Compra de Passagem (UC-03 / UC-04) ==
+
+Passageiro -> UI : Pesquisa viagens por Planeta de origem e destino
+UI -> Controller : GET /api/viagens?origem=...&destino=...
+Controller -> Service : buscarViagensPublicadas(origemId, destinoId)
+Service -> Repo : findByOrigemAndDestinoAndStatus(PUBLICADA)
+Repo -> DB : SELECT viagens pré-calculadas
+note right of DB
+  Nenhuma chamada ao Motor Físico:
+  duração, dívida temporal, preços,
+  rota 2D e ocupação já estão no banco.
+end note
+DB --> Repo : Lista de Viagens
+Repo --> Service : Lista de Viagens
+Service --> Controller : 200 OK (cards com opções de nave e Com/Sem Lúmica)
+Controller --> UI : Lista de viagens em JSON
+UI --> Passageiro : Exibe cards (preços, conforto, duração e dívida temporal)
+
+opt Passageiro visualiza Mapa Galáctico 2D
+  Passageiro -> UI : Clica em "Ver Rota no Mapa 2D"
+  UI --> Passageiro : Renderiza Mapa Galáctico 2D com paradas e rota lúmica (dados já carregados)
+end
+
+Passageiro -> UI : Escolhe viagem (nave/propulsão) e modalidade (Com ou Sem Rota Lúmica)
+UI --> Passageiro : Exibe mapa de poltronas (econômicas mais lotadas; tecnológicas/caras mais vazias)
+
+Passageiro -> UI : Seleciona assento disponível e confirma compra
+UI -> Controller : POST /api/passagens/comprar (viagemId, assento, usaRotaLumica)
+Controller -> Service : comprarPassagem(dadosCompra)
+Service -> Repo : verificarDisponibilidadeAssento(viagemId, assento)
+Repo -> DB : SELECT assento
+DB --> Repo : Status do assento
+
+alt Assento disponível e pagamento simulado aprovado
+  Service -> Repo : save(Passagem com usaRotaLumica e valorPago)
+  Repo -> DB : INSERT INTO passagem & UPDATE ocupação da viagem
+  DB --> Repo : Passagem emitida
+  Service --> Controller : 201 Created (Comprovante)
+  Controller --> UI : JSON do comprovante (codigoComprovante)
+  UI --> Passageiro : Exibe comprovante da passagem intergaláctica
+else Assento indisponível ou falha no pagamento
+  Service --> Controller : 409 Conflict / 402 Payment Required
+  Controller --> UI : Mensagem de erro
+  UI --> Passageiro : Notifica indisponibilidade ou falha
+end
+
+@enduml

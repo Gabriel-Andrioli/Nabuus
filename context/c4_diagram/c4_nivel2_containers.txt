@@ -1,0 +1,48 @@
+@startuml Nabuus_C4_Diagrama_de_Conteineres
+!include <C4/C4_Container>
+
+LAYOUT_LEFT_RIGHT()
+skinparam nodesep 60
+skinparam ranksep 120
+
+UpdateElementStyle("person", $bgColor="#08427B", $fontColor="#FFFFFF", $borderColor="#073B6F", $shape=RoundedBoxShape())
+UpdateElementStyle("container", $bgColor="#1168BD", $fontColor="#FFFFFF", $borderColor="#0E5AA7", $shape=RoundedBoxShape())
+UpdateElementStyle("container_db", $bgColor="#1168BD", $fontColor="#FFFFFF", $borderColor="#0E5AA7")
+UpdateRelStyle($textColor="#222222", $lineColor="#555555")
+
+title Diagrama de contêineres: Nabuus\n<size:12><color:#666666>Modelo C4, nível 2. Contêineres internos do sistema Nabuus e protocolos de comunicação.</color></size>
+
+Person(astronomo, "Astrônomo", "Mapeia o cosmos, mantém a base cartográfica e define as tecnologias de propulsão.")
+Person(fretista, "Fretista", "Opera a frota de ônibus espaciais e publica as viagens comerciais.")
+Person(passageiro, "Usuário (passageiro)", "Pesquisa viagens e adquire passagens intergalácticas.")
+
+Lay_R(astronomo, fretista)
+Lay_R(fretista, passageiro)
+
+System_Boundary(nabuus_boundary, "Sistema Nabuus") {
+
+    Container(frontend, "Aplicação Web (Front-End)", "HTML5, CSS3, JavaScript", "Camada de apresentação visual no navegador (estilo ClickBus). Exibe formulários, cards comparativos Com/Sem Rota Lúmica, mapa de poltronas e Mapa Galáctico 2D.")
+
+    Container(backend, "API de Negócios (Back-End)", "Java, Spring Boot", "Centraliza autenticação/autorização por papéis (JWT), regras logísticas e comerciais, gestão cartográfica, frotas, publicação de viagens e emissão de passagens.")
+
+    ContainerDb(db, "Banco de Dados", "PostgreSQL", "Garante persistência relacional (ACID) de usuários, sistemas solares, planetas, rotas lúmicas, tipos de propulsão, viagens pré-calculadas (tempos, preços, rota 2D e ocupação) e passagens.")
+
+    Container(motor, "Motor de Cálculo Físico", "Python, FastAPI, SciPy", "Microsserviço científico stateless acionado na publicação da viagem: sugere tarifas, valida autonomia (cKDTree), calcula cinemática relativística Com/Sem Lúmica, rota 2D e ocupação inicial.")
+
+    Lay_R(db, motor)
+}
+
+Rel(astronomo, frontend, "Cadastra sistemas, planetas (recarga), rotas lúmicas e propulsões", "HTTPS")
+Rel(fretista, frontend, "Cadastra naves, ajusta preços sugeridos e publica viagens", "HTTPS")
+Rel(passageiro, frontend, "Pesquisa viagens, compara Com/Sem Lúmica, vê Mapa 2D e compra passagem", "HTTPS")
+
+Rel(frontend, backend, "Realiza chamadas à API REST", "JSON / HTTP (JWT)")
+
+Rel(backend, db, "Lê e persiste cadastros, viagens pré-calculadas e passagens", "JDBC / SQL (Spring Data JPA)")
+Rel(backend, motor, "Aciona na publicação (/v1/precos/sugerir e /v1/viagens/simular)", "JSON / HTTP (REST)")
+
+SHOW_LEGEND()
+
+footer \n<i>As consultas e compras do passageiro leem diretamente os cenários pré-calculados no PostgreSQL, sem acionar o Motor Físico em tempo de busca.</i>\nUniversidade Federal de Juiz de Fora  |  Trabalho de Modelagem de Sistemas  |  Novembro de 2026
+@enduml
+

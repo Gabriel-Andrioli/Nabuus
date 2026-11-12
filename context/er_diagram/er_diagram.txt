@@ -1,0 +1,192 @@
+@startuml Diagrama_Entidade_Relacionamento_Nabuus
+title Diagrama Entidade-Relacionamento (DER / Modelo Físico PostgreSQL) — Sistema Nabuus
+
+hide circle
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 60
+skinparam packageStyle rectangle
+
+' ==================================================
+' ESQUEMA: AUTENTICAÇÃO E PERFIS (HERANÇA JOINED)
+' ==================================================
+package "Domínio de Usuários (Autenticação)" {
+
+    entity "usuario" as usuario {
+        * **id** : UUID <<PK>>
+        --
+        * nome : VARCHAR(120)
+        * email : VARCHAR(150) <<UNIQUE>>
+        * hash_senha : VARCHAR(255)
+        * role : VARCHAR(20)
+    }
+
+    entity "astronomo" as astronomo {
+        * **usuario_id** : UUID <<PK, FK>>
+        --
+        * credencial_cientifica : VARCHAR(60) <<UNIQUE>>
+    }
+
+    entity "fretista" as fretista {
+        * **usuario_id** : UUID <<PK, FK>>
+        --
+        * cnpj_intergalactico : VARCHAR(30) <<UNIQUE>>
+        * razao_social : VARCHAR(150)
+    }
+
+    entity "passageiro" as passageiro {
+        * **usuario_id** : UUID <<PK, FK>>
+        --
+        * cpf : VARCHAR(14) <<UNIQUE>>
+        * data_nascimento : DATE
+    }
+
+    usuario ||--o| astronomo : "1:1"
+    usuario ||--o| fretista : "1:1"
+    usuario ||--o| passageiro : "1:1"
+}
+
+' ==================================================
+' ESQUEMA: CARTOGRAFIA E PROPULSÃO
+' ==================================================
+package "Domínio Cartográfico e Científico" {
+
+    entity "sistema_solar" as sistema_solar {
+        * **id** : BIGSERIAL <<PK>>
+        --
+        * astronomo_id : UUID <<FK>>
+        * nome : VARCHAR(100) <<UNIQUE>>
+        * estrela_principal : VARCHAR(100)
+        * coordenada_ra : DOUBLE PRECISION
+        * coordenada_dec : DOUBLE PRECISION
+        * distancia_sol_anos_luz : DOUBLE PRECISION
+    }
+
+    entity "planeta" as planeta {
+        * **id** : BIGSERIAL <<PK>>
+        --
+        * sistema_solar_id : BIGINT <<FK>>
+        * nome : VARCHAR(100) <<UNIQUE>>
+        * raio_base : DOUBLE PRECISION
+        * massa_base : DOUBLE PRECISION
+        * zona_habitavel : BOOLEAN
+        * distancia_estrela_ua : DOUBLE PRECISION
+        * possui_posto_recarga : BOOLEAN
+        descricao_nabuus : TEXT
+    }
+
+    entity "rota_lumica" as rota_lumica {
+        * **id** : BIGSERIAL <<PK>>
+        --
+        * astronomo_id : UUID <<FK>>
+        * sistema_origem_id : BIGINT <<FK>>
+        * sistema_destino_id : BIGINT <<FK>>
+        * velocidade_c : DOUBLE PRECISION
+        * pedagio : NUMERIC(14,2)
+        * ativa : BOOLEAN
+    }
+
+    entity "tipo_propulsao" as tipo_propulsao {
+        * **id** : BIGSERIAL <<PK>>
+        --
+        * astronomo_id : UUID <<FK>>
+        * codigo : VARCHAR(40) <<UNIQUE>>
+        * nome : VARCHAR(100)
+        * aceleracao_g : DOUBLE PRECISION
+        * velocidade_cruzeiro_c : DOUBLE PRECISION
+        * autonomia_anos_luz : DOUBLE PRECISION
+        * categoria_conforto : VARCHAR(20)
+        * preco_base_referencia : NUMERIC(14,2)
+        * custo_ano_luz_referencia : NUMERIC(14,2)
+    }
+
+    sistema_solar ||--o{ planeta : "contém"
+    sistema_solar ||--o{ rota_lumica : "origem (Sol)"
+    sistema_solar ||--o{ rota_lumica : "destino"
+
+    astronomo ||--o{ sistema_solar : "cadastra"
+    astronomo ||--o{ rota_lumica : "define"
+    astronomo ||--o{ tipo_propulsao : "cadastra"
+}
+
+' ==================================================
+' ESQUEMA: LOGÍSTICA, VIAGENS PRÉ-CALCULADAS E RESERVAS
+' ==================================================
+package "Domínio Logístico e Comercial" {
+
+    entity "onibus_espacial" as onibus_espacial {
+        * **id** : BIGSERIAL <<PK>>
+        --
+        * fretista_id : UUID <<FK>>
+        * tipo_propulsao_id : BIGINT <<FK>>
+        * identificacao : VARCHAR(60) <<UNIQUE>>
+        * total_assentos : INTEGER
+        * ativo : BOOLEAN
+    }
+
+    entity "viagem" as viagem {
+        * **id** : BIGSERIAL <<PK>>
+        --
+        * fretista_id : UUID <<FK>>
+        * onibus_espacial_id : BIGINT <<FK>>
+        * planeta_embarque_id : BIGINT <<FK>>
+        * planeta_desembarque_id : BIGINT <<FK>>
+        rota_lumica_id : BIGINT <<FK, NULL>>
+        * data_partida : TIMESTAMP
+        * status : VARCHAR(20)
+        * preco_base : NUMERIC(14,2)
+        * custo_ano_luz : NUMERIC(14,2)
+        --
+        ' Cenário Sem Rota Lúmica (pré-calculado na publicação)
+        * viavel_sem_lumica : BOOLEAN
+        duracao_bordo_anos_sem_lumica : DOUBLE PRECISION
+        divida_temporal_anos_sem_lumica : DOUBLE PRECISION
+        preco_sem_lumica : NUMERIC(14,2)
+        * paradas_reabastecimento : INTEGER
+        --
+        ' Cenário Com Rota Lúmica (pré-calculado na publicação)
+        * viavel_com_lumica : BOOLEAN
+        duracao_bordo_anos_com_lumica : DOUBLE PRECISION
+        divida_temporal_anos_com_lumica : DOUBLE PRECISION
+        preco_com_lumica : NUMERIC(14,2)
+        --
+        ' Dados visuais prontos para o Front-End (sem recalcular)
+        * rota_2d_json : JSONB
+        * assentos_ocupados_json : JSONB
+    }
+
+    entity "passagem" as passagem {
+        * **id** : BIGSERIAL <<PK>>
+        --
+        * viagem_id : BIGINT <<FK>>
+        * passageiro_id : UUID <<FK>>
+        * assento_escolhido : VARCHAR(10)
+        * usa_rota_lumica : BOOLEAN
+        * valor_pago : NUMERIC(14,2)
+        * data_compra : TIMESTAMP
+        * codigo_comprovante : VARCHAR(40) <<UNIQUE>>
+    }
+
+    fretista ||--o{ onibus_espacial : "possui"
+    fretista ||--o{ viagem : "publica"
+    tipo_propulsao ||--o{ onibus_espacial : "equipa"
+    onibus_espacial ||--o{ viagem : "opera"
+
+    planeta ||--o{ viagem : "embarque"
+    planeta ||--o{ viagem : "desembarque"
+    rota_lumica |o--o{ viagem : "utilizada em"
+
+    viagem ||--o{ passagem : "possui reservas"
+    passageiro ||--o{ passagem : "adquire"
+
+    note bottom of viagem
+      **Cálculo Único na Publicação:**
+      As colunas `rota_2d_json` (coordenadas e paradas para o Mapa 2D)
+      e `assentos_ocupados_json` (ocupação inicial por conforto + vendas)
+      permitem que a busca e o checkout leiam tudo em 1 único SELECT.
+      **Constraint única em passagem:** `UNIQUE (viagem_id, assento_escolhido)`.
+    end note
+}
+
+@enduml
+

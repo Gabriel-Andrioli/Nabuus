@@ -1,0 +1,50 @@
+@startuml AD03_Publicar_Linha
+title AD03 - Publicar Viagem Espacial (Fretista)
+
+|Fretista|
+start
+if (Ônibus espacial já cadastrado?) then (não)
+  :Informar identificação, total de assentos\ne selecionar Tipo de Propulsão;
+  |Sistema Nabuus|
+  :Registrar Ônibus Espacial vinculado ao Tipo de Propulsão\n(define aceleração, cruzeiro, autonomia e conforto);
+  |Fretista|
+endif
+
+:Definir planeta de embarque, planeta de desembarque,\nônibus espacial e data/hora de partida;
+
+|Sistema Nabuus|
+:Solicitar sugestão de preços ao motor físico\ncom base no Tipo de Propulsão da nave;
+
+|Módulos de Cálculo Físico|
+:Calcular preço base e custo por ano-luz sugeridos;
+
+|Fretista|
+:Confirmar ou ajustar preço base e custo por ano-luz;
+:Solicitar publicação da viagem;
+
+|Sistema Nabuus|
+:Enviar dados da viagem, postos de recarga e rota lúmica ao motor;
+
+|Módulos de Cálculo Físico|
+:Validar autonomia e definir paradas de recarga (regra gulosa);
+:Calcular duração a bordo, dívida temporal, preços finais\ne rota 2D nos cenários Com e Sem Rota Lúmica;
+:Gerar ocupação inicial de assentos conforme conforto da propulsão;
+
+|Sistema Nabuus|
+if (Trajetória viável dentro da autonomia?) then (sim)
+  |Sistema Nabuus|
+  :Persistir viagem (status = PUBLICADA) no banco\ncom cenários, preços, rota 2D e ocupação pré-calculados;
+  :Disponibilizar viagem para pesquisa dos passageiros;
+  |Fretista|
+  :Visualizar confirmação de publicação;
+  stop
+else (não)
+  |Sistema Nabuus|
+  :Informar motivo da inviabilidade\n(autonomia insuficiente / sem postos de recarga no alcance);
+  |Fretista|
+  :Ajustar ônibus (propulsão com maior autonomia) ou destino;
+  stop
+endif
+
+@enduml
+
