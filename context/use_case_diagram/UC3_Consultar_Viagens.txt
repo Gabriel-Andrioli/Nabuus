@@ -1,0 +1,22 @@
+@startuml UC3_Consultar_Viagens
+skinparam actorStyle awesome
+left to right direction
+
+title UC3 — Consultar Viagens, Comparar Cenários e Mapa 2D
+
+actor "Passageiro" as Passageiro
+
+rectangle "UC3: Consulta de Viagens (100% Leitura em Banco)" {
+  usecase "Pesquisar Viagens Publicadas\npor Origem e Destino (RF-11)" as UC3_Buscar
+  usecase "Comparar Cenários Com e Sem Rota Lúmica\nnos Cards (preço, duração, dívida, paradas - RF-13)" as UC3_Comp
+  usecase "Filtrar e Ordenar Viagens\n(preço, duração, dívida, conforto - RF-12)" as UC3_Filtro
+  usecase "Visualizar Rota no Mapa Galáctico 2D\n(a partir de rota_2d_json - RF-15)" as UC3_Mapa
+}
+
+Passageiro --> UC3_Buscar
+UC3_Buscar ..> UC3_Comp : <<include>>
+UC3_Filtro ..> UC3_Buscar : <<extend>>
+UC3_Mapa ..> UC3_Buscar : <<extend>>
+
+@enduml
+

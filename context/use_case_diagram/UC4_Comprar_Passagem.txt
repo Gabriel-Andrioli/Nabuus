@@ -1,0 +1,22 @@
+@startuml UC4_Comprar_Passagem
+skinparam actorStyle awesome
+left to right direction
+
+title UC4 — Escolher Modalidade, Assento e Comprar Passagem
+
+actor "Passageiro" as Passageiro
+
+rectangle "UC4: Reserva e Aquisição de Passagem" {
+  usecase "Comprar Passagem Intergaláctica (RF-14)" as UC4_Comprar
+  usecase "Escolher Viagem (Nave/Propulsão) e\nModalidade (Com ou Sem Rota Lúmica)" as UC4_Mod
+  usecase "Selecionar Assento Disponível no Mapa\n(exibindo assentos_ocupados_json)" as UC4_Assento
+  usecase "Processar Pagamento Simulado e\nEmitir Comprovante" as UC4_Pag
+}
+
+Passageiro --> UC4_Comprar
+UC4_Comprar ..> UC4_Mod : <<include>>
+UC4_Comprar ..> UC4_Assento : <<include>>
+UC4_Comprar ..> UC4_Pag : <<include>>
+
+@enduml
+

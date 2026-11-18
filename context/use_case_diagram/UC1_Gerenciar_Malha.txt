@@ -1,0 +1,29 @@
+@startuml UC1_Gerenciar_Malha
+skinparam actorStyle awesome
+left to right direction
+
+title UC1 — Gerenciar Malha Cartográfica e Propulsões
+
+actor "Astrônomo" as Astronomo
+
+rectangle "UC1: Malha Cartográfica e Propulsões" {
+  usecase "Gerenciar Malha Cartográfica\ne Propulsões" as UC1_Root
+  usecase "Cadastrar Sistema Solar\n(RA, Dec, distância ao Sol - RF-01)" as UC1_Sis
+  usecase "Cadastrar Planeta e Habilitar\nPosto de Recarga (UA, posto - RF-02)" as UC1_Plan
+  usecase "Definir Rota Lúmica partindo do Sol\n(velocidadeC, pedágio, ativa - RF-03)" as UC1_Rota
+  usecase "Cadastrar Tipo de Propulsão\n(g, c, autonomia, conforto, ref. - RF-04)" as UC1_Prop
+  usecase "Editar/Remover ou Desativar\nRegistro Cartográfico (RF-05)" as UC1_Edit
+  usecase "Suspender Viagens Ativas Afetadas\n(status = SUSPENSA)" as UC1_Susp
+}
+
+Astronomo --> UC1_Root
+UC1_Root <|-- UC1_Sis
+UC1_Root <|-- UC1_Plan
+UC1_Root <|-- UC1_Rota
+UC1_Root <|-- UC1_Prop
+UC1_Root <|-- UC1_Edit
+
+UC1_Edit ..> UC1_Susp : <<include>>
+
+@enduml
+

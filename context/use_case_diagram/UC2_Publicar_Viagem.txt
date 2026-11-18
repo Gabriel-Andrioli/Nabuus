@@ -1,0 +1,35 @@
+@startuml UC2_Publicar_Viagem
+skinparam actorStyle awesome
+left to right direction
+
+title UC2 — Operar Frota e Publicar Viagem Espacial
+
+actor "Fretista" as Fretista
+actor "Motor de Cálculo Físico" as MotorFisico <<Subsistema>>
+
+rectangle "UC2: Frota e Publicação de Viagem (Cálculo Único)" {
+  usecase "Cadastrar e Gerenciar\nÔnibus Espacial (RF-06, RF-10)" as UC2_Nave
+  usecase "Publicar Viagem Espacial (RF-07)" as UC2_Pub
+  usecase "Sugerir e Ajustar Preço Base e\nCusto por Ano-Luz (RF-08, RF-16)" as UC2_Preco
+  usecase "Validar Autonomia, Calcular Paradas\n(Regra Gulosa) e Rota 2D (RF-19)" as UC2_Rota
+  usecase "Simular Duração a Bordo, Dívida Temporal\ne Preços Finais Com/Sem Lúmica (RF-17, RF-18, RF-20, RF-22)" as UC2_Sim
+  usecase "Gerar Ocupação Inicial de Assentos\npor Conforto da Propulsão (RF-21)" as UC2_Ocup
+  usecase "Gerenciar Disponibilidade de Viagens\n(Publicada / Suspensa / Cancelada - RF-09)" as UC2_Disp
+}
+
+Fretista --> UC2_Nave
+Fretista --> UC2_Pub
+Fretista --> UC2_Disp
+
+UC2_Pub ..> UC2_Preco : <<include>>
+UC2_Pub ..> UC2_Rota : <<include>>
+UC2_Pub ..> UC2_Sim : <<include>>
+UC2_Pub ..> UC2_Ocup : <<include>>
+
+UC2_Preco <-- MotorFisico
+UC2_Rota <-- MotorFisico
+UC2_Sim <-- MotorFisico
+UC2_Ocup <-- MotorFisico
+
+@enduml
+
