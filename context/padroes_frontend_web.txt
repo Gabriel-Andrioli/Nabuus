@@ -1,0 +1,192 @@
+================================================================================
+PADRÕES DE CODIFICAÇÃO, ARQUITETURA E TESTES — FRONT-END (HTML / CSS / JS)
+================================================================================
+Referências de Base:
+- W3C HTML5 Semantic Elements & WCAG 2.1 (Nível AA) / WAI-ARIA
+- Metodologia BEM (Block, Element, Modifier) & Design Tokens
+- Airbnb JavaScript Style Guide & Google HTML/CSS/JS Style Guides (adaptados)
+- OWASP Cross-Site Scripting (XSS) Prevention Cheat Sheet
+- Testing Pyramid para Web (Testes Unitários, DOM/Integração e Validação Visual)
+
+--------------------------------------------------------------------------------
+1. ORGANIZAÇÃO DE PASTAS E ARQUITETURA MODULAR
+--------------------------------------------------------------------------------
+1.1. Estrutura Recomendada de Diretórios:
+  frontend/
+  ├── pages/                 (páginas HTML estruturais da aplicação)
+  ├── assets/                (imagens, ícones SVG e fontes estáticas)
+  ├── css/
+  │   ├── tokens.css         (variáveis globais extraídas do protótipo Figma)
+  │   ├── base.css           (reset CSS, tipografia global e estilos padrão)
+  │   ├── components/        (estilos reutilizáveis: botões, cards, modais)
+  │   └── pages/             (regras de layout específicas de cada página)
+  └── js/
+      ├── services/          (comunicação HTTP com a API REST, sem tocar no DOM)
+      ├── views/             (controle de interface, leitura/escrita no DOM)
+      └── utils/             (funções puras: formatadores, máscaras, validadores)
+
+1.2. Separação de Responsabilidades (SoC):
+- PROIBIDO misturar chamadas fetch(), regras de negócio/formatação e
+  manipulação direta de DOM no mesmo bloco ou função.
+- A camada "services/" apenas envia requisições e trata respostas/erros HTTP.
+- A camada "utils/" contém apenas funções puras e determinísticas (não acessam
+  document, window ou localStorage).
+- A camada "views/" (ou "components/") coordena eventos da página, aciona os
+  services/utils e atualiza os elementos visuais no DOM.
+
+--------------------------------------------------------------------------------
+2. HTML5 SEMÂNTICO, ACESSIBILIDADE E DESACOPLAMENTO
+--------------------------------------------------------------------------------
+2.1. Semântica Estrutural (W3C):
+- Utilizar tags semânticas adequadas ao papel do conteúdo (<header>, <nav>,
+  <main>, <section>, <article>, <aside>, <footer>) no lugar de <div> genéricas.
+- Respeitar a hierarquia única de títulos (um único <h1> por página para o
+  título principal, seguido de <h2>, <h3> sem pular níveis).
+- Utilizar <button type="button|submit"> para ações interativas na página e
+  <a href="..."> exclusivamente para navegação. Nunca utilizar <div> ou
+  <span> clicáveis no lugar de botões.
+
+2.2. Acessibilidade (WCAG 2.1 / WAI-ARIA):
+- Todo campo de formulário (<input>, <select>, <textarea>) deve possuir um
+  <label for="..."> explicitamente vinculado.
+- Toda imagem informativa deve possuir atributo "alt" descritivo; imagens
+  puramente decorativas devem usar alt="" e aria-hidden="true".
+- Garantir navegação integral via teclado (Tab, Shift+Tab, Enter, Esc) e manter
+  indicadores visuais claros de foco (:focus-visible).
+- Utilizar atributos ARIA (aria-label, aria-expanded, aria-live, role) apenas
+  quando a semântica nativa do HTML5 não for suficiente.
+
+2.3. Desacoplamento e Formatação HTML:
+- Indentação de 2 espaços (sem tabulações).
+- Nomes de arquivos, IDs e atributos em minúsculas e kebab-case
+  (ex.: cadastro-usuario.html, data-item-id).
+- PROIBIDO CSS inline (style="...") e JavaScript inline (onclick="...").
+- Separar seletores de estilo e comportamento: utilizar classes CSS apenas para
+  estilização e atributos data-* (ex.: data-action="enviar", data-id) ou IDs
+  dedicados para seleção no JavaScript.
+
+--------------------------------------------------------------------------------
+3. ARQUITETURA CSS3 (DESIGN TOKENS + BEM + RESPONSIVIDADE)
+--------------------------------------------------------------------------------
+3.1. Design Tokens (Integração com o Figma):
+- O protótipo aprovado no Figma é a fonte única de verdade visual (Single
+  Source of Truth).
+- Extrair todas as cores, famílias tipográficas, escalas de fonte, espaçamentos,
+  raios de borda e sombras para o seletor :root em css/tokens.css
+  (ex.: --cor-primaria, --espaco-md, --fonte-titulo).
+- PROIBIDO espalhar valores mágicos (hexadecimais avulsos ou medidas soltas)
+  nos arquivos de componentes; referenciar sempre var(--nome-do-token).
+
+3.2. Metodologia BEM (Block, Element, Modifier):
+- Padronizar nomes de classes para evitar conflitos de especificidade entre
+  desenvolvedores:
+  * Bloco (componente independente): .card
+  * Elemento (parte interna do bloco): .card__titulo, .card__rodape
+  * Modificador (variação visual ou estado): .card--destaque, .botao--primario
+- Evitar seletores por ID (#id) para estilização e limitar o aninhamento de
+  seletores a no máximo 2 ou 3 níveis.
+- PROIBIDO o uso de !important, exceto em classes utilitárias pontuais de
+  visibilidade (ex.: .oculto / .sr-only).
+
+3.3. Layout e Responsividade (Mobile-First):
+- Estruturar layouts modernos com Flexbox (1 dimensão) e CSS Grid (2 dimensões).
+  Nunca utilizar tabelas (<table>) ou float para diagramação de páginas.
+- Adotar abordagem Mobile-First: regras base para telas menores e adaptações
+  progressivas via @media (min-width: ...) para tablet e desktop.
+- Preferir unidades relativas (rem, em, %, vh/vw) para tipografia e contêineres
+  fluidos, evitando larguras fixas em px que causem rolagem horizontal.
+
+--------------------------------------------------------------------------------
+4. PADRÕES DE ESCRITA EM JAVASCRIPT MODERNO (ES6+)
+--------------------------------------------------------------------------------
+4.1. Módulos, Variáveis e Nomenclatura:
+- Utilizar exclusivamente ES Modules nativos (import / export), carregando os
+  scripts no HTML com <script type="module">.
+- Declaração de variáveis: utilizar "const" por padrão; utilizar "let" apenas
+  quando houver reatribuição. PROIBIDO o uso de "var".
+- Convenções de nomes:
+  * Variáveis e funções: camelCase; funções de ação devem iniciar com verbo
+    (ex.: buscarRegistros, formatarMoeda, validarFormulario).
+  * Classes: PascalCase (ex.: ApiClient, GerenciadorSessao).
+  * Constantes globais/configuração: UPPER_SNAKE_CASE (ex.: API_BASE_URL).
+  * Nomes de arquivos JS: kebab-case (ex.: api-client.js, formatadores.js).
+
+4.2. Qualidade e Legibilidade do Código:
+- Indentação de 2 espaços, aspas padronizadas (preferencialmente simples ' ') e
+  ponto e vírgula consistente ao final das instruções.
+- Utilizar exclusivamente comparações estritas (=== e !==). Nunca usar == ou !=.
+- Manter funções pequenas e de responsabilidade única; preferir retornos
+  antecipados (early return) em vez de múltiplos blocos if/else aninhados.
+- Utilizar desestruturação, template literals e métodos funcionais de array
+  (map, filter, reduce, find) para tornar transformações de dados mais claras.
+- Delegação de eventos: em listas ou grades dinâmicas, registrar o event
+  listener no container pai utilizando event.target.closest(...) em vez de
+  anexar listeners individuais em dezenas de elementos filhos.
+
+--------------------------------------------------------------------------------
+5. COMUNICAÇÃO COM API REST, SESSÃO JWT E ESTADOS DE UI
+--------------------------------------------------------------------------------
+5.1. Cliente HTTP e Autenticação:
+- Centralizar chamadas HTTP em um cliente único usando Fetch API com async/await.
+- Enviar cabeçalhos padronizados (Content-Type: application/json e, quando
+  autenticado, Authorization: Bearer <token>).
+- Tratar respostas de forma centralizada:
+  * 401 Unauthorized: limpar sessão inválida e redirecionar para a tela de login.
+  * 403 Forbidden: informar falta de permissão para a operação.
+  * 4xx / 5xx: ler a mensagem estruturada do padrão ProblemDetail (RFC 9457)
+    retornada pela API e converter em erro tratável para a camada de UI.
+- Envolver toda chamada assíncrona em blocos try/catch/finally.
+
+5.2. Regra dos 4 Estados Obrigatórios da Interface:
+- Toda tela ou componente que realiza requisições à API deve tratar
+  explicitamente os quatro estados visuais previstos na interface:
+  1. Loading (carregamento): exibir feedback visual de progresso e desabilitar
+     o botão de envio durante a requisição para impedir submissões duplicadas.
+  2. Success (sucesso): renderizar os dados recebidos de forma clara e formatada.
+  3. Empty (vazio): exibir mensagem informativa quando uma busca ou listagem não
+     retornar itens (nunca deixar uma área em branco sem explicação).
+  4. Error (erro): exibir mensagem amigável baseada no retorno da API, nunca
+     expondo mensagens técnicas cruas ao usuário final.
+
+--------------------------------------------------------------------------------
+6. SEGURANÇA NO FRONT-END E PREVENÇÃO CONTRA XSS (OWASP)
+--------------------------------------------------------------------------------
+- PROIBIDO utilizar innerHTML, outerHTML ou document.write() para inserir textos
+  dinâmicos vindos da API ou digitados pelo usuário.
+- Utilizar SEMPRE textContent (ou innerText) combinado com criação programática
+  de nós (document.createElement / appendChild) ao montar elementos dinâmicos.
+- Validar tipos, formatos e limites de campos no cliente para melhorar a
+  experiência do usuário, sabendo que a validação definitiva sempre ocorre no
+  back-end.
+- Nunca utilizar eval(), new Function() ou atribuições dinâmicas inseguras em
+  atributos href/src sem validação prévia de protocolo (permitir apenas http/https
+  ou rotas relativas).
+- Nunca armazenar senhas ou dados pessoais sensíveis completos no navegador
+  (localStorage/sessionStorage), mantendo apenas o estritamente necessário para
+  a sessão autenticada.
+
+--------------------------------------------------------------------------------
+7. PADRÕES DE TESTES E CHECKLIST DE QUALIDADE
+--------------------------------------------------------------------------------
+7.1. Testes Automatizados no Front-End:
+- Ferramentas sugeridas: Vitest ou Jest (com jsdom quando houver necessidade de
+  simular o DOM) e Playwright/Cypress para fluxos E2E críticos.
+- Priorizar testes unitários nas funções puras da camada "utils/" (validadores,
+  máscaras, formatadores, cálculos visuais, filtros e ordenação em memória).
+- Em testes de interface/DOM, validar o comportamento visível pelo usuário
+  (texto renderizado, estados loading/error/empty, atributos aria-*, estado
+  disabled de botões), evitando acoplar testes a detalhes internos de CSS.
+- Seguir a estrutura AAA (Arrange, Act, Assert) e nomenclatura descritiva:
+  "deve <resultado esperado> quando <cenário testado>"
+  Ex.: deveFormatarValorMonetario_quandoNumeroForValido()
+       deveExibirEstadoVazio_quandoListaDeResultadosEstiverVazia()
+
+7.2. Checklist de Qualidade Pré-Commit / Pull Request:
+- Zero erros e zero warnings não tratados no Console do navegador.
+- Fluxos testados com estados de Loading, Empty, Error e Success.
+- Fidelidade visual conferida com o protótipo do Figma em resoluções Desktop e
+  Mobile, sem quebras de layout ou rolagem horizontal indesejada.
+- Mensagens de commit e criação de branches seguindo rigorosamente o padrão
+  Conventional Commits / GitHub Flow documentado no guia do projeto.
+================================================================================
+

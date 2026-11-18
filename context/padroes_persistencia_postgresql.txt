@@ -1,0 +1,130 @@
+================================================================================
+PADRÕES DE PERSISTÊNCIA, MODELAGEM E SQL — BANCO DE DADOS (POSTGRESQL)
+================================================================================
+Referências de Base:
+- SQL Style Guide — Simon Holywell (formatação e nomenclatura SQL)
+- PostgreSQL Official Documentation & "Don't Do This" Wiki (boas práticas de tipos)
+- Database Refactoring & Evolutionary Database Design (versionamento de schema)
+
+--------------------------------------------------------------------------------
+1. CONVENÇÕES DE NOMENCLATURA NO BANCO DE DADOS
+--------------------------------------------------------------------------------
+1.1. Identificadores Gerais (Tabelas e Colunas):
+- Utilizar exclusivamente lower_snake_case (letras minúsculas separadas por
+  sublinhado), sem acentos e sem caracteres especiais.
+- Nomes de tabelas sempre no SINGULAR (ex.: usuario, item_pedido, transacao).
+- Nunca utilizar palavras reservadas do SQL/PostgreSQL como nome de tabela ou
+  coluna (ex.: evitar "user", "order", "group", "status" isolado quando ambíguo).
+- Nunca criar identificadores entre aspas duplas ("NomeComMaiuscula"), pois isso
+  força sensibilidade a maiúsculas/minúsculas em todas as queries.
+
+1.2. Chaves e Colunas Padrão:
+- Chave primária (PK): chamar sempre "id" na própria tabela.
+- Chave estrangeira (FK): seguir o padrão <tabela_referenciada>_id
+  (ex.: usuario_id, categoria_id).
+- Colunas booleanas: prefixos claros no presente (ex.: ativo, possui_estoque,
+  verificado) e sempre definidas como NOT NULL com valor DEFAULT explícito.
+
+1.3. Nomenclatura Padronizada de Constraints e Índices:
+- Primary Key:       pk_<tabela>                      (ex.: pk_usuario)
+- Foreign Key:       fk_<tabela>_<tabela_destino>     (ex.: fk_pedido_usuario)
+- Unique Constraint: uk_<tabela>_<coluna(s)>          (ex.: uk_usuario_email)
+- Check Constraint:  ck_<tabela>_<coluna_ou_regra>    (ex.: ck_produto_preco_positivo)
+- Index:             idx_<tabela>_<coluna(s)>         (ex.: idx_pedido_data_criacao)
+
+--------------------------------------------------------------------------------
+2. TIPOS DE DADOS RECOMENDADOS NO POSTGRESQL ("DON'T DO THIS" WIKI)
+--------------------------------------------------------------------------------
+- Identificadores Numéricos: usar BIGINT com GENERATED ALWAYS AS IDENTITY
+  (ou BIGSERIAL) para chaves auto-incrementais.
+- Identificadores Globais: usar o tipo nativo UUID (nunca armazenar UUID como
+  VARCHAR(36)).
+- Textos:
+  * VARCHAR(n) quando houver limite máximo de domínio real (ex.: CPF, sigla,
+    e-mail, código).
+  * TEXT para descrições livres ou textos longos (no PostgreSQL, TEXT e VARCHAR
+    possuem o mesmo desempenho interno).
+  * Proibido o uso de CHAR(n) de tamanho fixo (desperdiça espaço com preenchimento).
+- Valores Monetários e Exatos:
+  * SEMPRE usar NUMERIC(precisão, escala) — ex.: NUMERIC(14, 2).
+  * Proibido usar FLOAT, REAL, DOUBLE PRECISION ou o tipo legado MONEY para
+    valores financeiros.
+- Grandezas Científicas / Ponto Flutuante:
+  * Usar DOUBLE PRECISION quando a natureza do dado for contínua/científica.
+- Datas e Horários:
+  * Preferir TIMESTAMPTZ (TIMESTAMP WITH TIME ZONE) ou TIMESTAMP padronizado
+    estritamente em UTC para registros de data/hora, e DATE para datas sem hora.
+  * Proibido usar o tipo TIME WITH TIME ZONE (desaconselhado pela documentação
+    oficial do PostgreSQL).
+- Dados Semiestruturados (JSON):
+  * SEMPRE usar JSONB (binário, compactado e indexável via GIN).
+  * Proibido usar o tipo JSON puro (armazena apenas texto sem otimização de busca).
+
+--------------------------------------------------------------------------------
+3. INTEGRIDADE RELACIONAL E CICLO DE VIDA DO DADO
+--------------------------------------------------------------------------------
+- Restrições de Domínio no Banco:
+  * Toda coluna obrigatória deve ter NOT NULL.
+  * Regras invariantes simples (ex.: quantidades >= 0, preços >= 0) devem ter
+    CHECK constraints no banco além da validação na aplicação.
+- Política de Exclusão em Chaves Estrangeiras (ON DELETE):
+  * Padrão geral: ON DELETE RESTRICT (ou NO ACTION) para impedir a exclusão
+    acidental de registros-pai que possuam histórico ou vínculos ativos.
+  * Usar ON DELETE CASCADE apenas em tabelas estritamente dependentes (relação
+    de composição forte onde o filho não existe sem o pai).
+- Exclusão Lógica (Soft Delete) vs. Exclusão Física (Hard Delete):
+  * Entidades cadastrais ou com vínculo histórico/financeiro não devem sofrer
+    DELETE físico; devem ser inativadas por coluna de estado (ex.: ativo = false
+    ou status = 'CANCELADO' / 'SUSPENSO').
+
+--------------------------------------------------------------------------------
+4. INDEXAÇÃO E DESEMPENHO DE CONSULTAS
+--------------------------------------------------------------------------------
+- Índices em Chaves Estrangeiras:
+  * O PostgreSQL cria índices automaticamente para PK e UNIQUE, mas NÃO cria
+    índices para FOREIGN KEY.
+  * Toda coluna de FK utilizada em filtros (WHERE) ou junções (JOIN) frequentes
+    deve receber um índice explícito (CREATE INDEX idx_...).
+- Índices Compostos:
+  * Quando consultas filtrarem frequentemente por duas ou mais colunas juntas,
+    criar índice composto ordenando primeiro pela coluna de igualdade (=) e
+    depois pela coluna de faixa/ordenação (>, <, ORDER BY).
+- Boas Práticas em Queries:
+  * Proibido usar SELECT * em consultas da aplicação; projetar apenas as colunas
+    necessárias.
+  * Utilizar EXPLAIN (ANALYZE, BUFFERS) para validar consultas complexas antes
+    de consolidá-las no código.
+
+--------------------------------------------------------------------------------
+5. ESTILO DE ESCRITA SQL E VERSIONAMENTO DE SCHEMA (MIGRATIONS)
+--------------------------------------------------------------------------------
+5.1. Formatação de Scripts SQL (Simon Holywell Style):
+- Palavras-chave reservadas do SQL sempre em MAIÚSCULAS (SELECT, FROM, INNER JOIN,
+  WHERE, GROUP BY, ORDER BY, INSERT INTO, UPDATE, CREATE TABLE).
+- Nomes de tabelas, aliases e colunas sempre em minúsculas (snake_case).
+- Sempre explicitar o tipo de JOIN (INNER JOIN, LEFT JOIN) — nunca usar apenas
+  "JOIN" implícito por vírgula no FROM.
+- Encerrar todas as instruções SQL com ponto e vírgula (;).
+
+5.2. Evolução e Versionamento do Banco:
+- Toda alteração estrutural (DDL) e carga inicial de referência (seed data) deve
+  estar registrada em scripts SQL versionados no repositório em ordem sequencial.
+- Scripts de migração já compartilhados na branch principal nunca devem ser
+  editados retroativamente; qualquer ajuste posterior deve ser feito por um novo
+  script incremental (ALTER TABLE ...).
+- Encoding obrigatório de todos os scripts e do banco: UTF-8.
+
+--------------------------------------------------------------------------------
+6. TESTES DE PERSISTÊNCIA E DADOS DE TESTE
+--------------------------------------------------------------------------------
+- Isolamento Transacional: cada teste de repositório/banco deve rodar em uma
+  transação revertida ao final (rollback automático) ou limpar seu estado para
+  não afetar os demais testes.
+- Validação de Constraints: criar testes específicos garantindo que o banco
+  rejeita inserções duplicadas em colunas UNIQUE, valores nulos em colunas
+  NOT NULL e violações de FK.
+- Independência de Dados de Produção: testes automatizados devem criar seus
+  próprios dados mínimos necessários (fixtures/builders) durante a fase Arrange
+  do teste, sem depender de registros pré-existentes manuais.
+================================================================================
+
