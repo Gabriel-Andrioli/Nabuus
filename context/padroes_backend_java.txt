@@ -1,0 +1,238 @@
+================================================================================
+PADRÕES DE CODIFICAÇÃO, ARQUITETURA E TESTES — BACK-END (JAVA / SPRING BOOT)
+================================================================================
+Referências de Base:
+- Google Java Style Guide (formatação, estrutura de arquivos e nomenclatura)
+- Effective Java — Joshua Bloch (boas práticas da linguagem, tipos e imutabilidade)
+- Clean Code — Robert C. Martin (legibilidade, funções pequenas e responsabilidade única)
+- Spring Boot Best Practices & RFC 9457 (Problem Details for HTTP APIs)
+- Testing Pyramid (JUnit 5, AssertJ e Mockito)
+- Conventional Commits 1.0.0 & GitHub Flow (versionamento e fluxo de equipe)
+
+--------------------------------------------------------------------------------
+1. ESTILO DE CÓDIGO E FORMATAÇÃO (GOOGLE JAVA STYLE ADAPTADO)
+--------------------------------------------------------------------------------
+1.1. Convenções de Nomenclatura:
+- Pacotes: letras minúsculas, sem sublinhados (ex.: com.empresa.projeto.modulo).
+- Classes, Interfaces, Records e Enums: UpperCamelCase (PascalCase), usando
+  substantivos (ex.: Usuario, PedidoService, PagamentoClient).
+- Métodos: lowerCamelCase, iniciando sempre com um verbo no infinitivo ou
+  imperativo que descreva a ação (ex.: buscarPorId, calcularTotal, salvar).
+- Variáveis e Parâmetros: lowerCamelCase, nomes descritivos e sem abreviações
+  ambíguas (evitar "tmp", "val", "obj", "aux").
+- Variáveis e Métodos Booleanos: prefixos semânticos claros como is, has, can,
+  possui, estaAtivo.
+- Constantes (static final) e valores de Enum: UPPER_SNAKE_CASE
+  (ex.: TAXA_MAXIMA, ATIVO, CANCELADO).
+- Banco de Dados (PostgreSQL): snake_case no singular para nomes de tabelas e
+  colunas, mantendo chaves estrangeiras no padrão <tabela>_id.
+
+1.2. Regras de Formatação e Legibilidade:
+- Indentação: 4 espaços (sem uso de tabulações).
+- Largura máxima de linha: 120 caracteres.
+- Chaves (estilo K&R): chave de abertura na mesma linha da declaração; uso
+  obrigatório de chaves mesmo em blocos condicionais ou laços de uma única linha.
+- Organização interna da classe:
+  1. Constantes (static final)
+  2. Atributos de instância (private final / private)
+  3. Construtores
+  4. Métodos públicos
+  5. Métodos privados auxiliares
+- Imports: sem uso de wildcard imports (ex.: proibido "import java.util.*;").
+
+--------------------------------------------------------------------------------
+2. ARQUITETURA EM CAMADAS E PRINCÍPIOS DE DESIGN (CLEAN CODE / SOLID)
+--------------------------------------------------------------------------------
+2.1. Responsabilidade de Cada Camada:
+- Controller (@RestController): recebe requisições HTTP, valida dados de entrada
+  (@Valid), delega o processamento para o Service e devolve a resposta HTTP com
+  o DTO e o status adequados. Não deve conter regras de negócio.
+- Service (@Service): concentra as regras de negócio, validações de domínio,
+  controle transacional (@Transactional) e orquestração entre múltiplos
+  Repositories ou clientes HTTP externos.
+- Repository (@Repository / JpaRepository): responsável exclusivamente pelo
+  acesso e persistência de dados no PostgreSQL.
+- Client: encapsula chamadas HTTP para APIs ou microsserviços externos.
+- DTO (Data Transfer Object) e Mapper: objetos de transporte de dados para
+  entrada/saída da API e conversão de/para entidades.
+
+2.2. Regras Estritas de Acoplamento:
+- Fluxo unidirecional obrigatório: Controller -> Service -> Repository / Client.
+- PROIBIDO injetar ou chamar um Repository diretamente dentro de um Controller.
+- PROIBIDO expor classes de domínio persistentes (@Entity) diretamente nos
+  endpoints REST (entrada ou saída). Toda comunicação HTTP deve utilizar DTOs.
+- Funções e métodos curtos: cada método deve fazer apenas uma coisa (Single
+  Responsibility Principle) e manter baixo nível de aninhamento (preferir
+  "early return" / guard clauses em vez de múltiplos "if/else" aninhados).
+
+--------------------------------------------------------------------------------
+3. BOAS PRÁTICAS DE JAVA MODERNO E SPRING BOOT
+--------------------------------------------------------------------------------
+3.1. Injeção de Dependências:
+- Utilizar exclusivamente Injeção por Construtor (Constructor Injection) com
+  atributos declarados como "private final".
+- PROIBIDO usar @Autowired diretamente em campos (field injection), garantindo
+  imutabilidade, prevenção de NullPointerException e facilidade de instanciação
+  em testes unitários.
+
+3.2. Imutabilidade e DTOs:
+- Utilizar Java "record" para todos os DTOs de Request e Response.
+- Validar todos os DTOs de entrada com Jakarta Bean Validation (@NotNull,
+  @NotBlank, @Size, @Positive, @Email, etc.).
+
+3.3. Tipos de Dados Seguros (Effective Java):
+- Valores monetários e financeiros: SEMPRE utilizar java.math.BigDecimal com
+  escala e modo de arredondamento explícitos (ex.: RoundingMode.HALF_UP).
+  Nunca utilizar float ou double para valores monetários.
+- Datas e Horários: utilizar exclusivamente a API java.time (LocalDate,
+  LocalDateTime, OffsetDateTime, Instant). Nunca utilizar java.util.Date ou
+  Calendar.
+- Retornos opcionais: utilizar Optional<T> como tipo de retorno de métodos que
+  podem não encontrar um resultado (nunca usar Optional em atributos de classe
+  ou parâmetros de método).
+
+--------------------------------------------------------------------------------
+4. PERSISTÊNCIA COM POSTGRESQL E SPRING DATA JPA
+--------------------------------------------------------------------------------
+- Tipos no PostgreSQL:
+  * Valores monetários mapeados como NUMERIC(precisão, escala).
+  * Datas e timestamps padronizados em UTC.
+  * Estruturas semirrígidas (quando aplicável) armazenadas como JSONB.
+- Carregamento de Relacionamentos (Lazy Loading):
+  * Todo relacionamento (@ManyToOne, @OneToMany, @OneToOne, @ManyToMany) deve
+    configurar FetchType.LAZY por padrão para evitar o problema de N+1 queries.
+  * Utilizar queries com JOIN FETCH ou EntityGraph no Repository quando os dados
+    relacionados forem necessários na mesma operação.
+- Gerenciamento de Transações:
+  * Operações apenas de leitura devem usar @Transactional(readOnly = true),
+    otimizando o gerenciamento de memória do JPA (sem dirty checking).
+  * Operações de criação, atualização ou exclusão devem usar @Transactional.
+- Integridade no Banco: chaves únicas (UNIQUE), chaves estrangeiras (FK) e
+  restrições de não-nulidade (NOT NULL) devem ser garantidas tanto na validação
+  da aplicação quanto nas constraints do PostgreSQL.
+
+--------------------------------------------------------------------------------
+5. PADRÕES DE API REST, STATUS HTTP E TRATAMENTO DE ERROS
+--------------------------------------------------------------------------------
+5.1. Convenções de Rotas REST:
+- Recursos nomeados com substantivos no plural e em kebab-case quando compostos
+  (ex.: /api/recursos, /api/itens-pedido/{id}).
+- Uso correto dos verbos HTTP: GET (leitura idempotente), POST (criação ou
+  processamento), PUT (substituição integral), PATCH (atualização parcial),
+  DELETE (remoção).
+
+5.2. Semântica de Status HTTP:
+- 200 OK: Requisição GET, PUT ou PATCH processada com sucesso.
+- 201 Created: Recurso criado com sucesso via POST.
+- 204 No Content: Operação concluída sem corpo de resposta (ex.: DELETE).
+- 400 Bad Request: Payload malformado ou falha de validação sintática (@Valid).
+- 401 Unauthorized: Usuário não autenticado ou token JWT inválido/expirado.
+- 403 Forbidden: Usuário autenticado, mas sem permissão (Role) para o recurso.
+- 404 Not Found: Recurso solicitado não encontrado.
+- 409 Conflict: Conflito de estado atual do recurso ou violação de unicidade.
+- 422 Unprocessable Entity: Payload sintaticamente válido, porém reprovado por
+  uma regra de negócio/domínio.
+- 500 Internal Server Error / 503 Service Unavailable: Erro inesperado no
+  servidor ou indisponibilidade temporária de serviço integrado.
+
+5.3. Tratamento Global de Exceções (RFC 9457):
+- Centralizar o tratamento de erros em uma classe anotada com
+  @RestControllerAdvice.
+- Padronizar o corpo de erro utilizando ProblemDetail (RFC 9457), contendo
+  type, title, status, detail e timestamp.
+- Nunca expor stack traces, nomes de tabelas ou mensagens cruas de exceções SQL
+  nas respostas da API.
+
+--------------------------------------------------------------------------------
+6. SEGURANÇA E CONFIGURAÇÃO
+--------------------------------------------------------------------------------
+- Autenticação e Autorização: stateless via token JWT com Spring Security e
+  controle de acesso declarativo por perfis (@PreAuthorize).
+- Senhas: armazenadas exclusivamente com hash criptográfico forte (BCrypt).
+- Variáveis de Ambiente (12-Factor App): credenciais do PostgreSQL, chaves de
+  assinatura JWT e URLs de serviços externos nunca devem ficar fixas (hardcoded)
+  no código-fonte; devem ser injetadas via variáveis de ambiente no
+  application.yml.
+- Logs: utilizar SLF4J; nunca registrar senhas, tokens JWT ou dados pessoais
+  sensíveis em arquivos de log ou console.
+
+--------------------------------------------------------------------------------
+7. PADRÕES DE TESTES AUTOMATIZADOS (PIRÂMIDE DE TESTES)
+--------------------------------------------------------------------------------
+7.1. Estrutura e Nomenclatura:
+- Ferramentas base: JUnit 5 + AssertJ + Mockito.
+- Todo teste deve seguir a estrutura AAA (Arrange, Act, Assert) ou BDD
+  (Given, When, Then) claramente separada por linhas em branco.
+- Nomenclatura de métodos de teste descritiva:
+  deve<ComportamentoEsperado>_quando<CenárioTestado>()
+  Ex.: deveLancarExcecao_quandoRecursoNaoForEncontrado()
+       deveRetornarStatus201_quandoDadosDeCadastroForemValidos()
+
+7.2. Níveis de Teste:
+1) Testes Unitários (*ServiceTest / *DomainTest):
+   - Executados com @ExtendWith(MockitoExtension.class), sem inicializar o
+     contexto do Spring (execução em milissegundos).
+   - Testam isoladamente todas as regras de negócio, caminhos felizes, casos de
+     borda e lançamento de exceções de domínio.
+2) Testes da Camada Web (*ControllerTest):
+   - Executados com @WebMvcTest e MockMvc.
+   - Validam roteamento, serialização/desserialização JSON, validações @Valid,
+     status HTTP retornados e regras de autorização por perfil.
+3) Testes de Persistência (*RepositoryTest):
+   - Executados com @DataJpaTest para validar consultas customizadas, filtros
+     e constraints de integridade do banco.
+4) Testes de Clientes HTTP (*ClientTest):
+   - Executados com @RestClientTest e MockRestServiceServer para validar o
+     contrato de comunicação (request/response e tratamento de erros/timeouts)
+     com serviços externos sem depender de rede.
+
+7.3. Princípios F.I.R.S.T.:
+- Fast (rápidos), Independent (um teste não depende de outro), Repeatable
+  (mesmo resultado em qualquer ambiente), Self-Validating (passa ou falha sem
+  inspeção manual) e Timely (escritos junto com o código de produção).
+
+--------------------------------------------------------------------------------
+8. DOCUMENTAÇÃO, VERSIONAMENTO E PADRÃO DE COMMITS (GIT / GITHUB)
+--------------------------------------------------------------------------------
+8.1. Documentação de Código e API:
+- Código autodescritivo: priorizar nomes claros para classes, métodos e
+  variáveis em vez de comentários explicando "o que" o código faz. Comentários
+  devem ser usados apenas para explicar o "porquê" de decisões não óbvias.
+- API Documentada: endpoints documentados via OpenAPI 3 / Swagger.
+
+8.2. Estrutura da Mensagem de Commit (Conventional Commits):
+- Formato obrigatório:
+  <tipo>(<escopo opcional>): <descrição curta e objetiva>
+
+- Tipos permitidos:
+  * feat:     nova funcionalidade adicionada ao sistema
+  * fix:      correção de bug ou comportamento incorreto
+  * refactor: melhoria interna de código sem alterar o comportamento externo
+  * test:     criação ou ajuste de testes automatizados
+  * docs:     criação ou atualização de documentação, README ou diagramas
+  * style:    ajustes apenas de formatação/indentação (sem mudança de lógica)
+  * perf:     melhoria de desempenho (queries, algoritmos, tempo de resposta)
+  * chore:    configuração de build, dependências, .gitignore ou scripts
+
+- Regras de Escrita da Mensagem:
+  1. Usar verbo no imperativo/presente em português (ex.: "adiciona", "corrige",
+     "remove", "atualiza").
+  2. Iniciar a descrição com letra minúscula e sem ponto final no título.
+  3. Limitar a primeira linha a no máximo 72 caracteres.
+  4. Proibido usar mensagens genéricas como "update", "ajustes", "wip" ou "fix".
+
+- Exemplos válidos:
+  * feat(auth): adiciona filtro de autenticacao via token jwt
+  * fix(persistencia): corrige mapeamento lazy em relacionamento
+  * test(service): adiciona testes unitarios para regra de cancelamento
+  * docs(context): adiciona documento de padroes de codificacao back-end
+
+8.3. Boas Práticas de Commits e Branches para a Equipe:
+- Commits Atômicos: cada commit deve conter apenas uma alteração lógica coesa
+  e deixar o projeto compilando e com os testes passando.
+- Branches por Tarefa (GitHub Flow):
+  * A branch "main" deve conter apenas código estável e funcional.
+  * Criar branches curtas por tarefa seguindo o padrão:
+    feat/<nome-curto>, fix/<nome-curto>, docs/<nome-curto>.
+================================================================================
+
