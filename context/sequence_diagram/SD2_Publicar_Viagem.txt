@@ -1,0 +1,84 @@
+@startuml SD2_Publicar_Viagem
+title SD2 — Operar Frota e Publicar Viagem Espacial (UC2 — Cálculo Único)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 210
+autonumber
+
+actor "Fretista" as Fretista
+
+box "Front-End" #F8FAFC
+  participant "Interface Web\n(HTML/CSS/JS)" as UI
+end box
+
+box "Back-End (Java / Spring Boot)" #EEF2FF
+  participant "Controller REST" as Controller
+  participant "Service" as Service
+  participant "MotorCalculoClient" as Client
+  participant "Repository (JPA)" as Repo
+end box
+
+database "PostgreSQL" as DB #E0F2FE
+
+box "Contêiner Científico" #FEF3C7
+  participant "Motor Físico\n(Python / FastAPI)" as Motor
+end box
+
+opt Ônibus espacial ainda não cadastrado
+  Fretista -> UI : Cadastra OnibusEspacial (identificação, totalAssentos, tipoPropulsaoId)
+  UI -> Controller : POST /api/onibus (JSON + JWT)
+  Controller -> Service : cadastrarOnibus(dados)
+  Service -> Repo : save(OnibusEspacial)
+  Repo -> DB : INSERT INTO onibus_espacial
+  DB --> Repo : OK
+  Service --> UI : 201 Created
+end
+
+Fretista -> UI : Seleciona origem, destino, OnibusEspacial e dataPartida
+UI -> Controller : POST /api/viagens/sugerir-preco
+Controller -> Service : sugerirPreco(tipoPropulsaoId)
+Service -> Repo : findById(tipoPropulsaoId)
+Repo -> DB : SELECT tipo_propulsao
+DB --> Service : TipoPropulsao
+Service -> Client : sugerirPreco(SugestaoPrecoRequestDTO)
+Client -> Motor : POST /v1/precos/sugerir
+Motor --> Client : SugestaoPrecoDTO (precoBaseSugerido, custoAnoLuzSugerido)
+Client --> Service : SugestaoPrecoDTO
+Service --> UI : 200 OK (valores sugeridos)
+UI --> Fretista : Exibe preços sugeridos para confirmação ou ajuste
+
+Fretista -> UI : Confirma/ajusta precoBase e custoAnoLuz e publica viagem
+UI -> Controller : POST /api/viagens/publicar
+Controller -> Service : publicarViagem(dadosViagem)
+Service -> Repo : buscarMalhaParaSimulacao(origemId, destinoId)
+Repo -> DB : SELECT planetas, sistemas, postos e rota_lumica
+DB --> Service : Dados cartográficos e nave
+
+Service -> Client : simularViagem(SimulacaoRequestDTO)
+Client -> Motor : POST /v1/viagens/simular
+activate Motor
+note right of Motor
+  Cálculo único na publicação:
+  1. Valida autonomia e paradas (regra gulosa)
+  2. Calcula tempos, dívida temporal, preços
+     finais e rota 2D (Com e Sem Lúmica)
+  3. Gera ocupação inicial pelo conforto
+end note
+Motor --> Client : ResultadoCenariosDTO (semLumica, comLumica, rota2D, assentosOcupados)
+deactivate Motor
+Client --> Service : ResultadoCenariosDTO
+
+alt Trajetória viável dentro da autonomia
+  Service -> Repo : save(Viagem PUBLICADA com cenários, rota_2d_json e assentos_ocupados_json)
+  Repo -> DB : INSERT INTO viagem
+  DB --> Service : Viagem persistida
+  Service --> UI : 201 Created
+  UI --> Fretista : Confirma publicação da viagem
+else Autonomia insuficiente
+  Service --> UI : 422 Unprocessable Entity (motivoInviabilidade)
+  UI --> Fretista : Exibe motivo e solicita ajuste de nave ou destino
+end
+
+@enduml
+

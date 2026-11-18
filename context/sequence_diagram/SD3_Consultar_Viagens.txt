@@ -1,0 +1,57 @@
+@startuml SD3_Consultar_Viagens
+title SD3 — Consultar Viagens, Comparar Cenários e Mapa 2D (UC3)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 210
+autonumber
+
+actor "Passageiro" as Passageiro
+
+box "Front-End" #F8FAFC
+  participant "Interface Web\n(HTML/CSS/JS)" as UI
+end box
+
+box "Back-End (Java / Spring Boot)" #EEF2FF
+  participant "Controller REST" as Controller
+  participant "Service" as Service
+  participant "Repository (JPA)" as Repo
+end box
+
+database "PostgreSQL" as DB #E0F2FE
+
+Passageiro -> UI : Informa planeta de origem e destino
+UI -> Controller : GET /api/viagens?origemId=...&destinoId=...
+Controller -> Service : buscarViagensPublicadas(origemId, destinoId)
+Service -> Repo : findPublicadas(origemId, destinoId)
+Repo -> DB : SELECT viagem (status = 'PUBLICADA')
+note right of DB
+  100% leitura em banco (sem chamar o Motor Físico):
+  duração, dívida temporal, preços Com/Sem Lúmica,
+  rota_2d_json e assentos_ocupados_json já estão prontos.
+end note
+DB --> Repo : Lista de Viagens
+Repo --> Service : Lista de Viagens
+
+alt Existem viagens disponíveis
+  Service --> Controller : 200 OK (cards comparativos + rota_2d_json)
+  Controller --> UI : Lista de viagens em JSON
+  UI --> Passageiro : Exibe cards (naves, conforto e cenários Com/Sem Rota Lúmica)
+
+  opt Passageiro deseja filtrar ou ordenar resultados
+    Passageiro -> UI : Aplica filtro/ordenação (preço, duração, dívida ou conforto)
+    UI --> Passageiro : Reordena/filtra cards exibidos
+  end
+
+  opt Passageiro deseja ver a rota no mapa
+    Passageiro -> UI : Clica em "Ver Rota no Mapa 2D"
+    UI --> Passageiro : Renderiza Mapa Galáctico 2D a partir de rota_2d_json
+  end
+else Nenhuma viagem encontrada
+  Service --> Controller : 200 OK (lista vazia)
+  Controller --> UI : []
+  UI --> Passageiro : Exibe "Nenhuma viagem encontrada"
+end
+
+@enduml
+

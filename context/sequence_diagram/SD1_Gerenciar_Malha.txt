@@ -1,0 +1,49 @@
+@startuml SD1_Gerenciar_Malha
+title SD1 — Gerenciar Malha Cartográfica e Propulsões (UC1)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 210
+autonumber
+
+actor "Astrônomo" as Astronomo
+
+box "Front-End" #F8FAFC
+  participant "Interface Web\n(HTML/CSS/JS)" as UI
+end box
+
+box "Back-End (Java / Spring Boot)" #EEF2FF
+  participant "Controller REST" as Controller
+  participant "Service" as Service
+  participant "Repository (JPA)" as Repo
+end box
+
+database "PostgreSQL" as DB #E0F2FE
+
+Astronomo -> UI : Informa dados do cadastro\n(SistemaSolar, Planeta/posto, RotaLumica ou TipoPropulsao)
+UI -> Controller : POST/PUT /api/cartografia (JSON + JWT)
+Controller -> Service : validarESalvar(dados)
+
+alt Dados válidos (coordenadas e limites físicos ok)
+  Service -> Repo : save(entidade)
+  Repo -> DB : INSERT / UPDATE
+  DB --> Repo : Registro persistido
+  Repo --> Service : Entidade salva
+
+  opt Edição ou desativação/remoção de Rota Lúmica ou Posto em uso
+    Service -> Repo : suspenderViagensAfetadas(id)
+    Repo -> DB : UPDATE viagem SET status = 'SUSPENSA'
+    DB --> Repo : Viagens atualizadas
+  end
+
+  Service --> Controller : 200 OK / 201 Created
+  Controller --> UI : Confirmação JSON
+  UI --> Astronomo : Exibe confirmação da operação
+else Dados inválidos
+  Service --> Controller : 400 Bad Request (erros de validação)
+  Controller --> UI : Lista de erros
+  UI --> Astronomo : Solicita correção dos dados
+end
+
+@enduml
+

@@ -93,3 +93,4 @@ O código-fonte LaTeX fica em `context/docs/documento_modelagem.tex` (sincroniza
 python context/docs/gerar_documento.py
 ```
 *(Utiliza `xelatex`/`lualatex` local se estiver instalado na máquina ou compila automaticamente via TeX Live remoto).*
+

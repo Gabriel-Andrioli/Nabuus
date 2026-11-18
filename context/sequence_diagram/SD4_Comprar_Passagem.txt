@@ -1,0 +1,57 @@
+@startuml SD4_Comprar_Passagem
+title SD4 — Escolher Modalidade, Assento e Comprar Passagem (UC4)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 210
+autonumber
+
+actor "Passageiro" as Passageiro
+
+box "Front-End" #F8FAFC
+  participant "Interface Web\n(HTML/CSS/JS)" as UI
+end box
+
+box "Back-End (Java / Spring Boot)" #EEF2FF
+  participant "Controller REST" as Controller
+  participant "Service" as Service
+  participant "Repository (JPA)" as Repo
+end box
+
+database "PostgreSQL" as DB #E0F2FE
+
+Passageiro -> UI : Seleciona viagem (nave/propulsão) e modalidade (Com ou Sem Rota Lúmica)
+UI -> Controller : GET /api/viagens/{viagemId}/assentos
+Controller -> Service : consultarAssentos(viagemId)
+Service -> Repo : findById(viagemId)
+Repo -> DB : SELECT assentos_ocupados_json, total_assentos
+DB --> Repo : Mapa de assentos
+Repo --> Service : Ocupação atual
+Service --> Controller : 200 OK
+Controller --> UI : Lista de assentos ocupados e livres
+UI --> Passageiro : Exibe mapa de poltronas\n(econômicas mais lotadas; luxo mais vazias)
+
+Passageiro -> UI : Seleciona assento disponível e confirma compra
+UI -> Controller : POST /api/passagens/comprar\n(viagemId, assento, usaRotaLumica)
+Controller -> Service : comprarPassagem(dadosCompra)
+Service -> Repo : verificarDisponibilidade(viagemId, assento)
+Repo -> DB : SELECT assento em assentos_ocupados_json / passagem
+DB --> Service : Status do assento
+
+alt Assento livre e pagamento simulado aprovado
+  Service -> Repo : save(Passagem com usaRotaLumica e valorPago)
+  Repo -> DB : INSERT INTO passagem
+  Service -> Repo : adicionarAssentoOcupado(viagemId, assento)
+  Repo -> DB : UPDATE viagem SET assentos_ocupados_json
+  DB --> Service : Passagem emitida
+  Service --> Controller : 201 Created (codigoComprovante)
+  Controller --> UI : Comprovante JSON
+  UI --> Passageiro : Exibe comprovante da passagem intergaláctica
+else Assento indisponível ou pagamento recusado
+  Service --> Controller : 409 Conflict / 402 Payment Required
+  Controller --> UI : Mensagem de erro
+  UI --> Passageiro : Notifica indisponibilidade ou falha
+end
+
+@enduml
+
