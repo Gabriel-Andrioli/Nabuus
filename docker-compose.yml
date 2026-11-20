@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nabuus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${NABUUS_DB_NAME:-nabuus}
+      POSTGRES_USER: ${NABUUS_DB_USER:-nabuus}
+      POSTGRES_PASSWORD: ${NABUUS_DB_PASSWORD:-nabuus}
+    ports:
+      - "5432:5432"
+    volumes:
+      - nabuus_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${NABUUS_DB_USER:-nabuus} -d ${NABUUS_DB_NAME:-nabuus}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  motor:
+    build:
+      context: ./motor
+      dockerfile: Dockerfile
+    container_name: nabuus-motor
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nabuus-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      motor:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      NABUUS_DB_URL: jdbc:postgresql://postgres:5432/${NABUUS_DB_NAME:-nabuus}
+      NABUUS_DB_USER: ${NABUUS_DB_USER:-nabuus}
+      NABUUS_DB_PASSWORD: ${NABUUS_DB_PASSWORD:-nabuus}
+      NABUUS_JWT_SECRET: ${NABUUS_JWT_SECRET:-NabuusInterstellarSecretKeyForJwtSigning2026UFJF!}
+      NABUUS_JWT_EXPIRATION_MS: ${NABUUS_JWT_EXPIRATION_MS:-86400000}
+      NABUUS_MOTOR_URL: http://motor:8001/v1
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nabuus-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "3000:80"
+
+volumes:
+  nabuus_pgdata:

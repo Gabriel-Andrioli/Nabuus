@@ -23,13 +23,18 @@ env/
 *.egg-info/
 .coverage
 
-# Java / Spring Boot (futuro back-end)
+# Java / Spring Boot (back-end)
 target/
 build/
 .gradle/
 *.jar
 *.war
 *.class
+
+# Docker e variáveis de ambiente locais
+.env
+.env.*
+docker-compose.override.yml
 
 # IDEs e Sistema Operacional
 .idea/
