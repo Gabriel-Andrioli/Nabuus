@@ -13,7 +13,6 @@
   <link rel="stylesheet" href="../css/components/buttons.css">
   <link rel="stylesheet" href="../css/components/cards.css">
   <link rel="stylesheet" href="../css/components/forms.css">
-  <link rel="stylesheet" href="../css/components/modals.css">
   <link rel="stylesheet" href="../css/pages/layout.css">
 </head>
 <body>
@@ -21,9 +20,8 @@
 
   <main class="container-viajante">
     <section aria-labelledby="titulo-resultados">
-      <p class="card__eyebrow">O PRÓXIMO PASSO DA SUA JORNADA</p>
       <h1 id="titulo-resultados" class="titulo-pagina">Viagens</h1>
-      <p class="texto-secundario">Compare destinos, tecnologias e o custo de ir além.</p>
+      <p class="texto-secundario">Consulte naves, datas de partida, classes, propulsões e disponibilidade de Rota Lúmica.</p>
 
       <form id="form-busca-topo" class="barra-busca-topo">
         <div class="campo">
@@ -64,39 +62,18 @@
             <div class="card__divisor"></div>
 
             <div class="campo">
-              <label class="campo__rotulo" for="filtro-custo">Custo por viajante</label>
-              <span id="texto-limite-custo" class="texto-secundario">Até US$ 20 bi</span>
-              <input id="filtro-custo" class="slider-controle" type="range" min="1" max="20" step="1" value="20">
-              <div class="slider-legenda"><span>US$ 0</span><span>US$ 20 bi</span></div>
-            </div>
-
-            <div class="campo">
               <label class="campo__rotulo" for="filtro-distancia">Distância do destino</label>
               <select id="filtro-distancia" class="campo__select">
                 <option value="Infinity">Qualquer distância</option>
                 <option value="5">Até 5 anos-luz</option>
-                <option value="10">Até 10 anos-luz</option>
+                <option value="15">Até 15 anos-luz</option>
                 <option value="50">Até 50 anos-luz</option>
-              </select>
-            </div>
-
-            <div class="campo">
-              <label class="campo__rotulo" for="filtro-tempo">Tempo na Terra</label>
-              <select id="filtro-tempo" class="campo__select">
-                <option value="Infinity">Qualquer duração</option>
-                <option value="6">Até 6 anos</option>
-                <option value="10">Até 10 anos</option>
-                <option value="20">Até 20 anos</option>
+                <option value="200">Até 200 anos-luz</option>
               </select>
             </div>
 
             <button id="btn-aplicar-filtros" type="button" class="botao botao--primario botao--bloco">Aplicar filtros</button>
           </div>
-        </section>
-
-        <section class="card card--painel">
-          <p class="card__eyebrow">Nem todo custo é financeiro.</p>
-          <p class="card__subtitulo">Compare também o tempo que passa para você e para a Terra.</p>
         </section>
       </aside>
 
@@ -111,9 +88,7 @@
             <label class="sr-only" for="select-ordenacao">Ordenar resultados</label>
             <select id="select-ordenacao" class="campo__select">
               <option value="relevancia">Mais relevantes</option>
-              <option value="menor-custo">Menor custo financeiro</option>
-              <option value="menor-tempo">Menor tempo a bordo</option>
-              <option value="menor-divida">Menor dívida temporal</option>
+              <option value="menor-distancia">Menor distância</option>
             </select>
           </div>
         </div>
@@ -123,25 +98,9 @@
     </div>
   </main>
 
-  <div id="modal-comparacao" class="modal-backdrop oculto" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-comparar">
-    <div class="modal">
-      <div class="modal__cabecalho">
-        <div>
-          <h2 id="titulo-modal-comparar" class="modal__titulo">Compare sua rota</h2>
-          <p id="subtitulo-modal-comparar" class="modal__subtitulo"></p>
-        </div>
-        <button id="btn-fechar-modal-comparar" type="button" class="botao">Fechar</button>
-      </div>
-      <div id="conteudo-modal-comparar" class="comparacao-grid"></div>
-      <div class="modal__acoes">
-        <button id="btn-voltar-comparar" type="button" class="botao botao--primario botao--bloco">Voltar sem alterar</button>
-      </div>
-    </div>
-  </div>
-
   <footer class="rodape">
     <div class="rodape__inner container-viajante">
-      <span>NABUUS · Simulações exploratórias · Valores e tecnologias ilustrativos</span>
+      <span>NABUUS · Simulações exploratórias</span>
       <span>Quais são os limites da humanidade?</span>
     </div>
   </footer>
