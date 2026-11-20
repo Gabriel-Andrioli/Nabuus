@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Astrônomo · Catálogo Científico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/forms.css">
+  <link rel="stylesheet" href="../css/components/modals.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-gestao lista-pilha">
+    <div class="barra-etapa">
+      <span>CONTA NABUUS · PERFIL ASTRÔNOMO</span>
+      <a href="astronomo-area.html">Área do astrônomo</a>
+    </div>
+
+    <div class="viagem-card__topo">
+      <div>
+        <h1 id="titulo-catalogo-astro" class="titulo-pagina">Catálogo científico</h1>
+        <p id="subtitulo-catalogo-astro" class="texto-secundario">Consulte os registros do universo NABUUS e amplie o catálogo.</p>
+      </div>
+      <button id="btn-novo-registro" type="button" class="botao botao--primario">Novo registro</button>
+    </div>
+
+    <nav id="tabs-astro" class="tabs" aria-label="Categorias do catálogo">
+      <button type="button" class="botao botao--ativo" data-aba="planetas">Planetas</button>
+      <button type="button" class="botao" data-aba="sistemas">Sistemas</button>
+      <button type="button" class="botao" data-aba="propulsoes">Propulsões</button>
+      <button type="button" class="botao" data-aba="rotas">Rotas Lúmicas</button>
+    </nav>
+
+    <section id="sec-astro-lista" class="lista-pilha"></section>
+
+    <section id="sec-astro-cadastro" class="oculto">
+      <div class="layout-gestao-form">
+        <form id="form-astro-cadastro" class="card lista-pilha">
+          <div id="campos-astro-dinamicos" class="lista-pilha"></div>
+          <div class="viagem-card__topo">
+            <button id="btn-astro-cancelar" type="button" class="botao">Cancelar</button>
+            <button type="submit" class="botao botao--primario">Revisar cadastro</button>
+          </div>
+        </form>
+
+        <aside class="card card--painel lista-pilha">
+          <p class="card__eyebrow">CADASTRO CIENTÍFICO</p>
+          <h2 class="card__titulo">Escolha. Revise. Cadastre.</h2>
+          <p class="texto-secundario">Os dados cadastrados ficam disponíveis para as simulações físicas do Fretista.</p>
+          <p class="texto-mutado">RF-05 · Desativar uma Rota Lúmica suspende as viagens vinculadas a ela.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="sec-astro-revisao" class="oculto lista-pilha">
+      <article id="card-astro-revisao" class="card lista-pilha"></article>
+      <div class="viagem-card__topo">
+        <button id="btn-astro-voltar-edicao" type="button" class="botao">Voltar e editar</button>
+        <button id="btn-astro-confirmar" type="button" class="botao botao--primario">Confirmar cadastro</button>
+      </div>
+    </section>
+
+    <section id="sec-astro-concluido" class="oculto card lista-pilha">
+      <p class="card__eyebrow">CADASTRO REALIZADO</p>
+      <h2 class="titulo-pagina">Registro salvo no catálogo NABUUS.</h2>
+      <div>
+        <button id="btn-astro-ver-catalogo" type="button" class="botao botao--primario">Voltar ao catálogo</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-astro-acao" class="modal-backdrop oculto" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2 id="modal-astro-titulo" class="modal__titulo"></h2>
+      <p id="modal-astro-texto" class="texto-secundario"></p>
+      <div class="modal__acoes">
+        <button id="btn-astro-modal-cancelar" type="button" class="botao">Cancelar</button>
+        <button id="btn-astro-modal-confirmar" type="button" class="botao botao--perigo">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-gestao">
+      <span>NABUUS · Catálogo do Astrônomo</span>
+      <span>Permissão do Astrônomo: planetas, sistemas, propulsões e rotas lúmicas.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/astronomo-catalogo-view.js"></script>
+</body>
+</html>

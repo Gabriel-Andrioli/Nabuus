@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Área do astrônomo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-gestao lista-pilha">
+    <section aria-labelledby="titulo-astronomo">
+      <p class="card__eyebrow">CONTA NABUUS · PERFIL ASTRÔNOMO</p>
+      <h1 id="titulo-astronomo" class="titulo-pagina">Amplie os horizontes do NABUUS.</h1>
+      <p class="texto-secundario">Área do astrônomo — Mantenha destinos, propulsões e Rotas Lúmicas para cada jornada.</p>
+    </section>
+
+    <section class="grid-cards-4" aria-label="Funções do astrônomo">
+      <a class="card card--interativo" href="astronomo-catalogo.html?aba=planetas">
+        <p class="card__eyebrow">01</p>
+        <h2 class="card__titulo">Planetas</h2>
+        <p class="card__subtitulo">Cadastre novos planetas, distâncias em UA e postos de recarga.</p>
+      </a>
+
+      <a class="card card--interativo" href="astronomo-catalogo.html?aba=sistemas">
+        <p class="card__eyebrow">02</p>
+        <h2 class="card__titulo">Sistemas</h2>
+        <p class="card__subtitulo">Cadastre sistemas estelares com coordenadas RA/Dec.</p>
+      </a>
+
+      <a class="card card--interativo" href="astronomo-catalogo.html?aba=propulsoes">
+        <p class="card__eyebrow">03</p>
+        <h2 class="card__titulo">Propulsões</h2>
+        <p class="card__subtitulo">Defina aceleração em g, velocidade em c e autonomia.</p>
+      </a>
+
+      <a class="card card--interativo" href="astronomo-catalogo.html?aba=rotas">
+        <p class="card__eyebrow">04</p>
+        <h2 class="card__titulo">Rotas Lúmicas</h2>
+        <p class="card__subtitulo">Defina canais partindo do Sol, pedágios e disponibilidade.</p>
+      </a>
+    </section>
+
+    <article class="card card--painel">
+      <h2 class="card__subtitulo">Cada perfil, sua responsabilidade.</h2>
+      <p class="texto-mutado">Criar e editar viagens pertence ao perfil Fretista. O perfil Astrônomo mantém os cadastros científicos do universo NABUUS.</p>
+    </article>
+
+    <div>
+      <a class="texto-acento" href="resultados.html">Explorar viagens disponíveis →</a>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-gestao">
+      <span>NABUUS · Gestão do Astrônomo</span>
+      <span>As funções de gestão indicam as permissões da conta.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/astronomo-area-view.js"></script>
+</body>
+</html>
