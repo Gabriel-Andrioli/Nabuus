@@ -115,6 +115,7 @@ CREATE TABLE onibus_espacial (
     tipo_propulsao_id BIGINT NOT NULL,
     identificacao VARCHAR(60) NOT NULL,
     total_assentos INTEGER NOT NULL,
+    velocidade_cruzeiro_c DOUBLE PRECISION NOT NULL DEFAULT 0.5,
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT pk_onibus_espacial PRIMARY KEY (id),
     CONSTRAINT uk_onibus_identificacao UNIQUE (identificacao),

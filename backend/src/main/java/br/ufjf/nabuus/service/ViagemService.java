@@ -109,7 +109,7 @@ public class ViagemService {
             paraMotorPlaneta(destino),
             new MotorNaveDTO(
                 onibus.getTipoPropulsao().getAceleracaoG(),
-                onibus.getTipoPropulsao().getVelocidadeCruzeiroC(),
+                onibus.getVelocidadeCruzeiroC(),
                 onibus.getTipoPropulsao().getAutonomiaAnosLuz(),
                 onibus.getTipoPropulsao().getCategoriaConforto(),
                 onibus.getTotalAssentos()
@@ -207,7 +207,7 @@ public class ViagemService {
         return new ViagemResponseDTO(
             v.getId(), v.getStatus(), v.getDataPartida(),
             v.getOnibusEspacial().getIdentificacao(), prop.getNome(),
-            prop.getVelocidadeCruzeiroC(), prop.getAutonomiaAnosLuz(),
+            v.getOnibusEspacial().getVelocidadeCruzeiroC(), prop.getAutonomiaAnosLuz(),
             prop.getCategoriaConforto(), v.getOnibusEspacial().getTotalAssentos(),
             v.getPlanetaEmbarque().getId(), v.getPlanetaEmbarque().getNome(),
             v.getPlanetaDesembarque().getId(), v.getPlanetaDesembarque().getNome(),

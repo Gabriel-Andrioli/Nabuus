@@ -32,6 +32,9 @@ public class OnibusEspacial {
     @Column(name = "total_assentos", nullable = false)
     private Integer totalAssentos;
 
+    @Column(name = "velocidade_cruzeiro_c", nullable = false)
+    private Double velocidadeCruzeiroC;
+
     @Column(nullable = false)
     private Boolean ativo;
 
@@ -44,10 +47,27 @@ public class OnibusEspacial {
         String identificacao,
         Integer totalAssentos
     ) {
+        this(
+            fretista,
+            tipoPropulsao,
+            identificacao,
+            totalAssentos,
+            tipoPropulsao != null ? tipoPropulsao.getVelocidadeCruzeiroC() : 0.5
+        );
+    }
+
+    public OnibusEspacial(
+        Fretista fretista,
+        TipoPropulsao tipoPropulsao,
+        String identificacao,
+        Integer totalAssentos,
+        Double velocidadeCruzeiroC
+    ) {
         this.fretista = fretista;
         this.tipoPropulsao = tipoPropulsao;
         this.identificacao = identificacao;
         this.totalAssentos = totalAssentos;
+        this.velocidadeCruzeiroC = velocidadeCruzeiroC;
         this.ativo = Boolean.TRUE;
     }
 
@@ -81,6 +101,14 @@ public class OnibusEspacial {
 
     public void setTotalAssentos(Integer totalAssentos) {
         this.totalAssentos = totalAssentos;
+    }
+
+    public Double getVelocidadeCruzeiroC() {
+        return velocidadeCruzeiroC;
+    }
+
+    public void setVelocidadeCruzeiroC(Double velocidadeCruzeiroC) {
+        this.velocidadeCruzeiroC = velocidadeCruzeiroC;
     }
 
     public Boolean getAtivo() {
