@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/forms.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar__inner container-viajante">
+      <a class="navbar__marca" href="../index.html">Página inicial</a>
+      <div class="navbar__acoes">
+        <a class="navbar__link" href="registro.html">Registrar</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container-viajante">
+    <section class="auth-grid" aria-labelledby="titulo-login">
+      <div>
+        <h1 id="titulo-login" class="card__titulo">Escolha seu perfil</h1>
+        <p class="card__subtitulo">Entre com o perfil vinculado à sua conta.</p>
+        <div id="lista-perfis-login" class="perfis-lista" role="radiogroup" aria-label="Perfil de acesso">
+          <button type="button" class="perfil-opcao perfil-opcao--ativo" data-perfil="VIAJANTE" aria-checked="true" role="radio">
+            <strong>Viajante</strong>
+            <span class="texto-secundario">Explore viagens e escolha sua poltrona.</span>
+          </button>
+          <button type="button" class="perfil-opcao" data-perfil="FRETISTA" aria-checked="false" role="radio">
+            <strong>Fretista</strong>
+            <span class="texto-secundario">Crie novas viagens e gerencie sua frota.</span>
+          </button>
+          <button type="button" class="perfil-opcao" data-perfil="ASTRONOMO" aria-checked="false" role="radio">
+            <strong>Astrônomo</strong>
+            <span class="texto-secundario">Cadastre planetas, sistemas e propulsões.</span>
+          </button>
+        </div>
+      </div>
+
+      <article class="card">
+        <h2 class="titulo-pagina">Bem-vindo de volta</h2>
+        <p class="texto-secundario">Entre para continuar sua jornada.</p>
+
+        <div id="alerta-login" class="estado-painel estado-painel--erro oculto" role="alert"></div>
+
+        <form id="form-login" class="lista-pilha" novalidate>
+          <div class="campo">
+            <label class="campo__rotulo" for="login-email">E-mail</label>
+            <input id="login-email" class="campo__controle" type="email" placeholder="piloto@nabuus.space" required>
+            <span id="erro-login-email" class="campo__erro"></span>
+          </div>
+
+          <div class="campo">
+            <label class="campo__rotulo" for="login-senha">Senha</label>
+            <input id="login-senha" class="campo__controle" type="password" placeholder="••••••" required>
+            <span id="erro-login-senha" class="campo__erro"></span>
+          </div>
+
+          <button id="btn-submit-login" type="submit" class="botao botao--primario botao--grande botao--bloco">
+            Entrar
+          </button>
+        </form>
+
+        <div class="card__divisor"></div>
+        <div class="lista-pilha">
+          <a class="texto-secundario" href="registro.html">Não tem uma conta? Registre-se</a>
+          <a class="texto-acento" href="../index.html">Continuar sem entrar →</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="../js/views/login-view.js"></script>
+</body>
+</html>

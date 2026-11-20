@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Página inicial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components/navbar.css">
+  <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/components/forms.css">
+  <link rel="stylesheet" href="css/pages/layout.css">
+</head>
+<body class="pagina-hero">
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-viajante hero">
+    <section aria-labelledby="titulo-hero">
+      <h1 id="titulo-hero" class="hero__titulo">NABUUS</h1>
+      <p class="hero__subtitulo">Quais são os limites da humanidade?</p>
+    </section>
+
+    <form id="form-busca-inicial" class="hero__busca" novalidate>
+      <div class="campo">
+        <label class="campo__rotulo" for="select-destino">Destino</label>
+        <select id="select-destino" class="campo__select" name="destino">
+          <option value="">Digite ou selecione um destino</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label class="campo__rotulo" for="input-data">Data de partida</label>
+        <input id="input-data" class="campo__controle" type="date" name="data" value="2100-01-15">
+      </div>
+
+      <button type="submit" class="botao botao--primario botao--grande">
+        Explorar viagens →
+      </button>
+    </form>
+
+    <section aria-label="Apresentação da experiência">
+      <h2 class="hero__subtitulo">Há um universo inteiro esperando por você.</h2>
+      <p class="texto-secundario">Explore destinos e planeje sua viagem interestelar.</p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-viajante">
+      <span>NABUUS · Simulação exploratória</span>
+      <span>Valores e tecnologias ilustrativos. Sem oferta comercial.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="js/views/home-view.js"></script>
+</body>
+</html>

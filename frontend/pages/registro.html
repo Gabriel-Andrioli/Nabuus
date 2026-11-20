@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Registro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/forms.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar__inner container-viajante">
+      <a class="navbar__marca" href="../index.html">Página inicial</a>
+      <div class="navbar__acoes">
+        <a class="navbar__link" href="login.html">Entrar</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container-viajante">
+    <section class="auth-grid" aria-labelledby="titulo-registro">
+      <div>
+        <h1 id="titulo-registro" class="card__titulo">Escolha seu perfil</h1>
+        <p class="card__subtitulo">Escolha o tipo de conta que deseja criar.</p>
+        <div id="lista-perfis-registro" class="perfis-lista" role="radiogroup" aria-label="Tipo de conta">
+          <button type="button" class="perfil-opcao perfil-opcao--ativo" data-perfil="VIAJANTE" aria-checked="true" role="radio">
+            <strong>Viajante</strong>
+            <span class="texto-secundario">Explore viagens e escolha sua poltrona.</span>
+          </button>
+          <button type="button" class="perfil-opcao" data-perfil="FRETISTA" aria-checked="false" role="radio">
+            <strong>Fretista</strong>
+            <span class="texto-secundario">Crie novas viagens e edite suas viagens.</span>
+          </button>
+          <button type="button" class="perfil-opcao" data-perfil="ASTRONOMO" aria-checked="false" role="radio">
+            <strong>Astrônomo</strong>
+            <span class="texto-secundario">Cadastre planetas, sistemas e propulsões.</span>
+          </button>
+        </div>
+      </div>
+
+      <article class="card">
+        <h2 class="titulo-pagina">Crie sua conta</h2>
+        <p class="texto-secundario">Cadastre-se para começar sua jornada.</p>
+
+        <form id="form-registro" class="lista-pilha" novalidate>
+          <div class="campo">
+            <label class="campo__rotulo" for="reg-nome">Nome completo *</label>
+            <input id="reg-nome" class="campo__controle" type="text" placeholder="Ex.: Aurora Vance" required>
+            <span id="erro-reg-nome" class="campo__erro"></span>
+          </div>
+
+          <div class="campo">
+            <label class="campo__rotulo" for="reg-email">E-mail *</label>
+            <input id="reg-email" class="campo__controle" type="email" placeholder="aurora@nabuus.space" required>
+            <span id="erro-reg-email" class="campo__erro"></span>
+          </div>
+
+          <div class="campo">
+            <label class="campo__rotulo" for="reg-senha">Senha *</label>
+            <input id="reg-senha" class="campo__controle" type="password" placeholder="Mínimo 6 caracteres" required>
+            <span id="erro-reg-senha" class="campo__erro"></span>
+          </div>
+
+          <div id="campos-especificos" class="grid-campos-2">
+            <div class="campo">
+              <label id="label-doc-1" class="campo__rotulo" for="reg-doc-1">CPF *</label>
+              <input id="reg-doc-1" class="campo__controle" type="text" placeholder="000.000.000-00" required>
+            </div>
+            <div id="grupo-doc-2" class="campo">
+              <label id="label-doc-2" class="campo__rotulo" for="reg-doc-2">Data de nascimento *</label>
+              <input id="reg-doc-2" class="campo__controle" type="date" value="2075-04-12" required>
+            </div>
+          </div>
+
+          <button id="btn-submit-registro" type="submit" class="botao botao--primario botao--grande botao--bloco">
+            Criar conta
+          </button>
+        </form>
+
+        <div class="card__divisor"></div>
+        <div class="lista-pilha">
+          <a class="texto-secundario" href="login.html">Já tem uma conta? Entre</a>
+          <a class="texto-acento" href="../index.html">Continuar sem entrar →</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="../js/views/registro-view.js"></script>
+</body>
+</html>
