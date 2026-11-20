@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Mapa da viagem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/mapa-2d.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-viajante lista-pilha">
+    <div class="barra-etapa">
+      <a href="detalhes-viagem.html">← Voltar</a>
+      <span id="status-modalidade-mapa">Modalidade selecionada: Sem Rota Lúmica</span>
+    </div>
+
+    <h1 class="titulo-pagina">Sua jornada pelo cosmos!</h1>
+
+    <section class="lista-pilha" aria-label="Itinerário e Mapa Galáctico 2D">
+      <div class="mapa-2d__barra">
+        <div>
+          <p class="card__eyebrow">SAÍDA</p>
+          <p id="mapa-origem">Terra · Sistema Solar</p>
+        </div>
+        <div>
+          <p class="card__eyebrow">DATA DE SAÍDA</p>
+          <p id="mapa-partida">Jan 2100</p>
+        </div>
+      </div>
+
+      <div class="mapa-2d">
+        <svg id="svg-mapa-2d" class="mapa-2d__canvas" viewBox="0 0 1336 320" role="img" aria-label="Mapa 2D da trajetória interestelar"></svg>
+      </div>
+
+      <div class="mapa-2d__barra">
+        <div>
+          <p class="card__eyebrow">DESTINO</p>
+          <p id="mapa-destino">Proxima Centauri b</p>
+        </div>
+        <div>
+          <p class="card__eyebrow">CHEGADA ESTIMADA</p>
+          <p id="mapa-chegada">Abr 2105</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Comparativo de métricas da viagem">
+      <p id="mapa-resumo-tecnico" class="texto-secundario"></p>
+      <div id="cards-metricas-mapa" class="grid-campos-2"></div>
+      <p class="texto-mutado">Cenário Lúmico ilustrativo · trajetórias esquemáticas em 2D · dívida = tempo na Terra − tempo a bordo.</p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-viajante">
+      <span>NABUUS · Simulação exploratória</span>
+      <span>Valores e tecnologias ilustrativos. Sem oferta comercial.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/mapa-viagem-view.js"></script>
+</body>
+</html>

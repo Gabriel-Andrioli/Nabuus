@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Resultados da busca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/forms.css">
+  <link rel="stylesheet" href="../css/components/modals.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-viajante">
+    <section aria-labelledby="titulo-resultados">
+      <p class="card__eyebrow">O PRÓXIMO PASSO DA SUA JORNADA</p>
+      <h1 id="titulo-resultados" class="titulo-pagina">Viagens</h1>
+      <p class="texto-secundario">Compare destinos, tecnologias e o custo de ir além.</p>
+
+      <form id="form-busca-topo" class="barra-busca-topo">
+        <div class="campo">
+          <label class="campo__rotulo" for="busca-origem">Origem</label>
+          <input id="busca-origem" class="campo__controle" type="text" value="Terra · Sistema Solar" readonly>
+        </div>
+        <div class="campo">
+          <label class="campo__rotulo" for="busca-destino">Destino</label>
+          <select id="busca-destino" class="campo__select">
+            <option value="">Todos os destinos</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label class="campo__rotulo" for="busca-partida">Partida</label>
+          <input id="busca-partida" class="campo__controle" type="text" value="Janeiro de 2100">
+        </div>
+        <button type="submit" class="botao botao--secundario botao--grande">Atualizar busca →</button>
+      </form>
+    </section>
+
+    <div class="layout-resultados">
+      <aside class="lista-pilha" aria-label="Painel de filtros">
+        <section class="card">
+          <div class="viagem-card__topo">
+            <h2>Filtrar viagens</h2>
+            <button id="btn-limpar-filtros" type="button" class="viagem-card__link-lumica">Limpar</button>
+          </div>
+          <div class="card__divisor"></div>
+
+          <div class="lista-pilha">
+            <div class="check-grupo">
+              <span class="campo__rotulo">Propulsão</span>
+              <label class="check-item"><input type="checkbox" name="propulsao" value="Antimatéria"> Antimatéria</label>
+              <label class="check-item"><input type="checkbox" name="propulsao" value="Fusão nuclear"> Fusão nuclear</label>
+              <label class="check-item"><input type="checkbox" name="propulsao" value="Vela solar"> Vela solar</label>
+            </div>
+
+            <div class="card__divisor"></div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="filtro-custo">Custo por viajante</label>
+              <span id="texto-limite-custo" class="texto-secundario">Até US$ 20 bi</span>
+              <input id="filtro-custo" class="slider-controle" type="range" min="1" max="20" step="1" value="20">
+              <div class="slider-legenda"><span>US$ 0</span><span>US$ 20 bi</span></div>
+            </div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="filtro-distancia">Distância do destino</label>
+              <select id="filtro-distancia" class="campo__select">
+                <option value="Infinity">Qualquer distância</option>
+                <option value="5">Até 5 anos-luz</option>
+                <option value="10">Até 10 anos-luz</option>
+                <option value="50">Até 50 anos-luz</option>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label class="campo__rotulo" for="filtro-tempo">Tempo na Terra</label>
+              <select id="filtro-tempo" class="campo__select">
+                <option value="Infinity">Qualquer duração</option>
+                <option value="6">Até 6 anos</option>
+                <option value="10">Até 10 anos</option>
+                <option value="20">Até 20 anos</option>
+              </select>
+            </div>
+
+            <button id="btn-aplicar-filtros" type="button" class="botao botao--primario botao--bloco">Aplicar filtros</button>
+          </div>
+        </section>
+
+        <section class="card card--painel">
+          <p class="card__eyebrow">Nem todo custo é financeiro.</p>
+          <p class="card__subtitulo">Compare também o tempo que passa para você e para a Terra.</p>
+        </section>
+      </aside>
+
+      <section class="lista-pilha" aria-label="Lista de resultados">
+        <div class="viagem-card__topo">
+          <div>
+            <h2 id="contador-viagens">0 viagens encontradas</h2>
+            <div id="chips-filtros" class="navbar__acoes"></div>
+          </div>
+
+          <div class="campo">
+            <label class="sr-only" for="select-ordenacao">Ordenar resultados</label>
+            <select id="select-ordenacao" class="campo__select">
+              <option value="relevancia">Mais relevantes</option>
+              <option value="menor-custo">Menor custo financeiro</option>
+              <option value="menor-tempo">Menor tempo a bordo</option>
+              <option value="menor-divida">Menor dívida temporal</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="lista-viagens" class="lista-pilha"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="modal-comparacao" class="modal-backdrop oculto" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-comparar">
+    <div class="modal">
+      <div class="modal__cabecalho">
+        <div>
+          <h2 id="titulo-modal-comparar" class="modal__titulo">Compare sua rota</h2>
+          <p id="subtitulo-modal-comparar" class="modal__subtitulo"></p>
+        </div>
+        <button id="btn-fechar-modal-comparar" type="button" class="botao">Fechar</button>
+      </div>
+      <div id="conteudo-modal-comparar" class="comparacao-grid"></div>
+      <div class="modal__acoes">
+        <button id="btn-voltar-comparar" type="button" class="botao botao--primario botao--bloco">Voltar sem alterar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-viajante">
+      <span>NABUUS · Simulações exploratórias · Valores e tecnologias ilustrativos</span>
+      <span>Quais são os limites da humanidade?</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/resultados-view.js"></script>
+</body>
+</html>

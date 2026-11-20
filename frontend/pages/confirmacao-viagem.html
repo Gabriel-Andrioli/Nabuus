@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Confirmação da viagem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-viajante">
+    <div id="etapa-revisao">
+      <div class="barra-etapa">
+        <a href="selecao-poltrona.html">← Alterar poltrona</a>
+        <span>01 Viagem / 02 Poltrona / 03 Confirmação</span>
+      </div>
+      <h1 class="titulo-pagina">Revise sua próxima jornada.</h1>
+      <p class="texto-secundario">Confira a viagem e sua poltrona antes de salvar a seleção.</p>
+
+      <div class="layout-duas-colunas">
+        <section class="lista-pilha">
+          <article class="card">
+            <div class="viagem-card__topo">
+              <span class="card__eyebrow">ROTA INTERESTELAR · SÓ IDA</span>
+              <span id="rev-tecnologia" class="badge"></span>
+            </div>
+            <h2 id="rev-destino" class="card__titulo"></h2>
+            <p id="rev-sistema" class="card__subtitulo"></p>
+            <div class="grid-campos-2">
+              <div><p class="metrica__rotulo">PARTIDA</p><p id="rev-origem"></p></div>
+              <div><p class="metrica__rotulo">CHEGADA ESTIMADA</p><p id="rev-chegada"></p></div>
+            </div>
+          </article>
+
+          <div class="grid-cards-3">
+            <article class="metrica-bloco"><p class="metrica__rotulo">Tempo na Terra</p><p id="rev-terra" class="metrica-bloco__valor"></p></article>
+            <article class="metrica-bloco"><p class="metrica__rotulo">Tempo a bordo</p><p id="rev-bordo" class="metrica-bloco__valor"></p></article>
+            <article class="metrica-bloco"><p class="metrica__rotulo">Dívida temporal</p><p id="rev-divida" class="metrica-bloco__valor texto-acento"></p></article>
+          </div>
+
+          <article class="card">
+            <h2 class="card__subtitulo">Uma longa jornada. Tudo pensado a bordo.</h2>
+            <p class="texto-secundario">Suporte de vida, alimentação e bagagem pessoal incluídos na simulação.</p>
+            <p id="rev-distancia" class="texto-acento"></p>
+          </article>
+        </section>
+
+        <aside class="card lista-pilha">
+          <p class="card__eyebrow">TUDO PRONTO PARA IR ALÉM</p>
+          <h2 id="rev-resumo-destino" class="card__titulo"></h2>
+          <div class="card card--painel">
+            <p class="metrica__rotulo">SUA POLTRONA</p>
+            <p id="rev-poltrona" class="titulo-pagina"></p>
+            <p class="texto-secundario">Convés 01 · Cabine de passageiros</p>
+          </div>
+          <div>
+            <p class="metrica__rotulo">TOTAL ESTIMADO POR VIAJANTE</p>
+            <p id="rev-custo" class="titulo-pagina"></p>
+          </div>
+          <button id="btn-confirmar-viagem" type="button" class="botao botao--primario botao--grande botao--bloco">Confirmar viagem</button>
+          <a class="botao botao--bloco" href="selecao-poltrona.html">Alterar poltrona</a>
+        </aside>
+      </div>
+    </div>
+
+    <div id="etapa-concluida" class="oculto">
+      <div class="barra-etapa">
+        <span>MINHA JORNADA</span>
+        <span>03 Confirmação concluída</span>
+      </div>
+      <h1 class="titulo-pagina">Sua próxima jornada está salva.</h1>
+
+      <div class="layout-duas-colunas">
+        <article class="card lista-pilha">
+          <p class="card__eyebrow">SELEÇÃO CONFIRMADA</p>
+          <h2 class="titulo-pagina">Seu lugar no universo está escolhido.</h2>
+          <p class="texto-secundario">Sua viagem e sua poltrona estão salvas. Você pode consultar todos os detalhes em Minhas Viagens.</p>
+          <div class="navbar__acoes">
+            <a class="botao botao--primario" href="minhas-viagens.html">Ir para Minhas Viagens</a>
+            <a class="botao" href="../index.html">Explorar outros destinos</a>
+          </div>
+          <p class="texto-mutado">Esta confirmação registra apenas sua seleção na simulação. Nenhuma compra real foi cobrada.</p>
+        </article>
+
+        <aside class="card lista-pilha">
+          <p class="card__eyebrow">SUA PRÓXIMA JORNADA</p>
+          <h2 id="comp-destino" class="card__titulo"></h2>
+          <p id="comp-tecnologia" class="texto-secundario"></p>
+          <div class="card card--painel">
+            <p class="metrica__rotulo">POLTRONA · CONVÉS 01</p>
+            <p id="comp-poltrona" class="titulo-pagina"></p>
+          </div>
+          <div>
+            <p class="metrica__rotulo">CUSTO ESTIMADO POR VIAJANTE</p>
+            <p id="comp-custo" class="titulo-pagina"></p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-viajante">
+      <span>NABUUS · Simulação exploratória</span>
+      <span>Valores e tecnologias ilustrativos. Sem oferta comercial.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/confirmacao-viagem-view.js"></script>
+</body>
+</html>

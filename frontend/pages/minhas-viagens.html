@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Minhas Viagens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/modals.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-viajante lista-pilha">
+    <div class="barra-etapa">
+      <span>ÁREA DO VIAJANTE</span>
+      <a href="resultados.html">Explorar viagens →</a>
+    </div>
+    <h1 class="titulo-pagina">Minhas Viagens</h1>
+    <p class="texto-secundario">Reencontre as viagens que você selecionou e os lugares que escolheu a bordo.</p>
+
+    <section id="lista-passagens" class="lista-pilha" aria-label="Passagens reservadas"></section>
+  </main>
+
+  <div id="modal-excluir-passagem" class="modal-backdrop oculto" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-excluir-pass">
+    <div class="modal">
+      <h2 id="titulo-modal-excluir-pass" class="modal__titulo">Confirmar exclusão</h2>
+      <p id="texto-modal-excluir-pass" class="texto-secundario"></p>
+      <div class="modal__acoes">
+        <button id="btn-cancelar-exclusao-pass" type="button" class="botao">Cancelar</button>
+        <button id="btn-confirmar-exclusao-pass" type="button" class="botao botao--perigo">Excluir passagem</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-viajante">
+      <span>NABUUS · Simulação exploratória</span>
+      <span>Valores e tecnologias ilustrativos. Sem oferta comercial.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/minhas-viagens-view.js"></script>
+</body>
+</html>

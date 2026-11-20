@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Detalhes da viagem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-viajante">
+    <div class="barra-etapa">
+      <a href="resultados.html">← Voltar aos resultados</a>
+      <span>01 Viagem / 02 Poltrona</span>
+    </div>
+    <h1 class="titulo-pagina">Configure sua viagem</h1>
+    <p class="texto-secundario">Confira a rota, o tempo da viagem e tudo que acompanha sua jornada.</p>
+
+    <div class="layout-duas-colunas">
+      <section class="lista-pilha" aria-label="Configurações da jornada">
+        <article class="card">
+          <div class="viagem-card__topo">
+            <span class="card__eyebrow">ROTA INTERESTELAR · SÓ IDA</span>
+            <span id="det-tecnologia" class="badge"></span>
+          </div>
+          <h2 id="det-destino" class="card__titulo"></h2>
+          <p id="det-sistema" class="card__subtitulo"></p>
+          <div class="grid-campos-2">
+            <div>
+              <p class="metrica__rotulo">PARTIDA</p>
+              <p id="det-origem"></p>
+            </div>
+            <div>
+              <p class="metrica__rotulo">CHEGADA ESTIMADA</p>
+              <p id="det-chegada"></p>
+            </div>
+          </div>
+        </article>
+
+        <div class="grid-cards-3">
+          <article class="metrica-bloco">
+            <p class="metrica__rotulo">Tempo na Terra</p>
+            <p id="det-tempo-terra" class="metrica-bloco__valor"></p>
+          </article>
+          <article class="metrica-bloco">
+            <p class="metrica__rotulo">Tempo a bordo</p>
+            <p id="det-tempo-bordo" class="metrica-bloco__valor"></p>
+          </article>
+          <article class="metrica-bloco">
+            <p class="metrica__rotulo">Dívida temporal</p>
+            <p id="det-divida" class="metrica-bloco__valor texto-acento"></p>
+          </article>
+        </div>
+
+        <article class="card lista-pilha">
+          <h2 class="card__subtitulo">Preferências da viagem</h2>
+
+          <div>
+            <p class="campo__rotulo">Rota</p>
+            <div id="grupo-rota" class="grid-campos-2">
+              <button type="button" class="botao" data-rota="false">Sem Rota Lúmica</button>
+              <button type="button" class="botao" data-rota="true">Com Rota Lúmica</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="campo__rotulo">Fuga criogênica</p>
+            <div id="grupo-crio" class="grid-campos-2">
+              <button type="button" class="botao" data-crio="Sem criogenia">Sem criogenia</button>
+              <button type="button" class="botao" data-crio="Dormir 75% do percurso">Dormir 75% do percurso</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="campo__rotulo">Lazer</p>
+            <div id="grupo-lazer" class="grid-cards-3">
+              <button type="button" class="botao" data-lazer="Essencial">Essencial</button>
+              <button type="button" class="botao" data-lazer="Observatório">Observatório</button>
+              <button type="button" class="botao" data-lazer="Imersivo">Imersivo</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="campo__rotulo">Alimentação</p>
+            <div id="grupo-alimentacao" class="grid-cards-3">
+              <button type="button" class="botao" data-alimentacao="Padrão">Padrão</button>
+              <button type="button" class="botao" data-alimentacao="Vegetariana">Vegetariana</button>
+              <button type="button" class="botao" data-alimentacao="Gourmet">Gourmet</button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <aside class="card lista-pilha" aria-label="Resumo da viagem">
+        <p class="card__eyebrow">SUA VIAGEM</p>
+        <h2 id="resumo-destino" class="card__titulo"></h2>
+        <p id="resumo-sub" class="texto-secundario"></p>
+
+        <div class="card card--painel">
+          <p class="metrica__rotulo">SUA POLTRONA</p>
+          <p id="resumo-poltrona">Nenhuma poltrona selecionada</p>
+        </div>
+
+        <div>
+          <p class="metrica__rotulo">CUSTO ESTIMADO POR VIAJANTE</p>
+          <p id="resumo-custo" class="titulo-pagina"></p>
+        </div>
+
+        <p id="resumo-desperto" class="texto-secundario"></p>
+
+        <a class="botao botao--primario botao--grande botao--bloco" href="selecao-poltrona.html">
+          Selecionar poltrona →
+        </a>
+        <a class="botao botao--bloco" href="mapa-viagem.html">
+          Ver mapa da viagem
+        </a>
+        <p class="texto-mutado">A criogenia reduz o tempo desperto, não o tempo de viagem nem a dívida temporal.</p>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-viajante">
+      <span>NABUUS · Simulação exploratória</span>
+      <span>Valores e tecnologias ilustrativos. Sem oferta comercial.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/detalhes-viagem-view.js"></script>
+</body>
+</html>

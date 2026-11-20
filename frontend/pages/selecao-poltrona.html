@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Seleção de poltrona</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/cabine.css">
+  <link rel="stylesheet" href="../css/components/modals.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-viajante">
+    <div class="barra-etapa">
+      <a href="detalhes-viagem.html">← Voltar aos detalhes</a>
+      <span>01 Viagem / 02 Poltrona</span>
+    </div>
+    <h1 class="titulo-pagina">Escolha sua poltrona</h1>
+    <p class="texto-secundario">A região da poltrona define a classe da viagem. Clique em uma poltrona ocupada para ver o perfil procedural.</p>
+
+    <div class="layout-duas-colunas">
+      <section class="card lista-pilha" aria-label="Mapa de poltronas">
+        <div class="viagem-card__topo">
+          <div>
+            <h2>Convés 01</h2>
+            <p class="texto-secundario">22 poltronas · 1 viajante</p>
+          </div>
+          <span class="badge">Cabine de passageiros</span>
+        </div>
+
+        <div class="cabine__legenda">
+          <span>□ Disponível</span>
+          <span>× Ocupada</span>
+          <span class="texto-acento">■ Sua seleção</span>
+        </div>
+
+        <div id="planta-cabine" class="cabine"></div>
+      </section>
+
+      <aside class="card lista-pilha" aria-label="Resumo da poltrona">
+        <p class="card__eyebrow">SUA ESCOLHA</p>
+        <h2 id="poltrona-destino" class="card__titulo"></h2>
+        <p id="poltrona-partida" class="texto-secundario"></p>
+
+        <div class="card card--painel">
+          <p class="metrica__rotulo">POLTRONA</p>
+          <p id="poltrona-atual" class="card__titulo">Escolha uma poltrona no mapa</p>
+          <p id="poltrona-classe" class="texto-secundario">Convés 01 · Cabine de passageiros</p>
+        </div>
+
+        <div>
+          <p class="metrica__rotulo">TOTAL ESTIMADO</p>
+          <p id="poltrona-custo" class="titulo-pagina"></p>
+        </div>
+
+        <button id="btn-confirmar-poltrona" type="button" class="botao botao--primario botao--grande botao--bloco">
+          Confirmar poltrona
+        </button>
+        <button id="btn-limpar-poltrona" type="button" class="botao botao--bloco">
+          Limpar seleção
+        </button>
+        <a class="botao botao--bloco" href="detalhes-viagem.html">Cancelar</a>
+      </aside>
+    </div>
+  </main>
+
+  <div id="modal-perfil-procedural" class="modal-backdrop oculto" role="dialog" aria-modal="true" aria-labelledby="perfil-titulo">
+    <div class="modal modal--compacto">
+      <p id="perfil-titulo" class="card__eyebrow">Poltrona · Ocupada</p>
+      <h2 id="perfil-nome" class="card__titulo"></h2>
+      <p id="perfil-ocupacao" class="texto-secundario"></p>
+      <p class="texto-mutado">Perfil fictício · demonstração de ocupação</p>
+      <button id="btn-fechar-perfil" type="button" class="botao botao--primario botao--bloco">Fechar</button>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-viajante">
+      <span>NABUUS · Simulação exploratória</span>
+      <span>Valores e tecnologias ilustrativos. Sem oferta comercial.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/selecao-poltrona-view.js"></script>
+</body>
+</html>
