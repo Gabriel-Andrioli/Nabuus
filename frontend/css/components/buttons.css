@@ -1,0 +1,92 @@
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-sm);
+  min-height: 2.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--raio-md);
+  border: 1px solid var(--cor-borda-padrao);
+  background-color: var(--cor-superficie-card);
+  color: var(--cor-texto-primario);
+  font-size: var(--texto-base);
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.botao:hover:not(:disabled) {
+  border-color: var(--cor-borda-ativa);
+  background-color: var(--cor-superficie-destaque);
+}
+
+.botao:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.botao--primario {
+  background-color: var(--cor-acao-primaria);
+  border-color: var(--cor-borda-ativa);
+  color: var(--cor-texto-primario);
+}
+
+.botao--primario:hover:not(:disabled) {
+  background-color: var(--cor-acao-primaria-ativa);
+}
+
+.botao--ativo {
+  background-color: var(--cor-acao-primaria-ativa);
+  border-color: var(--cor-borda-ativa);
+}
+
+.botao--secundario {
+  background-color: var(--cor-acao-secundaria);
+  border-color: var(--cor-borda-foco);
+}
+
+.botao--perigo {
+  background-color: var(--cor-perigo-fundo);
+  border-color: var(--cor-perigo-borda);
+  color: var(--cor-texto-primario);
+}
+
+.botao--perigo:hover:not(:disabled) {
+  background-color: #5b2038;
+}
+
+.botao--bloco {
+  width: 100%;
+}
+
+.botao--grande {
+  min-height: 3rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--raio-sm);
+  background-color: var(--cor-superficie-destaque);
+  border: 1px solid var(--cor-borda-padrao);
+  font-size: var(--texto-2xs);
+  color: var(--cor-acento-lavanda);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--raio-md);
+  background-color: var(--cor-superficie-badge);
+  border: 1px solid var(--cor-borda-padrao);
+  font-size: var(--texto-xs);
+  color: var(--cor-acento-lavanda);
+}
+
+.badge--alerta {
+  background-color: var(--cor-perigo-fundo);
+  border-color: var(--cor-perigo-borda);
+  color: var(--cor-texto-primario);
+}

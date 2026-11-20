@@ -1,0 +1,25 @@
+.mapa-2d {
+  background-color: var(--cor-fundo-mapa);
+  border: 1px solid #5C4B70;
+  border-radius: var(--raio-md);
+  overflow: hidden;
+  position: relative;
+}
+
+.mapa-2d__canvas {
+  width: 100%;
+  height: auto;
+  min-height: 260px;
+  display: block;
+}
+
+.mapa-2d__barra {
+  background-color: var(--cor-superficie-card);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-md);
+  padding: var(--espaco-md) var(--espaco-lg);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espaco-md);
+}

@@ -1,0 +1,90 @@
+.cabine {
+  background-color: var(--cor-superficie-cabine);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-md);
+}
+
+.cabine__proa,
+.cabine__acesso {
+  text-align: center;
+  font-size: var(--texto-2xs);
+  color: var(--cor-acento-lavanda);
+  letter-spacing: 0.08em;
+}
+
+.cabine__colunas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) 2rem repeat(2, 1fr);
+  gap: var(--espaco-sm);
+  text-align: center;
+  font-size: var(--texto-xs);
+  color: var(--cor-texto-secundario);
+}
+
+.cabine__zona-titulo {
+  font-size: var(--texto-sm);
+  color: var(--cor-acento-lavanda);
+  padding-top: var(--espaco-sm);
+  border-top: 1px solid var(--cor-borda-padrao);
+}
+
+.cabine__fileira {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) 2rem repeat(2, 1fr);
+  gap: var(--espaco-sm);
+  align-items: center;
+}
+
+.cabine__numero-fileira {
+  text-align: center;
+  font-size: var(--texto-2xs);
+  color: var(--cor-texto-secundario);
+}
+
+.poltrona {
+  min-height: 2.5rem;
+  border-radius: 7px;
+  border: 1px solid var(--cor-borda-padrao);
+  background-color: var(--cor-superficie-card);
+  color: var(--cor-texto-primario);
+  font-size: var(--texto-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.poltrona--luxo {
+  min-height: 3.75rem;
+}
+
+.poltrona--primeira {
+  min-height: 3.25rem;
+}
+
+.poltrona:hover {
+  border-color: var(--cor-borda-ativa);
+}
+
+.poltrona--ocupada {
+  background-color: var(--cor-poltrona-ocupada);
+  color: var(--cor-texto-secundario);
+}
+
+.poltrona--selecionada {
+  background-color: var(--cor-acento-lavanda);
+  color: var(--cor-superficie-card);
+  border-color: var(--cor-texto-primario);
+}
+
+.cabine__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-lg);
+  font-size: var(--texto-xs);
+  color: var(--cor-texto-secundario);
+}

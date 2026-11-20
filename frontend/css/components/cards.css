@@ -1,0 +1,153 @@
+.card {
+  background-color: var(--cor-superficie-card);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-lg);
+}
+
+.card--painel {
+  background-color: var(--cor-superficie-painel);
+  border-color: var(--cor-borda-painel);
+}
+
+.card--destaque {
+  border-color: var(--cor-borda-selecionada);
+}
+
+.card--interativo {
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.card--interativo:hover {
+  border-color: var(--cor-borda-ativa);
+  transform: translateY(-2px);
+}
+
+.card__eyebrow {
+  font-size: var(--texto-2xs);
+  color: var(--cor-acento-lavanda);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--espaco-xs);
+}
+
+.card__titulo {
+  font-size: var(--texto-xl);
+  color: var(--cor-texto-primario);
+  margin-bottom: var(--espaco-xs);
+}
+
+.card__subtitulo {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-secundario);
+}
+
+.card__divisor {
+  height: 1px;
+  background-color: var(--cor-borda-padrao);
+  margin-block: var(--espaco-md);
+}
+
+/* Card de Resultado de Viagem (estilo ClickBus intergaláctico) */
+.viagem-card {
+  background-color: var(--cor-superficie-card);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-lg);
+  display: grid;
+  gap: var(--espaco-md);
+}
+
+@media (min-width: 992px) {
+  .viagem-card {
+    grid-template-columns: 1fr 270px;
+    align-items: stretch;
+  }
+}
+
+.viagem-card--principal {
+  border-color: var(--cor-borda-selecionada);
+}
+
+.viagem-card__topo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--espaco-sm);
+}
+
+.viagem-card__metricas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-md);
+  padding-top: var(--espaco-md);
+  border-top: 1px solid var(--cor-borda-padrao);
+}
+
+@media (min-width: 768px) {
+  .viagem-card__metricas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.metrica__rotulo {
+  font-size: var(--texto-2xs);
+  color: var(--cor-texto-secundario);
+  margin-bottom: 0.25rem;
+}
+
+.metrica__valor {
+  font-size: var(--texto-md);
+  color: var(--cor-texto-primario);
+}
+
+.metrica__valor--lavanda {
+  color: var(--cor-acento-lavanda);
+}
+
+.viagem-card__lateral {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--espaco-sm);
+  padding-top: var(--espaco-md);
+  border-top: 1px solid var(--cor-borda-padrao);
+}
+
+@media (min-width: 992px) {
+  .viagem-card__lateral {
+    padding-top: 0;
+    padding-left: var(--espaco-lg);
+    border-top: 0;
+    border-left: 1px solid var(--cor-borda-padrao);
+  }
+}
+
+.viagem-card__preco {
+  font-size: var(--texto-xl);
+  color: var(--cor-texto-primario);
+}
+
+.viagem-card__link-lumica {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  font-size: var(--texto-xs);
+  color: var(--cor-acento-brilho);
+  text-decoration: underline;
+}
+
+.metrica-bloco {
+  background-color: var(--cor-superficie-card);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-md);
+}
+
+.metrica-bloco__valor {
+  font-size: 1.1875rem;
+  color: var(--cor-texto-primario);
+  margin-top: var(--espaco-xs);
+}

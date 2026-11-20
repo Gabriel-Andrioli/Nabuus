@@ -1,0 +1,71 @@
+/* Design Tokens extraídos do protótipo Nabuus.fig */
+:root {
+  /* Tipografia */
+  --fonte-principal: 'Michroma', sans-serif;
+  --texto-2xs: 0.5rem;        /* 8px */
+  --texto-xs: 0.625rem;       /* 10px */
+  --texto-sm: 0.6875rem;      /* 11px */
+  --texto-base: 0.75rem;      /* 12px */
+  --texto-md: 0.875rem;       /* 14px */
+  --texto-lg: 1rem;           /* 16px */
+  --texto-xl: 1.25rem;        /* 20px */
+  --texto-2xl: 1.625rem;      /* 26px */
+  --texto-3xl: 2rem;          /* 32px */
+  --texto-display-login: 4rem;
+  --texto-display-hero: clamp(2.5rem, 8vw, 7.3125rem);
+
+  /* Cores de Fundo */
+  --cor-fundo-espaco: #050409;
+  --cor-fundo-primario: #06040E;
+  --cor-fundo-mapa: #07060D;
+  --cor-fundo-overlay: rgba(5, 4, 9, 0.82);
+
+  /* Superfícies e Cards */
+  --cor-superficie-card: #110E1E;
+  --cor-superficie-painel: #110C1C;
+  --cor-superficie-secundaria: #171224;
+  --cor-superficie-input: #191325;
+  --cor-superficie-destaque: #21192F;
+  --cor-superficie-cabine: #211B30;
+  --cor-superficie-badge: #292138;
+  --cor-poltrona-ocupada: #302B3A;
+
+  /* Bordas */
+  --cor-borda-padrao: #494057;
+  --cor-borda-painel: #524566;
+  --cor-borda-card: #66597A;
+  --cor-borda-foco: #A496B7;
+  --cor-borda-selecionada: #8E76B0;
+  --cor-borda-ativa: #C7AFE9;
+
+  /* Ações e Estados */
+  --cor-acao-primaria: #625875;
+  --cor-acao-primaria-ativa: #4F4069;
+  --cor-acao-secundaria: #3B334A;
+  --cor-perigo-fundo: #421729;
+  --cor-perigo-borda: #A6475C;
+
+  /* Textos e Acentos */
+  --cor-texto-primario: #F8F5FF;
+  --cor-texto-secundario: #CFC5DA;
+  --cor-texto-apoio: #D4C7E5;
+  --cor-texto-mutado: #A99AB9;
+  --cor-acento-lavanda: #C7AFE9;
+  --cor-acento-brilho: #E0C9FF;
+
+  /* Raios */
+  --raio-xs: 3px;
+  --raio-sm: 6px;
+  --raio-md: 8px;
+  --raio-lg: 10px;
+  --raio-xl: 12px;
+
+  /* Espaçamentos e Larguras */
+  --espaco-xs: 0.25rem;
+  --espaco-sm: 0.5rem;
+  --espaco-md: 1rem;
+  --espaco-lg: 1.5rem;
+  --espaco-xl: 2rem;
+  --largura-viajante: 1336px;
+  --largura-gestao: 1200px;
+}

@@ -1,0 +1,123 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  background-color: var(--cor-fundo-espaco);
+  color: var(--cor-texto-primario);
+  font-family: var(--fonte-principal);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--cor-fundo-primario);
+  color: var(--cor-texto-primario);
+  font-family: var(--fonte-principal);
+  font-size: var(--texto-base);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cor-acento-lavanda);
+  outline-offset: 2px;
+}
+
+.oculto {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.container-viajante,
+.container-gestao {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--espaco-md);
+}
+
+@media (min-width: 768px) {
+  .container-viajante,
+  .container-gestao {
+    padding-inline: 3.25rem;
+  }
+}
+
+@media (min-width: 1400px) {
+  .container-viajante {
+    max-width: calc(var(--largura-viajante) + 6.5rem);
+  }
+
+  .container-gestao {
+    max-width: calc(var(--largura-gestao) + 6.5rem);
+  }
+}
+
+/* 4 Estados Obrigatórios da UI */
+.estado-painel {
+  background-color: var(--cor-superficie-card);
+  border: 1px solid var(--cor-borda-padrao);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-xl);
+  text-align: center;
+}
+
+.estado-painel--erro {
+  border-color: var(--cor-perigo-borda);
+  background-color: var(--cor-perigo-fundo);
+}
+
+.estado-painel__titulo {
+  font-size: var(--texto-lg);
+  color: var(--cor-texto-primario);
+  margin-bottom: var(--espaco-sm);
+}
+
+.estado-painel__texto {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-secundario);
+  margin-bottom: var(--espaco-md);
+}
+
+.texto-acento {
+  color: var(--cor-acento-lavanda);
+}
+
+.texto-secundario {
+  color: var(--cor-texto-secundario);
+}
+
+.texto-mutado {
+  color: var(--cor-texto-mutado);
+}
