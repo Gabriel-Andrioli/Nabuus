@@ -19,21 +19,21 @@
 
   <main class="container-viajante">
     <div class="barra-etapa">
-      <a href="resultados.html">← Voltar aos resultados</a>
+      <a id="link-voltar-resultados" href="resultados.html">← Voltar aos resultados</a>
       <span>01 Viagem / 02 Poltrona</span>
     </div>
     <h1 class="titulo-pagina">Configure sua viagem</h1>
-    <p class="texto-secundario">Confira a rota, o tempo da viagem e tudo que acompanha sua jornada.</p>
+    <p class="texto-secundario">Compare as propulsões, escolha sua classe e confira os impactos no tempo e custo.</p>
 
     <div class="layout-duas-colunas">
       <section class="lista-pilha" aria-label="Configurações da jornada">
         <article class="card">
           <div class="viagem-card__topo">
-            <span class="card__eyebrow">ROTA INTERESTELAR · SÓ IDA</span>
+            <h2 id="det-destino" class="card__titulo"></h2>
             <span id="det-tecnologia" class="badge"></span>
           </div>
-          <h2 id="det-destino" class="card__titulo"></h2>
           <p id="det-sistema" class="card__subtitulo"></p>
+          <div class="card__divisor"></div>
           <div class="grid-campos-2">
             <div>
               <p class="metrica__rotulo">PARTIDA</p>
@@ -65,6 +65,11 @@
           <h2 class="card__subtitulo">Preferências da viagem</h2>
 
           <div>
+            <p class="campo__rotulo">Tipo de propulsão</p>
+            <div id="grupo-propulsao" class="grid-cards-3"></div>
+          </div>
+
+          <div>
             <p class="campo__rotulo">Rota</p>
             <div id="grupo-rota" class="grid-campos-2">
               <button type="button" class="botao" data-rota="false">Sem Rota Lúmica</button>
@@ -73,11 +78,13 @@
           </div>
 
           <div>
-            <p class="campo__rotulo">Fuga criogênica</p>
-            <div id="grupo-crio" class="grid-campos-2">
-              <button type="button" class="botao" data-crio="Sem criogenia">Sem criogenia</button>
-              <button type="button" class="botao" data-crio="Dormir 75% do percurso">Dormir 75% do percurso</button>
-            </div>
+            <p class="campo__rotulo">Classe da cabine</p>
+            <div id="grupo-classe" class="grid-cards-3"></div>
+          </div>
+
+          <div class="card card--painel">
+            <p class="metrica__rotulo">CRIOGENIA</p>
+            <p id="status-criogenia" class="texto-secundario"></p>
           </div>
 
           <div>
@@ -123,7 +130,7 @@
         <a class="botao botao--bloco" href="mapa-viagem.html">
           Ver mapa da viagem
         </a>
-        <p class="texto-mutado">A criogenia reduz o tempo desperto, não o tempo de viagem nem a dívida temporal.</p>
+        <p class="texto-mutado">Na classe Luxo, 90% do percurso é feito em criogenia e descontado direto do tempo a bordo.</p>
       </aside>
     </div>
   </main>

@@ -1,4 +1,9 @@
-import { confirmarPassagem, obterSelecaoAtual, obterViagemSelecionada } from '../services/passagens-service.js';
+import {
+  confirmarPassagem,
+  obterCenarioAtivoDaViagem,
+  obterSelecaoAtual,
+  obterViagemSelecionada,
+} from '../services/passagens-service.js';
 import { formatarAnos, formatarCreditos, formatarDistanciaAnosLuz, formatarVelocidadeC } from '../utils/formatadores.js';
 import { renderizarBarraNavegacao } from './navegacao-comum.js';
 
@@ -7,27 +12,27 @@ function inicializarConfirmacao() {
 
   const viagem = obterViagemSelecionada();
   const sel = obterSelecaoAtual();
-  const cenario = sel.usaRotaLumica ? viagem.comLumica : viagem.semLumica;
-  const techTexto = `${viagem.propulsaoNome} · ${formatarVelocidadeC(viagem.velocidadeC)}`;
+  const resumo = obterCenarioAtivoDaViagem(viagem, sel);
+  const techTexto = `${resumo.opcao.propulsaoNome} · ${formatarVelocidadeC(resumo.opcao.velocidadeC)}`;
 
   document.getElementById('rev-tecnologia').textContent = techTexto;
   document.getElementById('rev-destino').textContent = viagem.destinoNome;
-  document.getElementById('rev-sistema').textContent = viagem.sistemaDestino;
-  document.getElementById('rev-origem').textContent = `${viagem.origemNome} · ${viagem.origemSistema}`;
-  document.getElementById('rev-chegada').textContent = viagem.chegadaTexto;
-  document.getElementById('rev-terra').textContent = formatarAnos(cenario.tempoTerraAnos);
-  document.getElementById('rev-bordo').textContent = formatarAnos(cenario.duracaoBordoAnos);
-  document.getElementById('rev-divida').textContent = formatarAnos(cenario.dividaTemporalAnos);
+  document.getElementById('rev-sistema').textContent = `${viagem.sistemaDestino} · Classe ${resumo.classe}`;
+  document.getElementById('rev-origem').textContent = `${viagem.origemNome} · ${viagem.origemSistema} (${viagem.partidaTexto})`;
+  document.getElementById('rev-chegada').textContent = resumo.chegadaTexto;
+  document.getElementById('rev-terra').textContent = formatarAnos(resumo.tempoTerraAnos);
+  document.getElementById('rev-bordo').textContent = formatarAnos(resumo.duracaoBordoAnos);
+  document.getElementById('rev-divida').textContent = formatarAnos(resumo.dividaTemporalAnos);
   document.getElementById('rev-distancia').textContent = formatarDistanciaAnosLuz(viagem.distanciaAl);
   document.getElementById('rev-resumo-destino').textContent = viagem.destinoNome;
   document.getElementById('rev-poltrona').textContent = sel.poltrona || '01A';
-  document.getElementById('rev-custo').textContent = formatarCreditos(cenario.precoFinal);
+  document.getElementById('rev-custo').textContent = formatarCreditos(resumo.precoFinal);
 
   document.getElementById('btn-confirmar-viagem').addEventListener('click', () => {
     const passagem = confirmarPassagem();
     document.getElementById('comp-destino').textContent = passagem.destinoNome;
     document.getElementById('comp-tecnologia').textContent =
-      `${passagem.tecnologia} · ${passagem.usaRotaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'}`;
+      `${passagem.tecnologia} · ${passagem.usaRotaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'} · ${passagem.classe}`;
     document.getElementById('comp-poltrona').textContent = passagem.assento;
     document.getElementById('comp-custo').textContent = formatarCreditos(passagem.valorPago);
 

@@ -1,12 +1,16 @@
-import { atualizarSelecaoAtual, obterRotaLumicaDaViagem, obterSelecaoAtual, obterViagemSelecionada } from '../services/passagens-service.js';
+import {
+  atualizarSelecaoAtual,
+  obterCenarioAtivoDaViagem,
+  obterSelecaoAtual,
+  obterViagemSelecionada,
+} from '../services/passagens-service.js';
 import { criarElemento, criarSvg, limparElemento } from '../utils/dom-seguro.js';
 import { calcularFatorLorentz, formatarAnos, formatarCreditos, formatarDistanciaAnosLuz, formatarVelocidadeC } from '../utils/formatadores.js';
 import { renderizarBarraNavegacao } from './navegacao-comum.js';
 
-function desenharMapa2D(svg, viagem, usaLumica) {
+function desenharMapa2D(svg, viagem, usaLumica, paradasSemLumica) {
   limparElemento(svg);
 
-  // Grade ortogonal 2D
   for (let x = 135; x < 1336; x += 134) {
     svg.appendChild(criarSvg('line', { x1: x, y1: 0, x2: x, y2: 320, stroke: '#494057', 'stroke-width': 0.5, 'stroke-opacity': 0.4 }));
   }
@@ -14,20 +18,16 @@ function desenharMapa2D(svg, viagem, usaLumica) {
     svg.appendChild(criarSvg('line', { x1: 0, y1: y, x2: 1336, y2: y, stroke: '#494057', 'stroke-width': 0.5, 'stroke-opacity': 0.4 }));
   }
 
-  // Estrelas de referência determinísticas
   for (let i = 1; i <= 40; i += 1) {
     const sx = (i * 197 + 51) % 1280 + 28;
     const sy = (i * 89 + 31) % 270 + 25;
     svg.appendChild(criarSvg('circle', { cx: sx, cy: sy, r: (i % 2) + 1, fill: '#CFC5DA', opacity: 0.6 }));
   }
 
-  // Órbitas de origem e destino
   svg.appendChild(criarSvg('ellipse', { cx: 334, cy: 223, rx: 190, ry: 45, fill: 'none', stroke: '#494057', 'stroke-dasharray': '4 4' }));
   svg.appendChild(criarSvg('ellipse', { cx: 985, cy: 88, rx: 111, ry: 27, fill: 'none', stroke: '#494057', 'stroke-dasharray': '4 4' }));
 
-  const paradas = usaLumica ? 0 : viagem.semLumica.paradas;
-
-  // Trajetória 2D (curva quadrática ou com ponto intermediário de parada)
+  const paradas = usaLumica ? 0 : paradasSemLumica;
   const dTrajeto = paradas > 0
     ? 'M 334 223 Q 500 180 658 155 T 985 88'
     : 'M 334 223 Q 640 130 985 88';
@@ -46,7 +46,6 @@ function desenharMapa2D(svg, viagem, usaLumica) {
     svg.appendChild(criarSvg('text', { x: 658, y: 178, fill: '#C7AFE9', 'font-size': 10, 'text-anchor': 'middle' })).textContent = 'Posto de Recarga';
   }
 
-  // Marcadores de origem e destino
   svg.appendChild(criarSvg('circle', { cx: 334, cy: 223, r: 8, fill: '#F8F5FF' }));
   svg.appendChild(criarSvg('text', { x: 334, y: 256, fill: '#F8F5FF', 'font-size': 13, 'text-anchor': 'middle' })).textContent = viagem.origemNome;
 
@@ -63,30 +62,31 @@ function inicializarMapa() {
 
   const viagem = obterViagemSelecionada();
   let selecao = obterSelecaoAtual();
-  const rotaLumica = obterRotaLumicaDaViagem(viagem);
-  const canalAtivo = !rotaLumica || rotaLumica.ativa;
 
   document.getElementById('mapa-origem').textContent = `${viagem.origemNome} · ${viagem.origemSistema}`;
   document.getElementById('mapa-partida').textContent = viagem.partidaTexto;
   document.getElementById('mapa-destino').textContent = viagem.destinoNome;
-  document.getElementById('mapa-chegada').textContent = viagem.chegadaTexto;
-
-  const gama = calcularFatorLorentz(viagem.velocidadeC).toFixed(2).replace('.', ',');
-  document.getElementById('mapa-resumo-tecnico').textContent =
-    `${formatarDistanciaAnosLuz(viagem.distanciaAl)} · ${formatarVelocidadeC(viagem.velocidadeC)} · ${gama} γ · Autonomia: ${viagem.autonomiaAl.toFixed(2).replace('.', ',')} al`;
 
   function atualizarTela() {
     selecao = obterSelecaoAtual();
-    const usaLumica = Boolean(selecao.usaRotaLumica && canalAtivo);
-    document.getElementById('status-modalidade-mapa').textContent =
-      `Modalidade selecionada: ${usaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'}`;
+    const resumo = obterCenarioAtivoDaViagem(viagem, selecao);
+    const gama = calcularFatorLorentz(resumo.opcao.velocidadeC).toFixed(2).replace('.', ',');
 
-    desenharMapa2D(document.getElementById('svg-mapa-2d'), viagem, usaLumica);
+    document.getElementById('mapa-chegada').textContent = resumo.chegadaTexto;
+    document.getElementById('mapa-resumo-tecnico').textContent =
+      `${formatarDistanciaAnosLuz(viagem.distanciaAl)} · ${resumo.opcao.propulsaoNome} (${formatarVelocidadeC(resumo.opcao.velocidadeC)}) · ${gama} γ · Autonomia: ${resumo.opcao.autonomiaAl.toFixed(2).replace('.', ',')} al`;
+    document.getElementById('status-modalidade-mapa').textContent =
+      `Modalidade selecionada: ${resumo.usaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'}`;
+
+    desenharMapa2D(document.getElementById('svg-mapa-2d'), viagem, resumo.usaLumica, resumo.opcao.semLumica.paradas);
 
     const container = document.getElementById('cards-metricas-mapa');
     limparElemento(container);
 
-    const criarCard = (titulo, dados, ativo, habilitado, legendaExtra, onClick) => {
+    const criarCard = (titulo, cenarioItem, ativo, habilitado, legendaExtra, onClick) => {
+      const duracao = cenarioItem
+        ? (resumo.emCriogenia ? cenarioItem.duracaoBordoAnos * 0.1 : cenarioItem.duracaoBordoAnos)
+        : 0;
       const card = criarElemento('article', {
         className: `card${ativo ? ' card--destaque' : ''}`,
       });
@@ -94,20 +94,24 @@ function inicializarMapa() {
       card.appendChild(
         criarElemento('p', {
           className: 'card__titulo',
-          text: `${formatarCreditos(dados.precoFinal)} · A bordo: ${formatarAnos(dados.duracaoBordoAnos)} · Dívida: ${formatarAnos(dados.dividaTemporalAnos)}`,
+          text: cenarioItem
+            ? `${formatarCreditos(cenarioItem.precoFinal)} · A bordo: ${formatarAnos(duracao)} · Dívida: ${formatarAnos(cenarioItem.dividaTemporalAnos)}`
+            : 'Rota Lúmica indisponível para este sistema',
         })
       );
-      card.appendChild(
-        criarElemento('p', {
-          className: 'texto-secundario',
-          text: `Na Terra: ${formatarAnos(dados.tempoTerraAnos)} · Paradas de recarga: ${dados.paradas} · ${legendaExtra}`,
-        })
-      );
+      if (cenarioItem) {
+        card.appendChild(
+          criarElemento('p', {
+            className: 'texto-secundario',
+            text: `Na Terra: ${formatarAnos(cenarioItem.tempoTerraAnos)} · Paradas de recarga: ${cenarioItem.paradas} · ${legendaExtra}`,
+          })
+        );
+      }
 
       const btn = criarElemento('button', {
         type: 'button',
         className: `botao ${ativo ? 'botao--ativo' : 'botao--primario'}`,
-        text: habilitado ? (ativo ? 'Modalidade selecionada ✓' : 'Usar esta modalidade') : 'Canal lúmico desativado',
+        text: habilitado ? (ativo ? 'Modalidade selecionada ✓' : 'Usar esta modalidade') : 'Canal lúmico indisponível',
         attrs: habilitado ? {} : { disabled: 'disabled' },
       });
       if (habilitado) {
@@ -118,7 +122,7 @@ function inicializarMapa() {
     };
 
     container.appendChild(
-      criarCard('Sem Rota Lúmica', viagem.semLumica, !usaLumica, true, 'Sem Pedágio Lúmico', () => {
+      criarCard('Sem Rota Lúmica', resumo.opcao.semLumica, !resumo.usaLumica, true, 'Sem Pedágio Lúmico', () => {
         atualizarSelecaoAtual({ usaRotaLumica: false });
         atualizarTela();
       })
@@ -126,10 +130,10 @@ function inicializarMapa() {
     container.appendChild(
       criarCard(
         'Com Rota Lúmica',
-        viagem.comLumica,
-        usaLumica,
-        canalAtivo,
-        `Pedágio Lúmico: ${formatarCreditos(viagem.comLumica.pedagio || 0)}`,
+        resumo.opcao.comLumica,
+        resumo.usaLumica,
+        resumo.canalAtivo,
+        resumo.opcao.comLumica ? `Pedágio Lúmico: ${formatarCreditos(resumo.opcao.comLumica.pedagio || 0)}` : '',
         () => {
           atualizarSelecaoAtual({ usaRotaLumica: true });
           atualizarTela();
