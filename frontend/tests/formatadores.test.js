@@ -28,6 +28,9 @@ test('deveCalcularFatorLorentzCorretamente_quandoVelocidadeFor080c', () => {
   const gama = calcularFatorLorentz(0.8);
   assert.ok(Math.abs(gama - 5 / 3) < 1e-6);
   assert.equal(formatarVelocidadeC(0.8), '0,80 c');
+  assert.equal(formatarVelocidadeC(0.012), '0,012 c');
+  assert.equal(formatarVelocidadeC(0.005), '0,005 c');
+  assert.equal(formatarVelocidadeC(0.996), '0,996 c');
   assert.equal(formatarDistanciaAnosLuz(4.24), '4,24 anos-luz');
   assert.equal(formatarDataCurta('2100-01-15'), 'Jan 2100');
 });
