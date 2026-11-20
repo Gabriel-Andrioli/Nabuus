@@ -7,7 +7,7 @@ import {
   sugerirPrecoPorPropulsao,
 } from '../services/frota-viagens-service.js';
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
-import { formatarCreditos } from '../utils/formatadores.js';
+import { formatarCreditos, formatarVelocidadeC } from '../utils/formatadores.js';
 import { renderizarBarraNavegacao, renderizarEstado } from './navegacao-comum.js';
 
 function inicializarFretistaViagens() {
@@ -29,12 +29,18 @@ function inicializarFretistaViagens() {
     if (p.nome === 'Terra') {
       continue;
     }
-    selDestino.appendChild(criarElemento('option', { text: p.nome, attrs: { value: p.nome } }));
+    selDestino.appendChild(criarElemento('option', { text: `${p.nome} (${p.sistemaNome})`, attrs: { value: p.nome } }));
   }
 
   for (const o of listarFrota()) {
+    const versoes = o.versoesPropulsao && o.versoesPropulsao.length > 0
+      ? o.versoesPropulsao.map((vr) => `${vr.propulsaoNome} ${formatarVelocidadeC(vr.velocidadeC)}`).join(', ')
+      : `${o.propulsaoNome} · ${formatarVelocidadeC(o.velocidadeC)}`;
     selOnibus.appendChild(
-      criarElemento('option', { text: `${o.identificacao} (${o.propulsaoNome})`, attrs: { value: String(o.id) } })
+      criarElemento('option', {
+        text: `${o.identificacao} (${versoes})`,
+        attrs: { value: String(o.id) },
+      })
     );
   }
 
@@ -67,7 +73,7 @@ function inicializarFretistaViagens() {
       info.appendChild(
         criarElemento('p', {
           className: 'card__subtitulo',
-          text: `${v.origemNome} · ${v.partidaTexto} · ${formatarCreditos(v.semLumica.precoFinal)}`,
+          text: `${v.origemNome} · ${v.partidaTexto} · Nave ${v.onibusNome} (${formatarVelocidadeC(v.velocidadeC)}) · ${formatarCreditos(v.semLumica.precoFinal)}`,
         })
       );
 
@@ -113,6 +119,7 @@ function inicializarFretistaViagens() {
       onibusId: onibus.id,
       onibusNome: onibus.identificacao,
       propulsaoNome: onibus.propulsaoNome,
+      velocidadeC: onibus.velocidadeC,
       partidaTexto: document.getElementById('fv-partida').value,
       precoFinal: Number(document.getElementById('fv-preco').value),
     };
@@ -120,7 +127,12 @@ function inicializarFretistaViagens() {
     const revEl = document.getElementById('card-revisao-viagem');
     limparElemento(revEl);
     revEl.appendChild(criarElemento('h2', { className: 'card__titulo', text: `${rascunho.origemNome} → ${rascunho.destinoNome}` }));
-    revEl.appendChild(criarElemento('p', { className: 'texto-secundario', text: `Ônibus espacial: ${rascunho.onibusNome} (${rascunho.propulsaoNome})` }));
+    revEl.appendChild(
+      criarElemento('p', {
+        className: 'texto-secundario',
+        text: `Nave selecionada: ${rascunho.onibusNome} (${rascunho.propulsaoNome} · ${formatarVelocidadeC(rascunho.velocidadeC)})`,
+      })
+    );
     revEl.appendChild(criarElemento('p', { className: 'texto-secundario', text: `Partida: ${rascunho.partidaTexto} · Preço base calculado: ${formatarCreditos(rascunho.precoFinal)}` }));
     alternarSecao(secRevisar);
   });

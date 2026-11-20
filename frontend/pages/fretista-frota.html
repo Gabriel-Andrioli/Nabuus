@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NABUUS • Fretista · Minha frota</title>
+  <title>NABUUS • Naves disponíveis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
@@ -12,8 +12,6 @@
   <link rel="stylesheet" href="../css/components/navbar.css">
   <link rel="stylesheet" href="../css/components/buttons.css">
   <link rel="stylesheet" href="../css/components/cards.css">
-  <link rel="stylesheet" href="../css/components/forms.css">
-  <link rel="stylesheet" href="../css/components/modals.css">
   <link rel="stylesheet" href="../css/pages/layout.css">
 </head>
 <body>
@@ -21,74 +19,24 @@
 
   <main class="container-gestao lista-pilha">
     <div class="barra-etapa">
-      <span>CONTA NABUUS · PERFIL FRETISTA</span>
-      <span>FROTA · SEUS VEÍCULOS</span>
+      <a href="fretista-area.html">← Área do fretista</a>
+      <span>CATÁLOGO SOMENTE LEITURA</span>
     </div>
-    <h1 id="titulo-frota" class="titulo-pagina">Minha frota de ônibus espaciais</h1>
-    <p class="texto-secundario">Apenas os veículos da sua conta. A tecnologia de propulsão pertence ao catálogo científico do Astrônomo.</p>
+    <h1 id="titulo-frota" class="titulo-pagina">Naves registradas pelo Astrônomo</h1>
+    <p class="texto-secundario">Consulta somente leitura. Apenas o Astrônomo cadastra ou altera especificações técnicas de naves e propulsões.</p>
 
     <section id="sec-lista-frota" class="lista-pilha">
       <div id="lista-onibus" class="lista-pilha"></div>
-      <div class="viagem-card__topo">
+      <div>
         <a class="botao" href="fretista-area.html">Voltar à minha área</a>
-        <button id="btn-novo-onibus" type="button" class="botao botao--primario">Cadastrar ônibus espacial</button>
-      </div>
-    </section>
-
-    <section id="sec-form-onibus" class="oculto">
-      <div class="layout-gestao-form">
-        <form id="form-onibus" class="card lista-pilha">
-          <div class="campo">
-            <label class="campo__rotulo" for="onibus-nome">01 · NOME DO ÔNIBUS ESPACIAL</label>
-            <input id="onibus-nome" class="campo__controle" type="text" placeholder="Ex.: NABUUS Aurora" required>
-          </div>
-
-          <div class="campo">
-            <label class="campo__rotulo" for="onibus-propulsao">02 · TECNOLOGIA DE PROPULSÃO</label>
-            <select id="onibus-propulsao" class="campo__select"></select>
-          </div>
-
-          <div class="campo">
-            <label class="campo__rotulo" for="onibus-assentos">03 · CAPACIDADE FÍSICA (POLTRONAS)</label>
-            <select id="onibus-assentos" class="campo__select">
-              <option value="24">24 poltronas</option>
-              <option value="32">32 poltronas</option>
-              <option value="48">48 poltronas</option>
-            </select>
-          </div>
-
-          <div class="viagem-card__topo">
-            <button id="btn-cancelar-onibus" type="button" class="botao">Cancelar</button>
-            <button type="submit" class="botao botao--primario">Salvar ônibus espacial</button>
-          </div>
-        </form>
-
-        <aside class="card card--painel lista-pilha">
-          <p class="card__eyebrow">ÔNIBUS ≠ PROPULSÃO</p>
-          <h2 class="card__titulo">Seu veículo físico.</h2>
-          <p class="texto-secundario">Fretista: nome, capacidade e vínculo com a tecnologia. Astrônomo: limites de g, c e autonomia da tecnologia.</p>
-          <p class="texto-mutado">Antimatéria: 1,0 g · 0,80 c · 4,50 al</p>
-          <p class="texto-mutado">Fusão: 0,8 g · 0,50 c · 6,00 al</p>
-        </aside>
       </div>
     </section>
   </main>
 
-  <div id="modal-excluir-onibus" class="modal-backdrop oculto" role="dialog" aria-modal="true">
-    <div class="modal">
-      <h2 class="modal__titulo">Excluir ônibus espacial</h2>
-      <p id="texto-excluir-onibus" class="texto-secundario"></p>
-      <div class="modal__acoes">
-        <button id="btn-cancelar-excluir-onibus" type="button" class="botao">Cancelar</button>
-        <button id="btn-confirmar-excluir-onibus" type="button" class="botao botao--perigo">Excluir</button>
-      </div>
-    </div>
-  </div>
-
   <footer class="rodape">
     <div class="rodape__inner container-gestao">
-      <span>NABUUS · Frota do Fretista</span>
-      <span>Valores e tecnologias ilustrativos.</span>
+      <span>NABUUS · Consulta de Naves</span>
+      <span>Especificações técnicas definidas pelo Astrônomo.</span>
     </div>
   </footer>
 
