@@ -1,28 +1,13 @@
-import { API_MOTOR_BASE_URL, lerEstado, requisicaoHttp, salvarEstado } from './api-client.js';
+import {
+  API_MOTOR_BASE_URL,
+  construirOpcoesPropulsaoViagem,
+  lerEstado,
+  requisicaoHttp,
+  salvarEstado,
+} from './api-client.js';
 
 export function listarFrota() {
   return lerEstado().onibusFrota;
-}
-
-export function salvarOnibus(onibus) {
-  const estado = lerEstado();
-  if (onibus.id) {
-    const idx = estado.onibusFrota.findIndex((o) => o.id === onibus.id);
-    if (idx >= 0) {
-      estado.onibusFrota[idx] = { ...estado.onibusFrota[idx], ...onibus };
-    }
-  } else {
-    const proximoId = Math.max(0, ...estado.onibusFrota.map((o) => o.id)) + 1;
-    estado.onibusFrota.push({ ...onibus, id: proximoId, ativo: true });
-  }
-  salvarEstado(estado);
-  return estado.onibusFrota;
-}
-
-export function excluirOnibus(id) {
-  const estado = lerEstado();
-  estado.onibusFrota = estado.onibusFrota.filter((o) => o.id !== id);
-  salvarEstado(estado);
 }
 
 export function listarViagensFretista() {
@@ -39,7 +24,7 @@ export async function sugerirPrecoPorPropulsao(propulsaoId) {
       body: JSON.stringify({
         precoBaseReferencia: prop.precoBaseReferencia,
         custoAnoLuzReferencia: prop.custoAnoLuzReferencia,
-        categoriaConforto: prop.categoriaConforto,
+        categoriaConforto: prop.categoriaConforto || 'EXECUTIVA',
       }),
     });
   } catch {
@@ -53,41 +38,77 @@ export async function sugerirPrecoPorPropulsao(propulsaoId) {
 
 export function publicarOuAtualizarViagem(dados) {
   const estado = lerEstado();
-  const prop = estado.propulsoes.find((p) => p.nome === dados.propulsaoNome) || estado.propulsoes[0];
-  const distanciaAl = dados.distanciaAl || 4.24;
-  const precoSemLumica = Number(dados.precoFinal || (prop.precoBaseReferencia + prop.custoAnoLuzReferencia * distanciaAl));
+  const nave = estado.onibusFrota.find((o) => o.id === Number(dados.onibusId)) || estado.onibusFrota[0];
+  const prop = estado.propulsoes.find((p) => p.id === nave?.tipoPropulsaoId || p.nome === (nave?.propulsaoNome || dados.propulsaoNome))
+    || estado.propulsoes[0];
+  const planetaDestino = estado.planetas.find((p) => p.nome === dados.destinoNome) || estado.planetas.find((p) => p.nome !== 'Terra');
+  const sistemaDestino = estado.sistemas.find((s) => s.id === planetaDestino?.sistemaId);
+  const rotaLumica = estado.rotasLumicas.find((r) => r.destinoSistemaId === planetaDestino?.sistemaId) || null;
+  const distanciaAl = dados.distanciaAl || (sistemaDestino?.distanciaSolAl > 0 ? sistemaDestino.distanciaSolAl : 4.24);
+  const partidaTexto = dados.partidaTexto || '15 Jan 2100';
+  const propulsoesDisp = nave?.versoesPropulsao && nave.versoesPropulsao.length > 0
+    ? nave.versoesPropulsao.map((vr) => vr.propulsaoNome)
+    : [prop.nome];
 
   if (dados.id) {
     const idx = estado.viagens.findIndex((v) => v.id === dados.id);
     if (idx >= 0) {
-      estado.viagens[idx] = { ...estado.viagens[idx], ...dados };
+      const atualizada = {
+        ...estado.viagens[idx],
+        ...dados,
+        onibusId: nave?.id || estado.viagens[idx].onibusId,
+        onibusNome: nave?.identificacao || estado.viagens[idx].onibusNome,
+        propulsaoNome: prop.nome,
+        velocidadeC: nave?.velocidadeC || prop.velocidadeCruzeiroC,
+        autonomiaAl: nave?.autonomiaAl || prop.autonomiaAnosLuz,
+        destinoPlanetaId: planetaDestino?.id || estado.viagens[idx].destinoPlanetaId,
+        sistemaDestino: planetaDestino?.sistemaNome || estado.viagens[idx].sistemaDestino,
+        distanciaAl,
+        rotaLumicaId: rotaLumica ? rotaLumica.id : null,
+        propulsoesDisponiveis: propulsoesDisp,
+      };
+      atualizada.opcoesPropulsao = construirOpcoesPropulsaoViagem(atualizada, estado);
+      const opAtual = atualizada.opcoesPropulsao.find((op) => op.propulsaoNome === atualizada.propulsaoNome) || atualizada.opcoesPropulsao[0];
+      atualizada.semLumica = {
+        ...opAtual.semLumica,
+        precoFinal: Number(dados.precoFinal || opAtual.semLumica.precoFinal),
+      };
+      atualizada.comLumica = opAtual.comLumica;
+      atualizada.chegadaTexto = opAtual.semLumica.chegadaTexto;
+      estado.viagens[idx] = atualizada;
     }
   } else {
     const proximoId = Math.max(0, ...estado.viagens.map((v) => v.id)) + 1;
-    estado.viagens.push({
+    const novaViagem = {
       id: proximoId,
-      codigo: `NB-00${proximoId}`,
+      codigo: `NB-${String(proximoId).padStart(3, '0')}`,
       origemNome: dados.origemNome || 'Terra',
       origemSistema: 'Sistema Solar',
-      destinoPlanetaId: dados.destinoPlanetaId || 16,
-      destinoNome: dados.destinoNome || 'Proxima Centauri b',
-      sistemaDestino: 'Sistema Alpha Centauri',
-      onibusId: dados.onibusId || 1,
-      onibusNome: dados.onibusNome || 'NABUUS Odyssey',
+      destinoPlanetaId: planetaDestino?.id || 16,
+      destinoNome: planetaDestino?.nome || 'Proxima Centauri b',
+      sistemaDestino: planetaDestino?.sistemaNome || 'Proxima Centauri',
+      onibusId: nave?.id || 1,
+      onibusNome: nave?.identificacao || 'NABUUS Odyssey',
       propulsaoNome: prop.nome,
-      velocidadeC: prop.velocidadeCruzeiroC,
-      autonomiaAl: prop.autonomiaAnosLuz,
+      velocidadeC: nave?.velocidadeC || prop.velocidadeCruzeiroC,
+      autonomiaAl: nave?.autonomiaAl || prop.autonomiaAnosLuz,
       distanciaAl,
-      partidaTexto: dados.partidaTexto || 'Jan 2100',
-      chegadaTexto: 'Abr 2105',
-      correspondencia: 'Nova oferta publicada',
+      partidaTexto,
       classes: ['Executiva', 'Primeira classe', 'Luxo'],
       status: 'PUBLICADA',
-      rotaLumicaId: 1,
-      semLumica: { duracaoBordoAnos: 3.2, tempoTerraAnos: 5.3, dividaTemporalAnos: 2.1, precoFinal: precoSemLumica, paradas: 0 },
-      comLumica: { duracaoBordoAnos: 0.12, tempoTerraAnos: 0.20, dividaTemporalAnos: 0.08, precoFinal: precoSemLumica + 1_200_000_000, paradas: 0, pedagio: 1_200_000_000 },
+      rotaLumicaId: rotaLumica ? rotaLumica.id : null,
+      propulsoesDisponiveis: propulsoesDisp,
       assentosOcupados: ['01B', '02A', '03C', '05D'],
-    });
+    };
+    novaViagem.opcoesPropulsao = construirOpcoesPropulsaoViagem(novaViagem, estado);
+    const opAtual = novaViagem.opcoesPropulsao.find((op) => op.propulsaoNome === novaViagem.propulsaoNome) || novaViagem.opcoesPropulsao[0];
+    novaViagem.semLumica = {
+      ...opAtual.semLumica,
+      precoFinal: Number(dados.precoFinal || opAtual.semLumica.precoFinal),
+    };
+    novaViagem.comLumica = opAtual.comLumica;
+    novaViagem.chegadaTexto = opAtual.semLumica.chegadaTexto;
+    estado.viagens.push(novaViagem);
   }
   salvarEstado(estado);
 }

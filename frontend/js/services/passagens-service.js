@@ -1,4 +1,4 @@
-import { lerEstado, salvarEstado } from './api-client.js';
+import { construirOpcoesPropulsaoViagem, lerEstado, salvarEstado } from './api-client.js';
 
 const PERFIS_CO_PASSAGEIROS = {
   '01B': { nome: 'Dr. Aris Thorne', ocupacao: 'Físico Teórico' },
@@ -36,15 +36,73 @@ export function obterSelecaoAtual() {
 
 export function obterRotaLumicaDaViagem(viagem) {
   const estado = lerEstado();
+  if (!viagem || !viagem.rotaLumicaId) {
+    return null;
+  }
   return estado.rotasLumicas.find((r) => r.id === viagem.rotaLumicaId) || null;
+}
+
+export function obterOpcoesPropulsao(viagem) {
+  const estado = lerEstado();
+  return construirOpcoesPropulsaoViagem(viagem, estado);
+}
+
+/**
+ * Resolve cenário ativo considerando propulsão escolhida, Rota Lúmica e desconto de 90% da criogenia na classe Luxo.
+ */
+export function obterCenarioAtivoDaViagem(viagem, sel = {}) {
+  const opcoes = obterOpcoesPropulsao(viagem);
+  const nomePropulsao = sel.propulsaoNome || viagem.propulsaoNome;
+  const opcao = opcoes.find((op) => op.propulsaoNome === nomePropulsao)
+    || opcoes.find((op) => op.propulsaoNome === viagem.propulsaoNome)
+    || opcoes[0];
+
+  const rotaLumica = obterRotaLumicaDaViagem(viagem);
+  const canalAtivo = Boolean(rotaLumica && rotaLumica.ativa && opcao?.comLumica);
+  const usaLumica = Boolean(sel.usaRotaLumica && canalAtivo);
+  const cenarioBase = usaLumica ? opcao.comLumica : opcao.semLumica;
+
+  const classes = viagem.classes || ['Executiva', 'Primeira classe', 'Luxo'];
+  const classe = sel.classe && classes.includes(sel.classe) ? sel.classe : (classes[0] || 'Executiva');
+  const emCriogenia = classe === 'Luxo';
+  const duracaoBordoAnos = emCriogenia
+    ? Number((cenarioBase.duracaoBordoAnos * 0.1).toFixed(4))
+    : cenarioBase.duracaoBordoAnos;
+
+  return {
+    opcoes,
+    opcao,
+    cenarioBase,
+    canalAtivo,
+    usaLumica,
+    classe,
+    emCriogenia,
+    duracaoBordoAnos,
+    tempoTerraAnos: cenarioBase.tempoTerraAnos,
+    dividaTemporalAnos: cenarioBase.dividaTemporalAnos,
+    precoFinal: cenarioBase.precoFinal,
+    chegadaTexto: cenarioBase.chegadaTexto || viagem.chegadaTexto,
+    paradas: cenarioBase.paradas || 0,
+    pedagio: cenarioBase.pedagio || 0,
+  };
 }
 
 export function confirmarPassagem() {
   const estado = lerEstado();
   const viagem = estado.viagens.find((v) => v.id === estado.selecaoAtual.viagemId) || estado.viagens[0];
   const poltrona = estado.selecaoAtual.poltrona || '01A';
-  const usaLumica = Boolean(estado.selecaoAtual.usaRotaLumica);
-  const cenario = usaLumica ? viagem.comLumica : viagem.semLumica;
+  const resumoAtivo = obterCenarioAtivoDaViagem(viagem, estado.selecaoAtual);
+
+  const classeAssento = poltrona.startsWith('01')
+    ? 'Luxo'
+    : poltrona.startsWith('02')
+      ? 'Primeira classe'
+      : 'Executiva';
+  const classeFinal = (viagem.classes || []).includes(classeAssento) ? classeAssento : resumoAtivo.classe;
+  const emCriogeniaFinal = classeFinal === 'Luxo';
+  const duracaoBordoFinal = emCriogeniaFinal
+    ? Number((resumoAtivo.cenarioBase.duracaoBordoAnos * 0.1).toFixed(4))
+    : resumoAtivo.cenarioBase.duracaoBordoAnos;
 
   const novaPassagem = {
     id: Date.now(),
@@ -52,12 +110,14 @@ export function confirmarPassagem() {
     destinoNome: viagem.destinoNome,
     origemNome: viagem.origemNome,
     dataPartida: viagem.partidaTexto,
-    chegadaEstimada: viagem.chegadaTexto,
-    tecnologia: `${viagem.propulsaoNome} · ${viagem.velocidadeC.toFixed(2).replace('.', ',')} c`,
+    chegadaEstimada: resumoAtivo.chegadaTexto,
+    tecnologia: `${resumoAtivo.opcao.propulsaoNome} · ${resumoAtivo.opcao.velocidadeC.toFixed(2).replace('.', ',')} c`,
     assento: poltrona,
-    classe: poltrona.startsWith('01') ? 'Luxo' : poltrona.startsWith('02') ? 'Primeira classe' : 'Executiva',
-    usaRotaLumica: usaLumica,
-    valorPago: cenario.precoFinal,
+    classe: classeFinal,
+    emCriogenia: emCriogeniaFinal,
+    duracaoBordoAnos: duracaoBordoFinal,
+    usaRotaLumica: resumoAtivo.usaLumica,
+    valorPago: resumoAtivo.precoFinal,
   };
 
   if (!viagem.assentosOcupados.includes(poltrona)) {

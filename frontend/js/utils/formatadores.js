@@ -59,7 +59,8 @@ export function formatarVelocidadeC(velocidadeC) {
   if (!Number.isFinite(valor) || valor <= 0) {
     return '0,00 c';
   }
-  return `${valor.toFixed(2).replace('.', ',')} c`;
+  const precisaTresCasas = valor < 0.1 || Math.abs(valor * 100 - Math.round(valor * 100)) > 1e-4;
+  return `${valor.toFixed(precisaTresCasas ? 3 : 2).replace('.', ',')} c`;
 }
 
 export function calcularFatorLorentz(velocidadeC) {

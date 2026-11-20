@@ -38,6 +38,9 @@ export function filtrarViagens(viagens, criterios = {}) {
 
 export function ordenarViagens(viagens, criterio = 'relevancia') {
   const copia = [...viagens];
+  if (criterio === 'menor-distancia') {
+    return copia.sort((a, b) => a.distanciaAl - b.distanciaAl);
+  }
   if (criterio === 'menor-custo') {
     return copia.sort((a, b) => a.semLumica.precoFinal - b.semLumica.precoFinal);
   }
