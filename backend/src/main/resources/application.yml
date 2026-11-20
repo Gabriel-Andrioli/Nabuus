@@ -1,0 +1,32 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: nabuus-backend
+  datasource:
+    url: ${NABUUS_DB_URL:jdbc:postgresql://localhost:5432/nabuus}
+    username: ${NABUUS_DB_USER:nabuus}
+    password: ${NABUUS_DB_PASSWORD:nabuus}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+nabuus:
+  jwt:
+    secret: ${NABUUS_JWT_SECRET:NabuusInterstellarSecretKeyForJwtSigning2026UFJF!}
+    expiration-ms: ${NABUUS_JWT_EXPIRATION_MS:86400000}
+  motor:
+    base-url: ${NABUUS_MOTOR_URL:http://localhost:8001/v1}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
