@@ -1,4 +1,4 @@
-import { lerEstado } from '../services/api-client.js';
+import { lerEstado, salvarUltimaBusca } from '../services/api-client.js';
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
 import { formatarDataCurta } from '../utils/formatadores.js';
 import { renderizarBarraNavegacao } from './navegacao-comum.js';
@@ -16,6 +16,18 @@ function inicializarHome() {
     criarElemento('option', { text: 'Todos os destinos disponíveis', attrs: { value: '' } })
   );
 
+  for (const sistema of estado.sistemas) {
+    const planetasDoSistema = estado.planetas.filter((p) => p.sistemaId === sistema.id && p.nome !== 'Terra');
+    if (planetasDoSistema.length > 1) {
+      selectDestino.appendChild(
+        criarElemento('option', {
+          text: `${sistema.nome} (Todo o sistema)`,
+          attrs: { value: sistema.nome },
+        })
+      );
+    }
+  }
+
   for (const planeta of estado.planetas) {
     if (planeta.nome === 'Terra') {
       continue;
@@ -30,15 +42,28 @@ function inicializarHome() {
 
   form.addEventListener('submit', (evento) => {
     evento.preventDefault();
+    const destino = selectDestino.value;
+    const partida = inputData.value ? formatarDataCurta(inputData.value) : '';
+
+    salvarUltimaBusca({
+      destino,
+      partida,
+      propulsoes: [],
+      custoMaximoBi: '20',
+      distanciaMaximaAl: 'Infinity',
+      tempoTerraMaximoAnos: 'Infinity',
+      ordenacao: 'relevancia',
+    });
+
     const params = new URLSearchParams();
-    if (selectDestino.value) {
-      params.set('destino', selectDestino.value);
+    params.set('novaBusca', '1');
+    if (destino) {
+      params.set('destino', destino);
     }
-    if (inputData.value) {
-      params.set('partida', formatarDataCurta(inputData.value));
+    if (partida) {
+      params.set('partida', partida);
     }
-    const query = params.toString();
-    window.location.href = `pages/resultados.html${query ? `?${query}` : ''}`;
+    window.location.href = `pages/resultados.html?${params.toString()}`;
   });
 }
 
