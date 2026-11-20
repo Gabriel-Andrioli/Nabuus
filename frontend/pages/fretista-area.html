@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Área do fretista</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-gestao lista-pilha">
+    <section aria-labelledby="titulo-fretista">
+      <p class="card__eyebrow">CONTA NABUUS · PERFIL FRETISTA</p>
+      <h1 id="titulo-fretista" class="titulo-pagina">Suas viagens começam aqui.</h1>
+      <p class="texto-secundario">Área do fretista — Organize as jornadas que você oferece pelo universo.</p>
+    </section>
+
+    <section class="grid-cards-3" aria-label="Funções do fretista">
+      <a class="card card--interativo" href="fretista-viagens.html?modo=nova">
+        <p class="card__eyebrow">01</p>
+        <h2 class="card__titulo">Criar novas viagens</h2>
+        <p class="card__subtitulo">Defina a rota, o ônibus espacial, a partida e as condições da jornada.</p>
+      </a>
+
+      <a class="card card--interativo" href="fretista-viagens.html?modo=lista">
+        <p class="card__eyebrow">02</p>
+        <h2 class="card__titulo">Editar suas viagens</h2>
+        <p class="card__subtitulo">Atualize as informações das viagens sob sua responsabilidade.</p>
+      </a>
+
+      <a class="card card--interativo" href="fretista-frota.html">
+        <p class="card__eyebrow">03</p>
+        <h2 class="card__titulo">Minha frota</h2>
+        <p class="card__subtitulo">Cadastre e edite seus ônibus espaciais.</p>
+      </a>
+    </section>
+
+    <article class="card card--painel">
+      <h2 class="card__subtitulo">Cada perfil, sua responsabilidade.</h2>
+      <p class="texto-mutado">O cadastro de planetas, sistemas e propulsões pertence ao perfil Astrônomo. O perfil Fretista gerencia ônibus espaciais e viagens.</p>
+    </article>
+
+    <div>
+      <a class="texto-acento" href="resultados.html">Explorar viagens disponíveis →</a>
+    </div>
+  </main>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-gestao">
+      <span>NABUUS · Gestão do Fretista</span>
+      <span>Crie e edite apenas as viagens da sua conta.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/fretista-area-view.js"></script>
+</body>
+</html>

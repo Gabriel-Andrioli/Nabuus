@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NABUUS • Fretista · Viagens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components/navbar.css">
+  <link rel="stylesheet" href="../css/components/buttons.css">
+  <link rel="stylesheet" href="../css/components/cards.css">
+  <link rel="stylesheet" href="../css/components/forms.css">
+  <link rel="stylesheet" href="../css/components/modals.css">
+  <link rel="stylesheet" href="../css/pages/layout.css">
+</head>
+<body>
+  <header id="navbar-principal" class="navbar"></header>
+
+  <main class="container-gestao lista-pilha">
+    <div class="barra-etapa">
+      <span>CONTA NABUUS · PERFIL FRETISTA</span>
+      <span id="etapa-fretista-texto">GESTÃO DO FRETISTA</span>
+    </div>
+
+    <section id="sec-lista-viagens" class="lista-pilha">
+      <div class="viagem-card__topo">
+        <div>
+          <h1 class="titulo-pagina">Suas viagens oferecidas.</h1>
+          <p class="texto-secundario">Apenas as viagens sob sua responsabilidade aparecem aqui.</p>
+        </div>
+        <button id="btn-nova-viagem" type="button" class="botao botao--primario">Criar nova viagem</button>
+      </div>
+      <div id="lista-viagens-fretista" class="lista-pilha"></div>
+      <div><a class="botao" href="fretista-area.html">Voltar à minha área</a></div>
+    </section>
+
+    <section id="sec-configurar-viagem" class="oculto">
+      <h1 class="titulo-pagina">Nova viagem</h1>
+      <p class="texto-secundario">Escolha os dados da jornada nos catálogos disponíveis.</p>
+
+      <div class="layout-gestao-form">
+        <form id="form-viagem-fretista" class="card lista-pilha">
+          <div class="grid-campos-2">
+            <div class="campo">
+              <label class="campo__rotulo" for="fv-origem">ORIGEM</label>
+              <input id="fv-origem" class="campo__controle" type="text" value="Terra" readonly>
+            </div>
+            <div class="campo">
+              <label class="campo__rotulo" for="fv-destino">DESTINO</label>
+              <select id="fv-destino" class="campo__select"></select>
+            </div>
+            <div class="campo">
+              <label class="campo__rotulo" for="fv-onibus">ÔNIBUS ESPACIAL DA FROTA</label>
+              <select id="fv-onibus" class="campo__select"></select>
+            </div>
+            <div class="campo">
+              <label class="campo__rotulo" for="fv-partida">PARTIDA · DATA E HORÁRIO</label>
+              <input id="fv-partida" class="campo__controle" type="text" value="Jan 2100">
+            </div>
+            <div class="campo">
+              <label class="campo__rotulo" for="fv-lugares">LUGARES OFERTADOS</label>
+              <input id="fv-lugares" class="campo__controle" type="number" value="24" min="1">
+            </div>
+            <div class="campo">
+              <label class="campo__rotulo" for="fv-preco">PREÇO POR VIAJANTE (CRÉDITOS)</label>
+              <input id="fv-preco" class="campo__controle" type="number" value="8600000000" min="0">
+            </div>
+          </div>
+          <div class="viagem-card__topo">
+            <button id="btn-cancelar-viagem" type="button" class="botao">Cancelar</button>
+            <button type="submit" class="botao botao--primario">Revisar viagem</button>
+          </div>
+        </form>
+
+        <aside class="card card--painel lista-pilha">
+          <p class="card__eyebrow">PREÇO SUGERIDO</p>
+          <h2 class="card__titulo">Pelo Motor Físico</h2>
+          <p id="sugestao-formula" class="texto-secundario">120 mi créditos (base) + 2 bi créditos/ano-luz</p>
+          <button id="btn-aplicar-sugestao" type="button" class="botao botao--primario">Consultar sugestão do Motor</button>
+          <p class="texto-mutado">O cálculo físico definitivo (tempos, dívida temporal, rota 2D e ocupação inicial) é executado uma única vez ao publicar.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="sec-revisar-viagem" class="oculto lista-pilha">
+      <h1 class="titulo-pagina">Revise antes de publicar.</h1>
+      <article id="card-revisao-viagem" class="card lista-pilha"></article>
+      <div class="viagem-card__topo">
+        <button id="btn-voltar-ajuste" type="button" class="botao">Voltar e ajustar</button>
+        <button id="btn-publicar-viagem" type="button" class="botao botao--primario">Publicar viagem</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-excluir-viagem" class="modal-backdrop oculto" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2 class="modal__titulo">Confirmar exclusão</h2>
+      <p id="texto-excluir-viagem" class="texto-secundario"></p>
+      <div class="modal__acoes">
+        <button id="btn-cancelar-excluir-viagem" type="button" class="botao">Cancelar</button>
+        <button id="btn-confirmar-excluir-viagem" type="button" class="botao botao--perigo">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <div class="rodape__inner container-gestao">
+      <span>NABUUS · Gestão do Fretista</span>
+      <span>Valores e tecnologias ilustrativos.</span>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/views/fretista-viagens-view.js"></script>
+</body>
+</html>
