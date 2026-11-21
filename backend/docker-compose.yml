@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: nabuus-postgres
     environment:
-      POSTGRES_DB: ${NABUUS_DB_NAME:nabuus}
-      POSTGRES_USER: ${NABUUS_DB_USER:nabuus}
-      POSTGRES_PASSWORD: ${NABUUS_DB_PASSWORD:nabuus}
+      POSTGRES_DB: ${NABUUS_DB_NAME:-nabuus}
+      POSTGRES_USER: ${NABUUS_DB_USER:-nabuus}
+      POSTGRES_PASSWORD: ${NABUUS_DB_PASSWORD:-nabuus}
     ports:
       - "5432:5432"
     volumes:
