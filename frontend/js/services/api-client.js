@@ -493,7 +493,8 @@ const ESTADO_INICIAL = {
       emCriogenia: true,
       duracaoBordoAnos: Number((VIAGEM_PADRAO.semLumica.duracaoBordoAnos * 0.1).toFixed(4)),
       usaRotaLumica: false,
-      valorPago: Math.round(VIAGEM_PADRAO.semLumica.precoFinal * 2),
+      alimentacao: 'Padrão',
+      valorPago: Math.round(VIAGEM_PADRAO.semLumica.precoFinal * 2 * 1.02),
     },
   ],
   selecaoAtual: {

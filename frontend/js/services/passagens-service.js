@@ -56,6 +56,39 @@ export function calcularPrecoPorClasse(precoBaseExecutiva, classe) {
   return Math.round(base * obterMultiplicadorClasse(classe));
 }
 
+export const PERCENTUAL_PRECO_ALIMENTACAO = Object.freeze({
+  Padrão: 0.02,
+  Vegetariana: 0.03,
+  Gourmet: 0.05,
+});
+
+export function obterPercentualAlimentacao(alimentacao) {
+  const chave = String(alimentacao || '').trim().toLowerCase();
+  if (chave === 'vegetariana') {
+    return 0.03;
+  }
+  if (chave === 'gourmet') {
+    return 0.05;
+  }
+  return 0.02;
+}
+
+export function calcularCustoAlimentacao(precoViagemClasse, alimentacao) {
+  const base = Number(precoViagemClasse);
+  if (!Number.isFinite(base) || base < 0) {
+    return 0;
+  }
+  return Math.round(base * obterPercentualAlimentacao(alimentacao));
+}
+
+export function calcularPrecoTotalComAlimentacao(precoViagemClasse, alimentacao) {
+  const base = Number(precoViagemClasse);
+  if (!Number.isFinite(base) || base < 0) {
+    return 0;
+  }
+  return Math.round(base + calcularCustoAlimentacao(base, alimentacao));
+}
+
 export function construirFileirasCabine(totalAssentos = 24) {
   const capacidade = Number(totalAssentos) || 24;
   const qtdFileiras = Math.max(6, Math.ceil(capacidade / 4));
@@ -159,8 +192,14 @@ export function obterCenarioAtivoDaViagem(viagem, sel = {}) {
   const duracaoBordoAnos = emCriogenia
     ? Number((cenarioBase.duracaoBordoAnos * 0.1).toFixed(4))
     : cenarioBase.duracaoBordoAnos;
+
+  const opcoesAlimentacao = ['Padrão', 'Vegetariana', 'Gourmet'];
+  const alimentacao = sel.alimentacao && opcoesAlimentacao.includes(sel.alimentacao) ? sel.alimentacao : 'Padrão';
+  const percentualAlimentacao = obterPercentualAlimentacao(alimentacao);
   const precoBaseCenario = cenarioBase.precoFinal;
-  const precoFinal = calcularPrecoPorClasse(precoBaseCenario, classe);
+  const precoComClasse = calcularPrecoPorClasse(precoBaseCenario, classe);
+  const custoAlimentacao = calcularCustoAlimentacao(precoComClasse, alimentacao);
+  const precoFinal = calcularPrecoTotalComAlimentacao(precoComClasse, alimentacao);
 
   return {
     opcoes,
@@ -170,11 +209,15 @@ export function obterCenarioAtivoDaViagem(viagem, sel = {}) {
     usaLumica,
     classe,
     multiplicadorClasse,
+    alimentacao,
+    percentualAlimentacao,
     emCriogenia,
     duracaoBordoAnos,
     tempoTerraAnos: cenarioBase.tempoTerraAnos,
     dividaTemporalAnos: cenarioBase.dividaTemporalAnos,
     precoBaseCenario,
+    precoComClasse,
+    custoAlimentacao,
     precoFinal,
     chegadaTexto: cenarioBase.chegadaTexto || viagem.chegadaTexto,
     paradas: cenarioBase.paradas || 0,
@@ -195,7 +238,10 @@ export function confirmarPassagem() {
   const duracaoBordoFinal = emCriogeniaFinal
     ? Number((resumoAtivo.cenarioBase.duracaoBordoAnos * 0.1).toFixed(4))
     : resumoAtivo.cenarioBase.duracaoBordoAnos;
-  const valorPagoFinal = calcularPrecoPorClasse(resumoAtivo.cenarioBase.precoFinal, classeFinal);
+  const alimentacaoFinal = resumoAtivo.alimentacao || 'Padrão';
+  const precoClasseFinal = calcularPrecoPorClasse(resumoAtivo.cenarioBase.precoFinal, classeFinal);
+  const custoAlimentacaoFinal = calcularCustoAlimentacao(precoClasseFinal, alimentacaoFinal);
+  const valorPagoFinal = calcularPrecoTotalComAlimentacao(precoClasseFinal, alimentacaoFinal);
 
   const novaPassagem = {
     id: Date.now(),
@@ -207,6 +253,8 @@ export function confirmarPassagem() {
     tecnologia: `${resumoAtivo.opcao.propulsaoNome} · ${resumoAtivo.opcao.velocidadeC.toFixed(2).replace('.', ',')} c`,
     assento: poltrona,
     classe: classeFinal,
+    alimentacao: alimentacaoFinal,
+    custoAlimentacao: custoAlimentacaoFinal,
     emCriogenia: emCriogeniaFinal,
     duracaoBordoAnos: duracaoBordoFinal,
     usaRotaLumica: resumoAtivo.usaLumica,
@@ -224,6 +272,7 @@ export function confirmarPassagem() {
       viagemId: viagem.id,
       assentoEscolhido: poltrona,
       usaRotaLumica: resumoAtivo.usaLumica,
+      alimentacao: alimentacaoFinal,
     }),
   });
 

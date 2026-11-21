@@ -16,6 +16,7 @@ test('deveFormatarValorMonetarioEmBilhoes_quandoValorForPositivo', () => {
   const resultado = formatarCreditos(valor);
   // Assert
   assert.equal(resultado, 'US$ 8,6 bi');
+  assert.equal(formatarCreditos(8_772_000_000), 'US$ 8,77 bi');
 });
 
 test('deveFormatarAnosEMeses_quandoDuracaoVariarDeFracaoABilhoes', () => {

@@ -1,6 +1,7 @@
 import {
   atualizarSelecaoAtual,
   calcularPrecoPorClasse,
+  calcularPrecoTotalComAlimentacao,
   obterCenarioAtivoDaViagem,
   obterSelecaoAtual,
   obterViagemSelecionada,
@@ -88,7 +89,8 @@ function inicializarMapa() {
       const duracao = cenarioItem
         ? (resumo.emCriogenia ? cenarioItem.duracaoBordoAnos * 0.1 : cenarioItem.duracaoBordoAnos)
         : 0;
-      const precoCard = cenarioItem ? calcularPrecoPorClasse(cenarioItem.precoFinal, resumo.classe) : 0;
+      const precoClasse = cenarioItem ? calcularPrecoPorClasse(cenarioItem.precoFinal, resumo.classe) : 0;
+      const precoCard = cenarioItem ? calcularPrecoTotalComAlimentacao(precoClasse, resumo.alimentacao) : 0;
       const card = criarElemento('article', {
         className: `card${ativo ? ' card--destaque' : ''}`,
       });

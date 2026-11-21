@@ -1,8 +1,10 @@
 import { lerUltimaBusca } from '../services/api-client.js';
 import {
   atualizarSelecaoAtual,
+  calcularCustoAlimentacao,
   obterCenarioAtivoDaViagem,
   obterMultiplicadorClasse,
+  obterPercentualAlimentacao,
   obterSelecaoAtual,
   obterViagemSelecionada,
 } from '../services/passagens-service.js';
@@ -56,7 +58,7 @@ function inicializarDetalhes() {
     document.getElementById('resumo-custo').textContent = formatarCreditos(resumo.precoFinal);
     document.getElementById('resumo-poltrona').textContent = sel.poltrona || 'Nenhuma poltrona selecionada';
     document.getElementById('resumo-sub').textContent =
-      `1 viajante · ${viagem.partidaTexto} · Classe ${resumo.classe} · ${resumo.usaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'}`;
+      `1 viajante · ${viagem.partidaTexto} · Classe ${resumo.classe} · Alimentação ${resumo.alimentacao} (${Math.round(resumo.percentualAlimentacao * 100)}%)`;
 
     const crioTexto = resumo.emCriogenia
       ? 'Criogenia incluída na classe Luxo: 90% descontado direto do tempo a bordo.'
@@ -106,8 +108,21 @@ function inicializarDetalhes() {
     for (const btn of document.querySelectorAll('#grupo-lazer [data-lazer]')) {
       btn.classList.toggle('botao--ativo', btn.dataset.lazer === sel.lazer);
     }
-    for (const btn of document.querySelectorAll('#grupo-alimentacao [data-alimentacao]')) {
-      btn.classList.toggle('botao--ativo', btn.dataset.alimentacao === sel.alimentacao);
+
+    const grupoAlimentacaoEl = document.getElementById('grupo-alimentacao');
+    limparElemento(grupoAlimentacaoEl);
+    for (const al of ['Padrão', 'Vegetariana', 'Gourmet']) {
+      const ativo = al === resumo.alimentacao;
+      const perc = Math.round(obterPercentualAlimentacao(al) * 100);
+      const custoAl = calcularCustoAlimentacao(resumo.precoComClasse, al);
+      const btnAl = criarElemento('button', {
+        type: 'button',
+        className: `botao botao--empilhado${ativo ? ' botao--ativo' : ''}`,
+        dataset: { alimentacao: al },
+      });
+      btnAl.appendChild(criarElemento('span', { className: 'botao__titulo', text: al }));
+      btnAl.appendChild(criarElemento('span', { className: 'botao__subtitulo', text: `${formatarCreditos(custoAl)} · ${perc}%` }));
+      grupoAlimentacaoEl.appendChild(btnAl);
     }
   }
 

@@ -62,6 +62,22 @@
   min-height: 3rem;
 }
 
+.botao--empilhado {
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-block: 0.65rem;
+}
+
+.botao__titulo {
+  font-weight: 600;
+  color: var(--cor-texto-primario);
+}
+
+.botao__subtitulo {
+  font-size: var(--texto-xs);
+  color: var(--cor-acento-lavanda);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;

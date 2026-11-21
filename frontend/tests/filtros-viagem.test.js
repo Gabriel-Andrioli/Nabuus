@@ -3,12 +3,16 @@ import test from 'node:test';
 import { lerEstado } from '../js/services/api-client.js';
 import {
   MULTIPLICADOR_PRECO_CLASSE,
+  PERCENTUAL_PRECO_ALIMENTACAO,
   atualizarSelecaoAtual,
+  calcularCustoAlimentacao,
   calcularPrecoPorClasse,
+  calcularPrecoTotalComAlimentacao,
   confirmarPassagem,
   construirFileirasCabine,
   obterCenarioAtivoDaViagem,
   obterMultiplicadorClasse,
+  obterPercentualAlimentacao,
 } from '../js/services/passagens-service.js';
 import { filtrarViagens, ordenarViagens } from '../js/utils/filtros-viagem.js';
 
@@ -128,23 +132,47 @@ test('deveAplicarMultiplicadoresDeClasseEPreservarRotaLumica_quandoCalcularValor
   assert.equal(MULTIPLICADOR_PRECO_CLASSE.Executiva, 1.0);
   assert.equal(MULTIPLICADOR_PRECO_CLASSE['Primeira classe'], 1.5);
   assert.equal(MULTIPLICADOR_PRECO_CLASSE.Luxo, 2.0);
+  assert.equal(PERCENTUAL_PRECO_ALIMENTACAO.Padrão, 0.02);
+  assert.equal(PERCENTUAL_PRECO_ALIMENTACAO.Vegetariana, 0.03);
+  assert.equal(PERCENTUAL_PRECO_ALIMENTACAO.Gourmet, 0.05);
+
   assert.equal(obterMultiplicadorClasse('Executiva'), 1.0);
   assert.equal(obterMultiplicadorClasse('Primeira classe'), 1.5);
   assert.equal(obterMultiplicadorClasse('Luxo'), 2.0);
+  assert.equal(obterPercentualAlimentacao('Padrão'), 0.02);
+  assert.equal(obterPercentualAlimentacao('Vegetariana'), 0.03);
+  assert.equal(obterPercentualAlimentacao('Gourmet'), 0.05);
+
   assert.equal(calcularPrecoPorClasse(1000, 'Primeira classe'), 1500);
   assert.equal(calcularPrecoPorClasse(1000, 'Luxo'), 2000);
+  assert.equal(calcularCustoAlimentacao(1000, 'Padrão'), 20);
+  assert.equal(calcularCustoAlimentacao(1000, 'Vegetariana'), 30);
+  assert.equal(calcularCustoAlimentacao(1000, 'Gourmet'), 50);
+  assert.equal(calcularPrecoTotalComAlimentacao(1000, 'Padrão'), 1020);
+  assert.equal(calcularPrecoTotalComAlimentacao(1000, 'Vegetariana'), 1030);
+  assert.equal(calcularPrecoTotalComAlimentacao(1000, 'Gourmet'), 1050);
 
   const estado = lerEstado();
   const viagem = estado.viagens.find((v) => v.destinoNome === 'Proxima Centauri b');
 
   for (const usaRotaLumica of [false, true]) {
-    const exec = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Executiva', usaRotaLumica });
-    const prim = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Primeira classe', usaRotaLumica });
-    const luxo = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Luxo', usaRotaLumica });
+    const exec = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Executiva', usaRotaLumica, alimentacao: 'Padrão' });
+    const prim = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Primeira classe', usaRotaLumica, alimentacao: 'Padrão' });
+    const luxo = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Luxo', usaRotaLumica, alimentacao: 'Padrão' });
 
-    assert.equal(exec.precoFinal, exec.cenarioBase.precoFinal);
-    assert.equal(prim.precoFinal, Math.round(exec.precoFinal * 1.5));
-    assert.equal(luxo.precoFinal, exec.precoFinal * 2);
+    assert.equal(exec.precoComClasse, exec.cenarioBase.precoFinal);
+    assert.equal(prim.precoComClasse, Math.round(exec.precoComClasse * 1.5));
+    assert.equal(luxo.precoComClasse, exec.precoComClasse * 2);
+
+    const execVeg = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Executiva', usaRotaLumica, alimentacao: 'Vegetariana' });
+    const execGour = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Executiva', usaRotaLumica, alimentacao: 'Gourmet' });
+
+    assert.equal(exec.custoAlimentacao, Math.round(exec.precoComClasse * 0.02));
+    assert.equal(exec.precoFinal, exec.precoComClasse + exec.custoAlimentacao);
+    assert.equal(execVeg.custoAlimentacao, Math.round(exec.precoComClasse * 0.03));
+    assert.equal(execVeg.precoFinal, exec.precoComClasse + execVeg.custoAlimentacao);
+    assert.equal(execGour.custoAlimentacao, Math.round(exec.precoComClasse * 0.05));
+    assert.equal(execGour.precoFinal, exec.precoComClasse + execGour.custoAlimentacao);
   }
 
   const storageOriginal = globalThis.localStorage;
@@ -162,6 +190,7 @@ test('deveAplicarMultiplicadoresDeClasseEPreservarRotaLumica_quandoCalcularValor
       usaRotaLumica: false,
       poltrona: '05A',
       classe: 'Executiva',
+      alimentacao: 'Padrão',
     });
     const passExec = confirmarPassagem();
 
@@ -171,8 +200,9 @@ test('deveAplicarMultiplicadoresDeClasseEPreservarRotaLumica_quandoCalcularValor
       usaRotaLumica: false,
       poltrona: '02C',
       classe: 'Primeira classe',
+      alimentacao: 'Vegetariana',
     });
-    const passPrim = confirmarPassagem();
+    const passPrimVeg = confirmarPassagem();
 
     atualizarSelecaoAtual({
       viagemId: viagem.id,
@@ -180,14 +210,22 @@ test('deveAplicarMultiplicadoresDeClasseEPreservarRotaLumica_quandoCalcularValor
       usaRotaLumica: false,
       poltrona: '01A',
       classe: 'Luxo',
+      alimentacao: 'Gourmet',
     });
-    const passLuxo = confirmarPassagem();
+    const passLuxoGour = confirmarPassagem();
 
+    const baseExec = viagem.semLumica.precoFinal;
     assert.equal(passExec.classe, 'Executiva');
-    assert.equal(passPrim.classe, 'Primeira classe');
-    assert.equal(passLuxo.classe, 'Luxo');
-    assert.equal(passPrim.valorPago, Math.round(passExec.valorPago * 1.5));
-    assert.equal(passLuxo.valorPago, passExec.valorPago * 2);
+    assert.equal(passExec.alimentacao, 'Padrão');
+    assert.equal(passExec.valorPago, calcularPrecoTotalComAlimentacao(baseExec, 'Padrão'));
+
+    assert.equal(passPrimVeg.classe, 'Primeira classe');
+    assert.equal(passPrimVeg.alimentacao, 'Vegetariana');
+    assert.equal(passPrimVeg.valorPago, calcularPrecoTotalComAlimentacao(Math.round(baseExec * 1.5), 'Vegetariana'));
+
+    assert.equal(passLuxoGour.classe, 'Luxo');
+    assert.equal(passLuxoGour.alimentacao, 'Gourmet');
+    assert.equal(passLuxoGour.valorPago, calcularPrecoTotalComAlimentacao(baseExec * 2, 'Gourmet'));
   } finally {
     if (storageOriginal === undefined) {
       delete globalThis.localStorage;

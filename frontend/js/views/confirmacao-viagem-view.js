@@ -22,7 +22,8 @@ function inicializarConfirmacao() {
 
   document.getElementById('rev-tecnologia').textContent = techTexto;
   document.getElementById('rev-destino').textContent = viagem.destinoNome;
-  document.getElementById('rev-sistema').textContent = `${viagem.sistemaDestino} · Classe ${resumo.classe}`;
+  document.getElementById('rev-sistema').textContent =
+    `${viagem.sistemaDestino} · Classe ${resumo.classe} · Alimentação ${resumo.alimentacao} (${Math.round(resumo.percentualAlimentacao * 100)}%)`;
   document.getElementById('rev-origem').textContent = `${viagem.origemNome} · ${viagem.origemSistema} (${viagem.partidaTexto})`;
   document.getElementById('rev-chegada').textContent = resumo.chegadaTexto;
   document.getElementById('rev-terra').textContent = formatarAnos(resumo.tempoTerraAnos);

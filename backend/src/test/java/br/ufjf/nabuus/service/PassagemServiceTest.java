@@ -145,6 +145,35 @@ class PassagemServiceTest {
     }
 
     @Test
+    void deveSomarPercentualDaAlimentacaoAoValorDaPassagem_quandoInformado() {
+        when(viagemRepository.findDetalhadaPorId(1L)).thenReturn(Optional.of(viagem));
+        when(passageiroRepository.findById(passageiroId)).thenReturn(Optional.of(passageiro));
+        when(passagemRepository.existsByViagemIdAndPassageiroIdAndAssentoEscolhido(any(), any(), any()))
+            .thenReturn(false);
+        when(passagemRepository.save(any(Passagem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // 03A = Executiva (1.0x -> 25600.00): +2% Padrão = 26112.00, +3% Vegetariana = 26368.00, +5% Gourmet = 26880.00
+        PassagemResponseDTO padrao = passagemService.comprar(
+            new PassagemComprarRequestDTO(1L, "03A", false, "Padrão"), passageiroId
+        );
+        PassagemResponseDTO vegetariana = passagemService.comprar(
+            new PassagemComprarRequestDTO(1L, "03B", false, "Vegetariana"), passageiroId
+        );
+        PassagemResponseDTO gourmet = passagemService.comprar(
+            new PassagemComprarRequestDTO(1L, "03C", false, "Gourmet"), passageiroId
+        );
+        // 02B = Primeira classe (1.5x -> 38400.00): +5% Gourmet = 40320.00
+        PassagemResponseDTO primeiraGourmet = passagemService.comprar(
+            new PassagemComprarRequestDTO(1L, "02B", false, "Gourmet"), passageiroId
+        );
+
+        assertThat(padrao.valorPago()).isEqualByComparingTo("26112.00");
+        assertThat(vegetariana.valorPago()).isEqualByComparingTo("26368.00");
+        assertThat(gourmet.valorPago()).isEqualByComparingTo("26880.00");
+        assertThat(primeiraGourmet.valorPago()).isEqualByComparingTo("40320.00");
+    }
+
+    @Test
     void deveLancarConflito_quandoMesmoPassageiroReservarAssentoDuplicado() {
         when(viagemRepository.findDetalhadaPorId(1L)).thenReturn(Optional.of(viagem));
         when(passageiroRepository.findById(passageiroId)).thenReturn(Optional.of(passageiro));

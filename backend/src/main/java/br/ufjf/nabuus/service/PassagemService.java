@@ -5,6 +5,7 @@ import br.ufjf.nabuus.domain.entity.Passageiro;
 import br.ufjf.nabuus.domain.entity.Viagem;
 import br.ufjf.nabuus.domain.enums.ClasseCabine;
 import br.ufjf.nabuus.domain.enums.StatusViagem;
+import br.ufjf.nabuus.domain.enums.TipoAlimentacao;
 import br.ufjf.nabuus.dto.logistica.PassagemComprarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.PassagemResponseDTO;
 import br.ufjf.nabuus.exception.ConflitoDeEstadoException;
@@ -73,9 +74,13 @@ public class PassagemService {
             dto.assentoEscolhido(),
             viagem.getOnibusEspacial().getTotalAssentos()
         );
-        BigDecimal valorPago = precoBaseCenario
-            .multiply(classeCabine.getMultiplicadorPreco())
-            .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal precoComClasse = precoBaseCenario
+            .multiply(classeCabine.getMultiplicadorPreco());
+        TipoAlimentacao tipoAlimentacao = TipoAlimentacao.porNome(dto.alimentacao());
+        BigDecimal valorComAlimentacao = tipoAlimentacao != null
+            ? precoComClasse.add(precoComClasse.multiply(tipoAlimentacao.getPercentual()))
+            : precoComClasse;
+        BigDecimal valorPago = valorComAlimentacao.setScale(2, RoundingMode.HALF_UP);
 
         String comprovante = "NB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         Passagem passagem = new Passagem(

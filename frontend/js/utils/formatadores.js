@@ -2,22 +2,28 @@
  * Funções puras de formatação de grandezas astronômicas, temporais e monetárias (RF-22 / RF-23).
  */
 
+function formatarEscala(numero, divisor, sufixo) {
+  const escalado = numero / divisor;
+  const texto = escalado.toFixed(2).replace(/0$/, '').replace('.', ',');
+  return `US$ ${texto} ${sufixo}`;
+}
+
 export function formatarCreditos(valor) {
   const numero = Number(valor);
   if (!Number.isFinite(numero) || numero < 0) {
     return 'US$ 0';
   }
   if (numero >= 1e12) {
-    return `US$ ${(numero / 1e12).toFixed(1).replace('.', ',')} tri`;
+    return formatarEscala(numero, 1e12, 'tri');
   }
   if (numero >= 1e9) {
-    return `US$ ${(numero / 1e9).toFixed(1).replace('.', ',')} bi`;
+    return formatarEscala(numero, 1e9, 'bi');
   }
   if (numero >= 1e6) {
-    return `US$ ${(numero / 1e6).toFixed(1).replace('.', ',')} mi`;
+    return formatarEscala(numero, 1e6, 'mi');
   }
   if (numero >= 1e3) {
-    return `US$ ${(numero / 1e3).toFixed(1).replace('.', ',')} mil`;
+    return formatarEscala(numero, 1e3, 'mil');
   }
   return `US$ ${numero.toFixed(0)}`;
 }
