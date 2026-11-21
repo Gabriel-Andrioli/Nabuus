@@ -82,6 +82,9 @@ public class ViagemService {
     /** Publica a viagem acionando o Motor Físico uma única vez e persistindo cenários, rota 2D e ocupação. */
     @Transactional
     public ViagemResponseDTO publicar(ViagemPublicarRequestDTO dto, UUID fretistaId) {
+        if (dto.planetaEmbarqueId().equals(dto.planetaDesembarqueId())) {
+            throw new RegraDeNegocioException("Planeta de embarque e desembarque devem ser diferentes.");
+        }
         Fretista fretista = fretistaRepository.findById(fretistaId)
             .orElseThrow(() -> new RecursoNaoEncontradoException("Fretista não encontrado."));
         OnibusEspacial onibus = onibusRepository.findById(dto.onibusEspacialId())

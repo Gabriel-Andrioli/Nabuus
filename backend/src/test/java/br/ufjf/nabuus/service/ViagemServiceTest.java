@@ -15,6 +15,8 @@ import br.ufjf.nabuus.domain.entity.TipoPropulsao;
 import br.ufjf.nabuus.domain.entity.Viagem;
 import br.ufjf.nabuus.domain.enums.CategoriaConforto;
 import br.ufjf.nabuus.domain.enums.StatusViagem;
+import br.ufjf.nabuus.dto.logistica.OnibusEspacialDTO;
+import br.ufjf.nabuus.dto.logistica.PassagemComprarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.ViagemPublicarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.ViagemResponseDTO;
 import br.ufjf.nabuus.dto.motor.CenarioSimuladoDTO;
@@ -28,6 +30,8 @@ import br.ufjf.nabuus.repository.RotaLumicaRepository;
 import br.ufjf.nabuus.repository.TipoPropulsaoRepository;
 import br.ufjf.nabuus.repository.ViagemRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -144,11 +148,48 @@ class ViagemServiceTest {
 
         assertThatThrownBy(() -> viagemService.publicar(
             new ViagemPublicarRequestDTO(
-                1L, 1L, 2L, OffsetDateTime.now(ZoneOffset.UTC),
+                1L, 1L, 2L, OffsetDateTime.now(ZoneOffset.UTC).plusDays(1),
                 new BigDecimal("15000.00"), new BigDecimal("2500.00")
             ),
             fretistaId
         )).isInstanceOf(RegraDeNegocioException.class)
           .hasMessageContaining("Autonomia insuficiente");
+    }
+
+    @Test
+    void deveRejeitarViagem_quandoPlanetaEmbarqueIgualAoDesembarque() {
+        assertThatThrownBy(() -> viagemService.publicar(
+            new ViagemPublicarRequestDTO(
+                1L, 1L, 1L, OffsetDateTime.now(ZoneOffset.UTC).plusDays(1),
+                new BigDecimal("15000.00"), new BigDecimal("2500.00")
+            ),
+            fretistaId
+        )).isInstanceOf(RegraDeNegocioException.class)
+          .hasMessageContaining("devem ser diferentes");
+    }
+
+    @Test
+    void deveValidarConstraintsDosDtosDeLogistica() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+        ViagemPublicarRequestDTO viagemPassada = new ViagemPublicarRequestDTO(
+            1L, 1L, 2L, OffsetDateTime.now(ZoneOffset.UTC).minusHours(1),
+            new BigDecimal("15000.00"), new BigDecimal("2500.00")
+        );
+        assertThat(validator.validate(viagemPassada))
+            .anyMatch(v -> v.getPropertyPath().toString().equals("dataPartida"));
+
+        OnibusEspacialDTO onibusExcessoAssentos = new OnibusEspacialDTO(
+            null, "Nave Gigante", 1L, null, 250, true
+        );
+        assertThat(validator.validate(onibusExcessoAssentos))
+            .anyMatch(v -> v.getPropertyPath().toString().equals("totalAssentos"));
+
+        PassagemComprarRequestDTO assentoInvalido = new PassagemComprarRequestDTO(1L, "ASSENTO-1", false);
+        assertThat(validator.validate(assentoInvalido))
+            .anyMatch(v -> v.getPropertyPath().toString().equals("assentoEscolhido"));
+
+        PassagemComprarRequestDTO assentoValido = new PassagemComprarRequestDTO(1L, "01A", false);
+        assertThat(validator.validate(assentoValido)).isEmpty();
     }
 }
