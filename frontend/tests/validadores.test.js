@@ -1,17 +1,23 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  MAX_ASSENTOS_VIAGEM,
+  converterPartidaTextoParaIso,
   formatarDataNascimentoDigitada,
   formatarIsoParaDataBr,
+  formatarIsoParaPartidaTexto,
   normalizarDataNascimentoParaIso,
+  validarAssentosOfertadosViagem,
   validarCnpjFretista,
   validarCoordenadasAstronomicas,
   validarCpf,
   validarCredencialAstronomo,
   validarDataNascimento,
+  validarDataPartida,
   validarEmail,
   validarFormularioLogin,
   validarFormularioRegistro,
+  validarFormularioViagemFretista,
   validarNumeroPositivo,
   validarSenha,
   validarTotalAssentos,
@@ -197,4 +203,50 @@ test('deveValidarCpfDataNascimentoESenha_noCadastroDeViajante', () => {
   assert.ok(viajanteInvalido.erros.senha);
   assert.ok(viajanteInvalido.erros.doc1);
   assert.ok(viajanteInvalido.erros.doc2);
+});
+
+test('deveValidarDataPartidaELimiteDe24Assentos_noCadastroDeViagemDoFretista', () => {
+  const hojeFixo = new Date(2026, 10, 21);
+
+  assert.equal(MAX_ASSENTOS_VIAGEM, 24);
+  assert.equal(validarAssentosOfertadosViagem(1), true);
+  assert.equal(validarAssentosOfertadosViagem(24), true);
+  assert.equal(validarAssentosOfertadosViagem(0), false);
+  assert.equal(validarAssentosOfertadosViagem(-1), false);
+  assert.equal(validarAssentosOfertadosViagem(25), false);
+  assert.equal(validarAssentosOfertadosViagem(12.5), false);
+  assert.equal(validarAssentosOfertadosViagem('abc'), false);
+  assert.equal(validarAssentosOfertadosViagem(''), false);
+
+  assert.equal(validarDataPartida('15/01/2100', hojeFixo), true);
+  assert.equal(validarDataPartida('2100-01-15', hojeFixo), true);
+  assert.equal(validarDataPartida('22/11/2026', hojeFixo), true);
+  assert.equal(validarDataPartida('21/11/2026', hojeFixo), false);
+  assert.equal(validarDataPartida('20/11/2026', hojeFixo), false);
+  assert.equal(validarDataPartida('Jan 2100', hojeFixo), false);
+  assert.equal(validarDataPartida('abc', hojeFixo), false);
+  assert.equal(validarDataPartida('15/01/21', hojeFixo), false);
+  assert.equal(validarDataPartida('30/02/2100', hojeFixo), false);
+
+  assert.equal(converterPartidaTextoParaIso('15 Jan 2100'), '2100-01-15');
+  assert.equal(converterPartidaTextoParaIso('Jan 2100'), '2100-01-01');
+  assert.equal(converterPartidaTextoParaIso('15/01/2100'), '2100-01-15');
+  assert.equal(converterPartidaTextoParaIso('texto qualquer'), null);
+  assert.equal(formatarIsoParaPartidaTexto('2100-01-15'), '15 Jan 2100');
+
+  const formValido = validarFormularioViagemFretista(
+    { partida: '15/01/2100', totalAssentos: 24, precoFinal: 8600000000 },
+    hojeFixo
+  );
+  assert.equal(formValido.valido, true);
+  assert.deepEqual(formValido.erros, {});
+
+  const formInvalido = validarFormularioViagemFretista(
+    { partida: 'qualquer texto', totalAssentos: 25, precoFinal: -10 },
+    hojeFixo
+  );
+  assert.equal(formInvalido.valido, false);
+  assert.ok(formInvalido.erros.partida);
+  assert.ok(formInvalido.erros.totalAssentos);
+  assert.ok(formInvalido.erros.precoFinal);
 });

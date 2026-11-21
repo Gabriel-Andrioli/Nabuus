@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { lerEstado } from '../js/services/api-client.js';
+import { publicarOuAtualizarViagem } from '../js/services/frota-viagens-service.js';
 import {
   MULTIPLICADOR_PRECO_CLASSE,
   PERCENTUAL_PRECO_ALIMENTACAO,
@@ -10,6 +11,7 @@ import {
   calcularPrecoTotalComAlimentacao,
   confirmarPassagem,
   construirFileirasCabine,
+  listarCodigosPoltronasCabine,
   obterCenarioAtivoDaViagem,
   obterMultiplicadorClasse,
   obterPercentualAlimentacao,
@@ -226,6 +228,64 @@ test('deveAplicarMultiplicadoresDeClasseEPreservarRotaLumica_quandoCalcularValor
     assert.equal(passLuxoGour.classe, 'Luxo');
     assert.equal(passLuxoGour.alimentacao, 'Gourmet');
     assert.equal(passLuxoGour.valorPago, calcularPrecoTotalComAlimentacao(baseExec * 2, 'Gourmet'));
+  } finally {
+    if (storageOriginal === undefined) {
+      delete globalThis.localStorage;
+    } else {
+      globalThis.localStorage = storageOriginal;
+    }
+  }
+});
+
+test('deveLimitarOfertaDeAssentosAte24EConstruirMapaDePoltronasCoerente', () => {
+  assert.equal(listarCodigosPoltronasCabine(1).length, 1);
+  assert.deepEqual(listarCodigosPoltronasCabine(1), ['01A']);
+  assert.equal(listarCodigosPoltronasCabine(4).length, 4);
+  assert.equal(listarCodigosPoltronasCabine(10).length, 10);
+  assert.equal(listarCodigosPoltronasCabine(16).length, 16);
+  assert.equal(listarCodigosPoltronasCabine(24).length, 24);
+
+  const fileiras10 = construirFileirasCabine(10);
+  assert.equal(fileiras10.length, 3);
+  assert.deepEqual(fileiras10[2].colunas, ['A', 'B']);
+
+  const storageOriginal = globalThis.localStorage;
+  const mapaMemoria = new Map();
+  globalThis.localStorage = {
+    getItem: (chave) => (mapaMemoria.has(chave) ? mapaMemoria.get(chave) : null),
+    setItem: (chave, valor) => mapaMemoria.set(chave, String(valor)),
+    removeItem: (chave) => mapaMemoria.delete(chave),
+  };
+
+  try {
+    assert.throws(
+      () => publicarOuAtualizarViagem({
+        destinoNome: 'Proxima Centauri b',
+        onibusId: 2,
+        partidaTexto: '15/01/2100',
+        totalAssentos: 25,
+        precoFinal: 8_600_000_000,
+      }),
+      /24/
+    );
+
+    publicarOuAtualizarViagem({
+      destinoNome: 'Proxima Centauri b',
+      onibusId: 2,
+      partidaTexto: '20/03/2105',
+      totalAssentos: 10,
+      precoFinal: 9_000_000_000,
+    });
+
+    const viagens = lerEstado().viagens;
+    const criada = viagens[viagens.length - 1];
+    assert.equal(criada.totalAssentos, 10);
+    assert.equal(criada.dataPartidaIso, '2105-03-20');
+    assert.equal(criada.partidaTexto, '20 Mar 2105');
+
+    const codigosValidos = listarCodigosPoltronasCabine(10);
+    assert.ok(criada.assentosOcupados.every((c) => codigosValidos.includes(c)));
+    assert.ok(criada.assentosOcupados.length < codigosValidos.length);
   } finally {
     if (storageOriginal === undefined) {
       delete globalThis.localStorage;

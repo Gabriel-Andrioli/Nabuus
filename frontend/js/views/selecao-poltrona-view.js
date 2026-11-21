@@ -54,6 +54,10 @@ function inicializarSelecaoPoltrona() {
       const linha = criarElemento('div', { className: 'cabine__fileira' });
 
       const addColuna = (letra) => {
+        if (Array.isArray(f.colunas) && !f.colunas.includes(letra)) {
+          linha.appendChild(criarElemento('span', { className: 'poltrona-vazia', attrs: { 'aria-hidden': 'true' } }));
+          return;
+        }
         const codigo = `${f.num}${letra}`;
         const ocupada = viagem.assentosOcupados.includes(codigo);
         const selecionada = sel.poltrona === codigo;

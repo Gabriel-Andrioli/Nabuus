@@ -105,8 +105,12 @@ function inicializarDetalhes() {
         btn.textContent = resumo.canalAtivo ? 'Com Rota Lúmica' : 'Sem Rota Lúmica disponível';
       }
     }
-    for (const btn of document.querySelectorAll('#grupo-lazer [data-lazer]')) {
-      btn.classList.toggle('botao--ativo', btn.dataset.lazer === sel.lazer);
+    const motivacoesValidas = ['Estudos Intergaláticos', 'Observação do Espaço', 'Trabalho'];
+    const motivacaoAtiva = motivacoesValidas.includes(sel.motivacaoViagem)
+      ? sel.motivacaoViagem
+      : 'Estudos Intergaláticos';
+    for (const btn of document.querySelectorAll('#grupo-motivacao [data-motivacao]')) {
+      btn.classList.toggle('botao--ativo', btn.dataset.motivacao === motivacaoAtiva);
     }
 
     const grupoAlimentacaoEl = document.getElementById('grupo-alimentacao');
@@ -150,10 +154,10 @@ function inicializarDetalhes() {
     }
   });
 
-  document.getElementById('grupo-lazer').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-lazer]');
+  document.getElementById('grupo-motivacao').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-motivacao]');
     if (btn) {
-      atualizarSelecaoAtual({ lazer: btn.dataset.lazer });
+      atualizarSelecaoAtual({ motivacaoViagem: btn.dataset.motivacao });
       renderizar();
     }
   });

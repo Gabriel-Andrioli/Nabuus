@@ -8,6 +8,15 @@ import {
 } from '../services/frota-viagens-service.js';
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
 import { formatarCreditos, formatarVelocidadeC } from '../utils/formatadores.js';
+import {
+  MAX_ASSENTOS_VIAGEM,
+  converterPartidaTextoParaIso,
+  formatarDataNascimentoDigitada,
+  formatarIsoParaDataBr,
+  formatarIsoParaPartidaTexto,
+  normalizarDataNascimentoParaIso,
+  validarFormularioViagemFretista,
+} from '../utils/validadores.js';
 import { renderizarBarraNavegacao, renderizarEstado } from './navegacao-comum.js';
 
 function inicializarFretistaViagens() {
@@ -19,11 +28,123 @@ function inicializarFretistaViagens() {
   const listaEl = document.getElementById('lista-viagens-fretista');
   const selDestino = document.getElementById('fv-destino');
   const selOnibus = document.getElementById('fv-onibus');
+  const inputPartida = document.getElementById('fv-partida');
+  const pickerPartida = document.getElementById('fv-partida-picker');
+  const btnCalendarioPartida = document.getElementById('btn-calendario-partida');
+  const inputLugares = document.getElementById('fv-lugares');
+  const inputPreco = document.getElementById('fv-preco');
+  const erroPartida = document.getElementById('erro-fv-partida');
+  const erroLugares = document.getElementById('erro-fv-lugares');
+  const erroPreco = document.getElementById('erro-fv-preco');
   const modal = document.getElementById('modal-excluir-viagem');
 
   let rascunho = null;
   let editandoId = null;
   let idParaExcluir = null;
+
+  function limparErrosFormulario() {
+    erroPartida.textContent = '';
+    erroLugares.textContent = '';
+    erroPreco.textContent = '';
+  }
+
+  function obterDataMinimaPartida() {
+    const amanha = new Date();
+    amanha.setDate(amanha.getDate() + 1);
+    const ano = amanha.getFullYear();
+    const mes = String(amanha.getMonth() + 1).padStart(2, '0');
+    const dia = String(amanha.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  function calcularPosicaoCursorData(digitosAntes) {
+    if (digitosAntes <= 2) {
+      return digitosAntes;
+    }
+    if (digitosAntes <= 4) {
+      return digitosAntes + 1;
+    }
+    return digitosAntes + 2;
+  }
+
+  function aplicarMascaraDataPartida() {
+    const valorAnterior = inputPartida.value;
+    const inicioSelecao = inputPartida.selectionStart ?? valorAnterior.length;
+    const digitosAntes = Math.min(
+      valorAnterior.slice(0, inicioSelecao).replace(/\D/g, '').length,
+      8
+    );
+    const formatado = formatarDataNascimentoDigitada(valorAnterior);
+    inputPartida.value = formatado;
+    const novaPosicao = Math.min(calcularPosicaoCursorData(digitosAntes), formatado.length);
+    inputPartida.setSelectionRange(novaPosicao, novaPosicao);
+    erroPartida.textContent = '';
+  }
+
+  pickerPartida.min = obterDataMinimaPartida();
+  pickerPartida.max = '9999-12-31';
+
+  inputPartida.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Backspace') {
+      const inicio = inputPartida.selectionStart ?? 0;
+      const fim = inputPartida.selectionEnd ?? 0;
+      if (inicio === fim && inicio > 1 && inputPartida.value[inicio - 1] === '/') {
+        evento.preventDefault();
+        const semDigitoAnterior = inputPartida.value.slice(0, inicio - 2) + inputPartida.value.slice(inicio);
+        const digitosAntes = semDigitoAnterior.slice(0, inicio - 2).replace(/\D/g, '').length;
+        const formatado = formatarDataNascimentoDigitada(semDigitoAnterior);
+        inputPartida.value = formatado;
+        const novaPosicao = Math.min(calcularPosicaoCursorData(digitosAntes), formatado.length);
+        inputPartida.setSelectionRange(novaPosicao, novaPosicao);
+      }
+      return;
+    }
+    if (evento.ctrlKey || evento.metaKey || evento.altKey || evento.key.length !== 1) {
+      return;
+    }
+    if (!/^\d$/.test(evento.key)) {
+      evento.preventDefault();
+      return;
+    }
+    const inicio = inputPartida.selectionStart ?? inputPartida.value.length;
+    const fim = inputPartida.selectionEnd ?? inputPartida.value.length;
+    const temSelecao = fim > inicio;
+    const totalDigitos = inputPartida.value.replace(/\D/g, '').length;
+    if (totalDigitos >= 8 && !temSelecao) {
+      evento.preventDefault();
+    }
+  });
+
+  inputPartida.addEventListener('input', aplicarMascaraDataPartida);
+
+  btnCalendarioPartida.addEventListener('click', () => {
+    const isoAtual = normalizarDataNascimentoParaIso(inputPartida.value);
+    pickerPartida.min = obterDataMinimaPartida();
+    pickerPartida.max = '9999-12-31';
+    pickerPartida.value = isoAtual || '';
+    if (typeof pickerPartida.showPicker === 'function') {
+      pickerPartida.showPicker();
+    } else {
+      pickerPartida.focus();
+      pickerPartida.click();
+    }
+  });
+
+  pickerPartida.addEventListener('change', () => {
+    if (!pickerPartida.value) {
+      return;
+    }
+    inputPartida.value = formatarIsoParaDataBr(pickerPartida.value);
+    erroPartida.textContent = '';
+  });
+
+  inputLugares.addEventListener('input', () => {
+    erroLugares.textContent = '';
+  });
+
+  inputPreco.addEventListener('input', () => {
+    erroPreco.textContent = '';
+  });
 
   for (const p of listarCatalogo('planetas')) {
     if (p.nome === 'Terra') {
@@ -73,7 +194,7 @@ function inicializarFretistaViagens() {
       info.appendChild(
         criarElemento('p', {
           className: 'card__subtitulo',
-          text: `${v.origemNome} · ${v.partidaTexto} · Nave ${v.onibusNome} (${formatarVelocidadeC(v.velocidadeC)}) · ${formatarCreditos(v.semLumica.precoFinal)}`,
+          text: `${v.origemNome} · ${v.partidaTexto} · Nave ${v.onibusNome} (${formatarVelocidadeC(v.velocidadeC)}) · ${v.totalAssentos || 24} poltronas · ${formatarCreditos(v.semLumica.precoFinal)}`,
         })
       );
 
@@ -86,12 +207,19 @@ function inicializarFretistaViagens() {
   }
 
   function abrirFormulario(viagem = null) {
+    limparErrosFormulario();
     editandoId = viagem ? viagem.id : null;
     if (viagem) {
       selDestino.value = viagem.destinoNome;
       selOnibus.value = String(viagem.onibusId || 1);
-      document.getElementById('fv-partida').value = viagem.partidaTexto;
-      document.getElementById('fv-preco').value = String(viagem.semLumica.precoFinal);
+      const isoPartida = viagem.dataPartidaIso || converterPartidaTextoParaIso(viagem.partidaTexto) || '2100-01-15';
+      inputPartida.value = formatarIsoParaDataBr(isoPartida);
+      inputLugares.value = String(Math.min(MAX_ASSENTOS_VIAGEM, Math.max(1, Number(viagem.totalAssentos || MAX_ASSENTOS_VIAGEM))));
+      inputPreco.value = String(viagem.semLumica.precoFinal);
+    } else {
+      inputPartida.value = '15/01/2100';
+      inputLugares.value = String(MAX_ASSENTOS_VIAGEM);
+      inputPreco.value = '8600000000';
     }
     alternarSecao(secConfig);
   }
@@ -104,14 +232,34 @@ function inicializarFretistaViagens() {
     const propId = onibus ? onibus.tipoPropulsaoId : 1;
     const sugestao = await sugerirPrecoPorPropulsao(propId);
     const precoSugerido = sugestao.precoBaseSugerido + sugestao.custoAnoLuzSugerido * 4.24;
-    document.getElementById('fv-preco').value = String(Math.round(precoSugerido));
+    inputPreco.value = String(Math.round(precoSugerido));
+    erroPreco.textContent = '';
     document.getElementById('sugestao-formula').textContent =
       `${formatarCreditos(sugestao.precoBaseSugerido)} (base) + ${formatarCreditos(sugestao.custoAnoLuzSugerido)}/ano-luz`;
   });
 
   document.getElementById('form-viagem-fretista').addEventListener('submit', (e) => {
     e.preventDefault();
+    limparErrosFormulario();
+
+    const { valido, erros } = validarFormularioViagemFretista({
+      partida: inputPartida.value,
+      totalAssentos: inputLugares.value,
+      precoFinal: inputPreco.value,
+    });
+
+    if (!valido) {
+      erroPartida.textContent = erros.partida || '';
+      erroLugares.textContent = erros.totalAssentos || '';
+      erroPreco.textContent = erros.precoFinal || '';
+      return;
+    }
+
     const onibus = listarFrota().find((o) => o.id === Number(selOnibus.value)) || listarFrota()[0];
+    const dataPartidaIso = normalizarDataNascimentoParaIso(inputPartida.value);
+    const partidaTexto = formatarIsoParaPartidaTexto(dataPartidaIso);
+    const totalAssentos = Number(inputLugares.value);
+
     rascunho = {
       id: editandoId,
       origemNome: document.getElementById('fv-origem').value,
@@ -120,8 +268,10 @@ function inicializarFretistaViagens() {
       onibusNome: onibus.identificacao,
       propulsaoNome: onibus.propulsaoNome,
       velocidadeC: onibus.velocidadeC,
-      partidaTexto: document.getElementById('fv-partida').value,
-      precoFinal: Number(document.getElementById('fv-preco').value),
+      dataPartidaIso,
+      partidaTexto,
+      totalAssentos,
+      precoFinal: Number(inputPreco.value),
     };
 
     const revEl = document.getElementById('card-revisao-viagem');
@@ -133,7 +283,12 @@ function inicializarFretistaViagens() {
         text: `Nave selecionada: ${rascunho.onibusNome} (${rascunho.propulsaoNome} · ${formatarVelocidadeC(rascunho.velocidadeC)})`,
       })
     );
-    revEl.appendChild(criarElemento('p', { className: 'texto-secundario', text: `Partida: ${rascunho.partidaTexto} · Preço base calculado: ${formatarCreditos(rascunho.precoFinal)}` }));
+    revEl.appendChild(
+      criarElemento('p', {
+        className: 'texto-secundario',
+        text: `Partida: ${rascunho.partidaTexto} · Lugares ofertados: ${rascunho.totalAssentos} poltronas · Preço base calculado: ${formatarCreditos(rascunho.precoFinal)}`,
+      })
+    );
     alternarSecao(secRevisar);
   });
 

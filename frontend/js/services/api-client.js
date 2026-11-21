@@ -502,7 +502,7 @@ const ESTADO_INICIAL = {
     propulsaoNome: 'Antimatéria',
     classe: 'Executiva',
     usaRotaLumica: false,
-    lazer: 'Essencial',
+    motivacaoViagem: 'Estudos Intergaláticos',
     alimentacao: 'Padrão',
     poltrona: null,
     ultimaConfirmadaId: null,

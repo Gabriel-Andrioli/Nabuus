@@ -88,3 +88,8 @@
   font-size: var(--texto-xs);
   color: var(--cor-texto-secundario);
 }
+
+.poltrona-vazia {
+  min-height: 2.5rem;
+  visibility: hidden;
+}

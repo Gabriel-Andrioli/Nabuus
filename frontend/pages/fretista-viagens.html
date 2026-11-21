@@ -42,7 +42,7 @@
       <p class="texto-secundario">Escolha os dados da jornada nos catálogos disponíveis.</p>
 
       <div class="layout-gestao-form">
-        <form id="form-viagem-fretista" class="card lista-pilha">
+        <form id="form-viagem-fretista" class="card lista-pilha" novalidate>
           <div class="grid-campos-2">
             <div class="campo">
               <label class="campo__rotulo" for="fv-origem">ORIGEM</label>
@@ -57,16 +57,44 @@
               <select id="fv-onibus" class="campo__select"></select>
             </div>
             <div class="campo">
-              <label class="campo__rotulo" for="fv-partida">PARTIDA · DATA E HORÁRIO</label>
-              <input id="fv-partida" class="campo__controle" type="text" value="Jan 2100">
+              <label class="campo__rotulo" for="fv-partida">DATA DE PARTIDA *</label>
+              <div class="campo-data">
+                <input
+                  id="fv-partida"
+                  class="campo__controle campo-data__input"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="10"
+                  placeholder="dd/mm/aaaa"
+                  value="15/01/2100"
+                  required
+                >
+                <button
+                  id="btn-calendario-partida"
+                  type="button"
+                  class="campo-data__botao"
+                  aria-label="Selecionar data de partida no calendário"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </button>
+                <input id="fv-partida-picker" class="campo-data__picker" type="date" tabindex="-1" aria-hidden="true">
+              </div>
+              <span id="erro-fv-partida" class="campo__erro"></span>
             </div>
             <div class="campo">
-              <label class="campo__rotulo" for="fv-lugares">LUGARES OFERTADOS</label>
-              <input id="fv-lugares" class="campo__controle" type="number" value="24" min="1">
+              <label class="campo__rotulo" for="fv-lugares">LUGARES OFERTADOS (MÁX. 24) *</label>
+              <input id="fv-lugares" class="campo__controle" type="number" value="24" min="1" max="24" step="1" required>
+              <span id="erro-fv-lugares" class="campo__erro"></span>
             </div>
             <div class="campo">
               <label class="campo__rotulo" for="fv-preco">PREÇO POR VIAJANTE (CRÉDITOS)</label>
               <input id="fv-preco" class="campo__controle" type="number" value="8600000000" min="0">
+              <span id="erro-fv-preco" class="campo__erro"></span>
             </div>
           </div>
           <div class="viagem-card__topo">

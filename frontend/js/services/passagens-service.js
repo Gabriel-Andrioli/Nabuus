@@ -90,41 +90,57 @@ export function calcularPrecoTotalComAlimentacao(precoViagemClasse, alimentacao)
 }
 
 export function construirFileirasCabine(totalAssentos = 24) {
-  const capacidade = Number(totalAssentos) || 24;
-  const qtdFileiras = Math.max(6, Math.ceil(capacidade / 4));
-  const fimLuxo = qtdFileiras >= 12 ? 2 : 1;
-  const fimPrimeira = qtdFileiras >= 12 ? 5 : qtdFileiras >= 8 ? 3 : 2;
-  const assentosLuxo = fimLuxo * 4;
-  const assentosPrimeira = (fimPrimeira - fimLuxo) * 4;
-  const assentosExecutiva = (qtdFileiras - fimPrimeira) * 4;
+  const capacidade = Math.max(1, Math.floor(Number(totalAssentos) || 24));
+  const qtdFileiras = Math.ceil(capacidade / 4);
+  const fimLuxo = qtdFileiras >= 12 ? 2 : qtdFileiras >= 2 ? 1 : 0;
+  const fimPrimeira = qtdFileiras >= 12 ? 5 : qtdFileiras >= 8 ? 3 : qtdFileiras >= 3 ? 2 : fimLuxo;
 
-  const fileiras = [];
+  const letras = ['A', 'B', 'C', 'D'];
+  const rascunho = [];
+  const totaisPorClasse = { Luxo: 0, 'Primeira classe': 0, Executiva: 0 };
+
   for (let i = 1; i <= qtdFileiras; i += 1) {
     const num = String(i).padStart(2, '0');
+    const assentosNaFileira = Math.min(4, capacidade - (i - 1) * 4);
+    const colunas = letras.slice(0, assentosNaFileira);
+    let classeNome = 'Executiva';
+    let classeCss = '';
     if (i <= fimLuxo) {
-      fileiras.push({
-        num,
-        classeNome: 'Luxo',
-        zona: i === 1 ? `LUXO (2x) · ${assentosLuxo} poltronas` : null,
-        classeCss: 'poltrona--luxo',
-      });
+      classeNome = 'Luxo';
+      classeCss = 'poltrona--luxo';
     } else if (i <= fimPrimeira) {
-      fileiras.push({
-        num,
-        classeNome: 'Primeira classe',
-        zona: i === fimLuxo + 1 ? `PRIMEIRA CLASSE (1,5x) · ${assentosPrimeira} poltronas` : null,
-        classeCss: 'poltrona--primeira',
-      });
-    } else {
-      fileiras.push({
-        num,
-        classeNome: 'Executiva',
-        zona: i === fimPrimeira + 1 ? `EXECUTIVA (1x) · ${assentosExecutiva} poltronas` : null,
-        classeCss: '',
-      });
+      classeNome = 'Primeira classe';
+      classeCss = 'poltrona--primeira';
+    }
+    totaisPorClasse[classeNome] += colunas.length;
+    rascunho.push({ num, classeNome, classeCss, colunas });
+  }
+
+  let ultimaClasse = null;
+  return rascunho.map((item) => {
+    let zona = null;
+    if (item.classeNome !== ultimaClasse) {
+      ultimaClasse = item.classeNome;
+      if (item.classeNome === 'Luxo') {
+        zona = `LUXO (2x) · ${totaisPorClasse.Luxo} poltronas`;
+      } else if (item.classeNome === 'Primeira classe') {
+        zona = `PRIMEIRA CLASSE (1,5x) · ${totaisPorClasse['Primeira classe']} poltronas`;
+      } else {
+        zona = `EXECUTIVA (1x) · ${totaisPorClasse.Executiva} poltronas`;
+      }
+    }
+    return { ...item, zona };
+  });
+}
+
+export function listarCodigosPoltronasCabine(totalAssentos = 24) {
+  const codigos = [];
+  for (const f of construirFileirasCabine(totalAssentos)) {
+    for (const letra of f.colunas) {
+      codigos.push(`${f.num}${letra}`);
     }
   }
-  return fileiras;
+  return codigos;
 }
 
 export function obterClassePorPoltrona(codigo, totalAssentos = 24) {
@@ -258,6 +274,7 @@ export function confirmarPassagem() {
     emCriogenia: emCriogeniaFinal,
     duracaoBordoAnos: duracaoBordoFinal,
     usaRotaLumica: resumoAtivo.usaLumica,
+    motivacaoViagem: estado.selecaoAtual.motivacaoViagem || 'Estudos Intergaláticos',
     valorPago: valorPagoFinal,
     usuarioEmail: lerSessao()?.email || null,
   };

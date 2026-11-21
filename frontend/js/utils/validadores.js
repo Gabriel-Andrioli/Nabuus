@@ -168,9 +168,89 @@ export function validarCoordenadasAstronomicas(ra, dec) {
     && numDec <= 90;
 }
 
+export const MAX_ASSENTOS_VIAGEM = 24;
+
+const MESES_PARTIDA = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
 export function validarTotalAssentos(total) {
   const num = Number(total);
   return Number.isInteger(num) && num >= 1 && num <= 200;
+}
+
+export function validarAssentosOfertadosViagem(total) {
+  if (total === null || total === undefined || String(total).trim() === '') {
+    return false;
+  }
+  const num = Number(total);
+  return Number.isInteger(num) && num >= 1 && num <= MAX_ASSENTOS_VIAGEM;
+}
+
+export function validarDataPartida(dataInformada, hoje = new Date()) {
+  const iso = normalizarDataNascimentoParaIso(dataInformada);
+  if (!iso) {
+    return false;
+  }
+  const [ano, mes, dia] = iso.split('-').map(Number);
+  const data = new Date(ano, mes - 1, dia);
+  data.setFullYear(ano);
+  const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  return data > inicioHoje;
+}
+
+export function converterPartidaTextoParaIso(partidaTexto) {
+  if (typeof partidaTexto !== 'string') {
+    return null;
+  }
+  const limpa = partidaTexto.trim();
+  const isoDireto = normalizarDataNascimentoParaIso(limpa);
+  if (isoDireto) {
+    return isoDireto;
+  }
+  const matchDiaMesAno = /^(\d{1,2})\s+([A-Za-zÀ-ÿ]{3})\s+(\d{4})$/.exec(limpa);
+  if (matchDiaMesAno) {
+    const dia = String(Number(matchDiaMesAno[1])).padStart(2, '0');
+    const mesIdx = MESES_PARTIDA.findIndex((m) => m.toLowerCase() === matchDiaMesAno[2].toLowerCase());
+    if (mesIdx < 0) {
+      return null;
+    }
+    const mes = String(mesIdx + 1).padStart(2, '0');
+    return normalizarDataNascimentoParaIso(`${matchDiaMesAno[3]}-${mes}-${dia}`);
+  }
+  const matchMesAno = /^([A-Za-zÀ-ÿ]{3})\s+(\d{4})$/.exec(limpa);
+  if (matchMesAno) {
+    const mesIdx = MESES_PARTIDA.findIndex((m) => m.toLowerCase() === matchMesAno[1].toLowerCase());
+    if (mesIdx < 0) {
+      return null;
+    }
+    const mes = String(mesIdx + 1).padStart(2, '0');
+    return normalizarDataNascimentoParaIso(`${matchMesAno[2]}-${mes}-01`);
+  }
+  return null;
+}
+
+export function formatarIsoParaPartidaTexto(dataIso) {
+  const iso = normalizarDataNascimentoParaIso(dataIso);
+  if (!iso) {
+    return '';
+  }
+  const [ano, mes, dia] = iso.split('-');
+  const nomeMes = MESES_PARTIDA[Number(mes) - 1] || 'Jan';
+  return `${dia} ${nomeMes} ${ano}`;
+}
+
+export function validarFormularioViagemFretista({ partida, totalAssentos, precoFinal }, hoje = new Date()) {
+  const erros = {};
+  if (!validarDataPartida(partida, hoje)) {
+    erros.partida = 'Informe uma data de partida válida no futuro (dd/mm/aaaa).';
+  }
+  if (!validarAssentosOfertadosViagem(totalAssentos)) {
+    erros.totalAssentos = 'Informe entre 1 e 24 assentos ofertados por viagem.';
+  }
+  const preco = Number(precoFinal);
+  if (precoFinal === null || precoFinal === undefined || String(precoFinal).trim() === '' || !Number.isFinite(preco) || preco < 0) {
+    erros.precoFinal = 'Informe um preço válido (maior ou igual a zero).';
+  }
+  return { valido: Object.keys(erros).length === 0, erros };
 }
 
 export function validarFormularioLogin({ email, senha }) {
