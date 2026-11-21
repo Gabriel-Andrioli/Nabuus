@@ -1,5 +1,10 @@
 import { registrarUsuario } from '../services/auth-service.js';
-import { validarFormularioRegistro } from '../utils/validadores.js';
+import {
+  formatarDataNascimentoDigitada,
+  formatarIsoParaDataBr,
+  normalizarDataNascimentoParaIso,
+  validarFormularioRegistro,
+} from '../utils/validadores.js';
 
 function inicializarRegistro() {
   let perfil = 'VIAJANTE';
@@ -9,6 +14,8 @@ function inicializarRegistro() {
   const grupo2 = document.getElementById('grupo-doc-2');
   const label2 = document.getElementById('label-doc-2');
   const input2 = document.getElementById('reg-doc-2');
+  const pickerNascimento = document.getElementById('reg-doc-2-picker');
+  const btnCalendario = document.getElementById('btn-calendario-nascimento');
   const erroNome = document.getElementById('erro-reg-nome');
   const erroEmail = document.getElementById('erro-reg-email');
   const erroSenha = document.getElementById('erro-reg-senha');
@@ -37,6 +44,32 @@ function inicializarRegistro() {
     return `${ano}-${mes}-${dia}`;
   }
 
+  function calcularPosicaoCursorData(digitosAntes) {
+    if (digitosAntes <= 2) {
+      return digitosAntes;
+    }
+    if (digitosAntes <= 4) {
+      return digitosAntes + 1;
+    }
+    return digitosAntes + 2;
+  }
+
+  function aplicarMascaraDataNascimento() {
+    if (perfil !== 'VIAJANTE') {
+      return;
+    }
+    const valorAnterior = input2.value;
+    const inicioSelecao = input2.selectionStart ?? valorAnterior.length;
+    const digitosAntes = Math.min(
+      valorAnterior.slice(0, inicioSelecao).replace(/\D/g, '').length,
+      8
+    );
+    const formatado = formatarDataNascimentoDigitada(valorAnterior);
+    input2.value = formatado;
+    const novaPosicao = Math.min(calcularPosicaoCursorData(digitosAntes), formatado.length);
+    input2.setSelectionRange(novaPosicao, novaPosicao);
+  }
+
   function atualizarCamposPerfil() {
     limparErros();
     if (perfil === 'VIAJANTE') {
@@ -44,10 +77,16 @@ function inicializarRegistro() {
       input1.placeholder = '000.000.000-00';
       input1.value = '';
       label2.textContent = 'Data de nascimento *';
-      input2.type = 'date';
-      input2.max = obterDataMaximaNascimento();
-      input2.placeholder = '';
+      input2.type = 'text';
+      input2.inputMode = 'numeric';
+      input2.maxLength = 10;
+      input2.placeholder = 'dd/mm/aaaa';
+      input2.autocomplete = 'bday';
       input2.value = '';
+      input2.classList.add('campo-data__input');
+      btnCalendario.classList.remove('oculto');
+      pickerNascimento.max = obterDataMaximaNascimento();
+      pickerNascimento.value = '';
       grupo2.classList.remove('oculto');
     } else if (perfil === 'FRETISTA') {
       label1.textContent = 'CNPJ Intergaláctico *';
@@ -55,21 +94,88 @@ function inicializarRegistro() {
       input1.value = '';
       label2.textContent = 'Razão Social *';
       input2.type = 'text';
-      input2.removeAttribute('max');
+      input2.inputMode = 'text';
+      input2.removeAttribute('maxlength');
       input2.placeholder = 'Ex.: Odyssey Linhas Estelares';
+      input2.autocomplete = 'organization';
       input2.value = '';
+      input2.classList.remove('campo-data__input');
+      btnCalendario.classList.add('oculto');
+      pickerNascimento.value = '';
       grupo2.classList.remove('oculto');
     } else {
       label1.textContent = 'Credencial Científica *';
       input1.placeholder = 'IAU-2100-001';
       input1.value = '';
-      input2.removeAttribute('max');
+      input2.removeAttribute('maxlength');
       input2.value = '';
+      input2.classList.remove('campo-data__input');
+      btnCalendario.classList.add('oculto');
+      pickerNascimento.value = '';
       grupo2.classList.add('oculto');
     }
   }
 
-  input2.max = obterDataMaximaNascimento();
+  pickerNascimento.max = obterDataMaximaNascimento();
+
+  input2.addEventListener('keydown', (evento) => {
+    if (perfil !== 'VIAJANTE') {
+      return;
+    }
+    if (evento.key === 'Backspace') {
+      const inicio = input2.selectionStart ?? 0;
+      const fim = input2.selectionEnd ?? 0;
+      if (inicio === fim && inicio > 1 && input2.value[inicio - 1] === '/') {
+        evento.preventDefault();
+        const semDigitoAnterior = input2.value.slice(0, inicio - 2) + input2.value.slice(inicio);
+        const digitosAntes = semDigitoAnterior.slice(0, inicio - 2).replace(/\D/g, '').length;
+        const formatado = formatarDataNascimentoDigitada(semDigitoAnterior);
+        input2.value = formatado;
+        const novaPosicao = Math.min(calcularPosicaoCursorData(digitosAntes), formatado.length);
+        input2.setSelectionRange(novaPosicao, novaPosicao);
+      }
+      return;
+    }
+    if (evento.ctrlKey || evento.metaKey || evento.altKey || evento.key.length !== 1) {
+      return;
+    }
+    if (!/^\d$/.test(evento.key)) {
+      evento.preventDefault();
+      return;
+    }
+    const inicio = input2.selectionStart ?? input2.value.length;
+    const fim = input2.selectionEnd ?? input2.value.length;
+    const temSelecao = fim > inicio;
+    const totalDigitos = input2.value.replace(/\D/g, '').length;
+    if (totalDigitos >= 8 && !temSelecao) {
+      evento.preventDefault();
+    }
+  });
+
+  input2.addEventListener('input', aplicarMascaraDataNascimento);
+
+  btnCalendario.addEventListener('click', () => {
+    if (perfil !== 'VIAJANTE') {
+      return;
+    }
+    const isoAtual = normalizarDataNascimentoParaIso(input2.value);
+    pickerNascimento.max = obterDataMaximaNascimento();
+    pickerNascimento.value = isoAtual || '';
+    if (typeof pickerNascimento.showPicker === 'function') {
+      pickerNascimento.showPicker();
+    } else {
+      pickerNascimento.focus();
+      pickerNascimento.click();
+    }
+  });
+
+  pickerNascimento.addEventListener('change', () => {
+    if (perfil !== 'VIAJANTE' || !pickerNascimento.value) {
+      return;
+    }
+    input2.value = formatarIsoParaDataBr(pickerNascimento.value);
+    erroDoc2.textContent = '';
+  });
 
   grupoPerfis.addEventListener('click', (evento) => {
     const botao = evento.target.closest('[data-perfil]');

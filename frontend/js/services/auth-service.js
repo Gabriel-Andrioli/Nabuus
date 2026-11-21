@@ -7,6 +7,7 @@ import {
   salvarSessao,
 } from './api-client.js';
 import {
+  normalizarDataNascimentoParaIso,
   validarCnpjFretista,
   validarCpf,
   validarCredencialAstronomo,
@@ -98,11 +99,16 @@ export async function registrarUsuario({ nome, email, senha, perfil, doc1, doc2 
   if (perfil === 'FRETISTA' && !validarCnpjFretista(doc1Limpo)) {
     throw new Error('CNPJ intergaláctico inválido ou não homologado.');
   }
+  let dataNascimentoIso = null;
   if (perfil === 'VIAJANTE') {
     if (!validarCpf(doc1Limpo)) {
       throw new Error('Informe um CPF válido com 11 dígitos.');
     }
-    if (!validarDataNascimento(doc2Limpo)) {
+    dataNascimentoIso = normalizarDataNascimentoParaIso(doc2Limpo);
+    if (!dataNascimentoIso) {
+      throw new Error('Informe uma data válida no formato dd/mm/aaaa.');
+    }
+    if (!validarDataNascimento(dataNascimentoIso)) {
       throw new Error('A data de nascimento deve estar no passado.');
     }
   }
@@ -131,7 +137,7 @@ export async function registrarUsuario({ nome, email, senha, perfil, doc1, doc2 
     cnpjIntergalactico: perfil === 'FRETISTA' ? doc1Limpo : null,
     razaoSocial: perfil === 'FRETISTA' ? doc2Limpo : null,
     cpf: perfil === 'VIAJANTE' ? doc1Limpo : null,
-    dataNascimento: perfil === 'VIAJANTE' ? doc2Limpo : null,
+    dataNascimento: perfil === 'VIAJANTE' ? dataNascimentoIso : null,
   };
 
   let resp = null;
@@ -152,7 +158,7 @@ export async function registrarUsuario({ nome, email, senha, perfil, doc1, doc2 
     senhaHashDemo: senha,
     perfil,
     doc1: perfil === 'ASTRONOMO' ? doc1Limpo.toUpperCase() : doc1Limpo,
-    doc2: doc2Limpo,
+    doc2: perfil === 'VIAJANTE' ? dataNascimentoIso : doc2Limpo,
   };
   estado.usuariosRegistrados = [...usuarios, novoRegistro];
   salvarEstado(estado);

@@ -29,6 +29,54 @@
   outline: none;
 }
 
+.campo__controle::selection {
+  background-color: var(--cor-acao-primaria);
+  color: var(--cor-texto-primario);
+}
+
+.campo-data {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.campo-data__input {
+  padding-right: 2.5rem;
+}
+
+.campo-data__botao {
+  position: absolute;
+  right: 0.625rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--raio-xs);
+  color: var(--cor-texto-mutado);
+  transition: color 0.15s ease;
+}
+
+.campo-data__botao:hover,
+.campo-data__botao:focus-visible {
+  color: var(--cor-acento-lavanda);
+}
+
+.campo-data__picker {
+  position: absolute;
+  right: 0.625rem;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  padding: 0;
+  color-scheme: dark;
+}
+
 .campo__erro {
   font-size: var(--texto-xs);
   color: #f4a2b8;

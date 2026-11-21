@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  formatarDataNascimentoDigitada,
+  formatarIsoParaDataBr,
+  normalizarDataNascimentoParaIso,
   validarCnpjFretista,
   validarCoordenadasAstronomicas,
   validarCpf,
@@ -118,10 +121,44 @@ test('deveValidarCpfDataNascimentoESenha_noCadastroDeViajante', () => {
   assert.equal(validarCpf('abc.def.ghi-jk'), false);
 
   const hojeFixo = new Date(2026, 10, 21);
+  assert.equal(formatarDataNascimentoDigitada('20032002'), '20/03/2002');
+  assert.equal(formatarDataNascimentoDigitada('2003123456789'), '20/03/1234');
+  assert.equal(formatarDataNascimentoDigitada('20'), '20');
+  assert.equal(formatarDataNascimentoDigitada('200'), '20/0');
+  assert.equal(normalizarDataNascimentoParaIso('20/03/2002'), '2002-03-20');
+  assert.equal(normalizarDataNascimentoParaIso('20/03/20021'), null);
+  assert.equal(normalizarDataNascimentoParaIso('20/03/20'), null);
+  assert.equal(formatarIsoParaDataBr('2002-03-20'), '20/03/2002');
+
   assert.equal(validarDataNascimento('1998-04-12', hojeFixo), true);
+  assert.equal(validarDataNascimento('12/04/1998', hojeFixo), true);
   assert.equal(validarDataNascimento('2026-11-21', hojeFixo), false);
+  assert.equal(validarDataNascimento('21/11/2026', hojeFixo), false);
   assert.equal(validarDataNascimento('2075-04-12', hojeFixo), false);
+  assert.equal(validarDataNascimento('12/04/2075', hojeFixo), false);
   assert.equal(validarDataNascimento('2026-02-30', hojeFixo), false);
+  assert.equal(validarDataNascimento('30/02/2026', hojeFixo), false);
+
+  const viajanteBrValido = validarFormularioRegistro({
+    nome: 'Aurora',
+    email: 'aurora4@nabuus.space',
+    senha: 'segredo123',
+    perfil: 'VIAJANTE',
+    doc1: '123.456.789-00',
+    doc2: '20/03/2002',
+  });
+  assert.equal(viajanteBrValido.valido, true);
+
+  const viajanteDataIncompleta = validarFormularioRegistro({
+    nome: 'Aurora',
+    email: 'aurora5@nabuus.space',
+    senha: 'segredo123',
+    perfil: 'VIAJANTE',
+    doc1: '123.456.789-00',
+    doc2: '20/03/20',
+  });
+  assert.equal(viajanteDataIncompleta.valido, false);
+  assert.equal(viajanteDataIncompleta.erros.doc2, 'Informe uma data válida no formato dd/mm/aaaa.');
 
   assert.equal(validarSenha('123456'), true);
   assert.equal(validarSenha('a'.repeat(20)), true);
