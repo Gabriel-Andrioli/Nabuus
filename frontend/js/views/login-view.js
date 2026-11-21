@@ -1,4 +1,4 @@
-import { realizarLogin } from '../services/auth-service.js';
+import { autenticarUsuario } from '../services/auth-service.js';
 import { validarFormularioLogin } from '../utils/validadores.js';
 
 function inicializarLogin() {
@@ -25,7 +25,7 @@ function inicializarLogin() {
     }
   });
 
-  form.addEventListener('submit', (evento) => {
+  form.addEventListener('submit', async (evento) => {
     evento.preventDefault();
     erroEmail.textContent = '';
     erroSenha.textContent = '';
@@ -46,8 +46,9 @@ function inicializarLogin() {
     btnSubmit.textContent = 'Autenticando...';
 
     try {
-      realizarLogin({
+      await autenticarUsuario({
         email: inputEmail.value.trim(),
+        senha: inputSenha.value,
         perfil: perfilSelecionado,
       });
 

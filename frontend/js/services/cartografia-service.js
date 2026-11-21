@@ -1,4 +1,4 @@
-import { lerEstado, salvarEstado } from './api-client.js';
+import { lerEstado, salvarEstado, sincronizarApiJava } from './api-client.js';
 
 export function listarCatalogo(aba) {
   const estado = lerEstado();
@@ -31,6 +31,19 @@ export function salvarPlaneta(planeta) {
     estado.planetas.push(registro);
   }
   salvarEstado(estado);
+  void sincronizarApiJava('/cartografia/planetas', {
+    method: 'POST',
+    body: JSON.stringify({
+      sistemaSolarId: registro.sistemaId || 1,
+      nome: registro.nome,
+      raioBase: 1.0,
+      massaBase: 1.0,
+      zonaHabitavel: true,
+      distanciaEstrelaUA: registro.distanciaEstrelaUA || 1.0,
+      possuiPostoRecarga: Boolean(registro.possuiPostoRecarga),
+      descricaoNabuus: registro.resumo || '',
+    }),
+  });
   return registro;
 }
 
@@ -40,6 +53,16 @@ export function salvarSistema(sistema) {
   const registro = { ...sistema, id: sistema.id || proximoId };
   estado.sistemas.push(registro);
   salvarEstado(estado);
+  void sincronizarApiJava('/cartografia/sistemas', {
+    method: 'POST',
+    body: JSON.stringify({
+      nome: registro.nome,
+      estrelaPrincipal: registro.estrelaPrincipal || registro.configuracao || registro.nome,
+      coordenadaRA: registro.ra || 0,
+      coordenadaDec: registro.dec || 0,
+      distanciaSolAnosLuz: registro.distanciaSolAl || 1.0,
+    }),
+  });
   return registro;
 }
 
@@ -57,6 +80,19 @@ export function salvarPropulsao(propulsao) {
   };
   estado.propulsoes.push(registro);
   salvarEstado(estado);
+  void sincronizarApiJava('/cartografia/propulsoes', {
+    method: 'POST',
+    body: JSON.stringify({
+      codigo: registro.codigo || `PROP_${registro.id}`,
+      nome: registro.nome,
+      aceleracaoG: registro.aceleracaoG,
+      velocidadeCruzeiroC: registro.velocidadeCruzeiroC,
+      autonomiaAnosLuz: registro.autonomiaAnosLuz,
+      categoriaConforto: 'EXECUTIVA',
+      precoBaseReferencia: registro.precoBaseReferencia,
+      custoAnoLuzReferencia: registro.custoAnoLuzReferencia,
+    }),
+  });
   return registro;
 }
 
@@ -66,6 +102,16 @@ export function salvarRotaLumica(rota) {
   const registro = { ...rota, id: rota.id || proximoId, origemSistema: 'Sol', fatorDilatacao: rota.fatorDilatacao || 18 };
   estado.rotasLumicas.push(registro);
   salvarEstado(estado);
+  void sincronizarApiJava('/cartografia/rotas-lumicas', {
+    method: 'POST',
+    body: JSON.stringify({
+      sistemaOrigemId: 1,
+      sistemaDestinoId: registro.destinoSistemaId || 2,
+      velocidadeC: registro.velocidadeC,
+      pedagio: registro.pedagio,
+      ativa: registro.ativa !== false,
+    }),
+  });
   return registro;
 }
 
@@ -113,6 +159,14 @@ export function salvarNave(nave) {
     estado.onibusFrota.push(registro);
   }
   salvarEstado(estado);
+  void sincronizarApiJava('/onibus', {
+    method: 'POST',
+    body: JSON.stringify({
+      identificacao: registro.identificacao,
+      tipoPropulsaoId: registro.tipoPropulsaoId,
+      totalAssentos: registro.totalAssentos,
+    }),
+  });
   return registro;
 }
 
@@ -128,6 +182,7 @@ export function alternarStatusRotaLumica(rotaId) {
     v.rotaLumicaId === rotaId ? { ...v, status: rota.ativa ? 'PUBLICADA' : 'SUSPENSA' } : v
   );
   salvarEstado(estado);
+  void sincronizarApiJava(`/cartografia/rotas-lumicas/${rotaId}/status?ativa=${rota.ativa}`, { method: 'PATCH' });
   return rota;
 }
 

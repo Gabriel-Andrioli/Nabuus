@@ -1,23 +1,17 @@
 import { exigirAutenticacao } from '../services/auth-service.js';
 import {
   atualizarSelecaoAtual,
+  construirFileirasCabine,
   obterCenarioAtivoDaViagem,
+  obterClassePorPoltrona,
   obterPerfilPoltronaOcupada,
   obterSelecaoAtual,
+  obterTotalAssentosViagem,
   obterViagemSelecionada,
 } from '../services/passagens-service.js';
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
 import { formatarCreditos } from '../utils/formatadores.js';
 import { renderizarBarraNavegacao } from './navegacao-comum.js';
-
-const FILEIRAS = [
-  { num: '01', classeNome: 'Luxo', zona: 'LUXO · 2 poltronas', classeCss: 'poltrona--luxo' },
-  { num: '02', classeNome: 'Primeira classe', zona: 'PRIMEIRA CLASSE · 4 poltronas', classeCss: 'poltrona--primeira' },
-  { num: '03', classeNome: 'Executiva', zona: 'EXECUTIVA · 16 poltronas', classeCss: '' },
-  { num: '04', classeNome: 'Executiva', zona: null, classeCss: '' },
-  { num: '05', classeNome: 'Executiva', zona: null, classeCss: '' },
-  { num: '06', classeNome: 'Executiva', zona: null, classeCss: '' },
-];
 
 function inicializarSelecaoPoltrona() {
   renderizarBarraNavegacao('navbar-principal', { prefixo: '../' });
@@ -26,7 +20,10 @@ function inicializarSelecaoPoltrona() {
   let sel = obterSelecaoAtual();
   const resumo = obterCenarioAtivoDaViagem(viagem, sel);
   const classesDisponiveis = viagem.classes || ['Executiva', 'Primeira classe', 'Luxo'];
+  const totalAssentos = obterTotalAssentosViagem(viagem);
+  const fileiras = construirFileirasCabine(totalAssentos);
 
+  document.getElementById('cabine-capacidade-texto').textContent = `${totalAssentos} poltronas · 1 viajante`;
   document.getElementById('poltrona-destino').textContent = viagem.destinoNome;
   document.getElementById('poltrona-partida').textContent =
     `${viagem.origemNome} · ${viagem.partidaTexto} · ${resumo.opcao.propulsaoNome}`;
@@ -35,16 +32,6 @@ function inicializarSelecaoPoltrona() {
   const plantaEl = document.getElementById('planta-cabine');
   const modalPerfil = document.getElementById('modal-perfil-procedural');
   const btnConfirmar = document.getElementById('btn-confirmar-poltrona');
-
-  function nomeClassePorPoltrona(codigo) {
-    if (codigo.startsWith('01')) {
-      return 'Luxo';
-    }
-    if (codigo.startsWith('02')) {
-      return 'Primeira classe';
-    }
-    return 'Executiva';
-  }
 
   function renderizarPlanta() {
     sel = obterSelecaoAtual();
@@ -57,7 +44,7 @@ function inicializarSelecaoPoltrona() {
     }
     plantaEl.appendChild(cab);
 
-    for (const f of FILEIRAS) {
+    for (const f of fileiras) {
       if (f.zona) {
         plantaEl.appendChild(criarElemento('p', { className: 'cabine__zona-titulo', text: f.zona }));
       }
@@ -104,7 +91,7 @@ function inicializarSelecaoPoltrona() {
     const atualEl = document.getElementById('poltrona-atual');
     const classeEl = document.getElementById('poltrona-classe');
     if (sel.poltrona) {
-      const classePoltrona = nomeClassePorPoltrona(sel.poltrona);
+      const classePoltrona = obterClassePorPoltrona(sel.poltrona, totalAssentos);
       atualEl.textContent = sel.poltrona;
       classeEl.textContent = `${classePoltrona}${classePoltrona === 'Luxo' ? ' (Criogenia 90%)' : ''} · Convés 01`;
       btnConfirmar.disabled = false;

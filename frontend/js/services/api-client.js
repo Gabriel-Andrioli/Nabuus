@@ -3,7 +3,11 @@
  * e catálogo inicial alinhado ao CSV real (data/nabuus_planetas.csv).
  */
 
-export const API_JAVA_BASE_URL = 'http://localhost:8080/api';
+const ehProxyFrontend = typeof globalThis !== 'undefined'
+  && globalThis.location
+  && String(globalThis.location.port) === '3000';
+
+export const API_JAVA_BASE_URL = ehProxyFrontend ? '/api' : 'http://localhost:8080/api';
 export const API_MOTOR_BASE_URL = 'http://localhost:8001/v1';
 
 const CHAVE_STORAGE = 'nabuus_estado_v3';
@@ -431,6 +435,7 @@ function construirViagensIniciais() {
         sistemaDestino: planeta.sistemaNome,
         onibusId: nave.id,
         onibusNome: nave.identificacao,
+        totalAssentos: nave.totalAssentos,
         propulsaoNome: nave.propulsaoNome,
         velocidadeC: nave.velocidadeC,
         autonomiaAl: nave.autonomiaAl,
@@ -440,7 +445,11 @@ function construirViagensIniciais() {
         status: 'PUBLICADA',
         rotaLumicaId: rota ? rota.id : null,
         propulsoesDisponiveis: nave.versoesPropulsao.map((vr) => vr.propulsaoNome),
-        assentosOcupados: ['01B', '02A', '03C', '04B'],
+        assentosOcupados: nave.totalAssentos >= 48
+          ? ['01B', '02D', '04A', '06C', '08B', '10D', '11A']
+          : nave.totalAssentos >= 32
+            ? ['01B', '02A', '03C', '05D', '07B']
+            : ['01B', '02A', '03C', '04B'],
       };
 
       const opcoesPropulsao = construirOpcoesPropulsaoViagem(viagemBase, {
@@ -506,6 +515,32 @@ const ESTADO_INICIAL = {
     tempoTerraMaximoAnos: 'Infinity',
     ordenacao: 'relevancia',
   },
+  usuariosRegistrados: [
+    {
+      nome: 'Dr. Carl Sagan',
+      email: 'astronomo@nabuus.space',
+      senhaHashDemo: '123456',
+      perfil: 'ASTRONOMO',
+      doc1: 'IAU-2100-BR',
+      doc2: '',
+    },
+    {
+      nome: 'Odyssey Linhas Estelares',
+      email: 'fretista@nabuus.space',
+      senhaHashDemo: '123456',
+      perfil: 'FRETISTA',
+      doc1: '12.345.678/0001-99',
+      doc2: 'Odyssey Linhas Estelares Ltda',
+    },
+    {
+      nome: 'Aurora Vance',
+      email: 'viajante@nabuus.space',
+      senhaHashDemo: '123456',
+      perfil: 'VIAJANTE',
+      doc1: '123.456.789-00',
+      doc2: '1998-04-12',
+    },
+  ],
 };
 
 function temStorage() {
@@ -588,6 +623,10 @@ export async function requisicaoHttp(url, opcoes = {}) {
   try {
     const resposta = await fetch(url, { ...opcoes, headers });
     if (resposta.status === 401) {
+      if (url.includes('/auth/login')) {
+        const problema = await resposta.json().catch(() => ({}));
+        throw new Error(problema.detail || 'E-mail ou senha inválidos.');
+      }
       salvarSessao(null);
       throw new Error('Sessão expirada. Faça login novamente.');
     }
@@ -603,6 +642,23 @@ export async function requisicaoHttp(url, opcoes = {}) {
     }
     return await resposta.json();
   } catch (erro) {
+    if (erro instanceof TypeError) {
+      const falhaRede = new Error('Servidor indisponível no momento.');
+      falhaRede.ehErroRede = true;
+      throw falhaRede;
+    }
     throw erro instanceof Error ? erro : new Error('Falha de comunicação com o servidor.');
+  }
+}
+
+export async function sincronizarApiJava(caminho, opcoes = {}) {
+  const sessao = lerSessao();
+  if (!sessao?.token || String(sessao.token).startsWith('demo-jwt-')) {
+    return null;
+  }
+  try {
+    return await requisicaoHttp(`${API_JAVA_BASE_URL}${caminho}`, opcoes);
+  } catch {
+    return null;
   }
 }

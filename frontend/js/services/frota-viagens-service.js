@@ -1,9 +1,12 @@
 import {
+  API_JAVA_BASE_URL,
   API_MOTOR_BASE_URL,
   construirOpcoesPropulsaoViagem,
   lerEstado,
+  lerSessao,
   requisicaoHttp,
   salvarEstado,
+  sincronizarApiJava,
 } from './api-client.js';
 
 export function listarFrota() {
@@ -14,10 +17,20 @@ export function listarViagensFretista() {
   return lerEstado().viagens;
 }
 
-/** Aciona /v1/precos/sugerir no Motor Físico quando disponível ou aplica cálculo de fallback. */
+/** Aciona o Back-End Java (ou Motor Físico) quando disponível, com fallback local. */
 export async function sugerirPrecoPorPropulsao(propulsaoId) {
   const estado = lerEstado();
   const prop = estado.propulsoes.find((p) => p.id === Number(propulsaoId)) || estado.propulsoes[0];
+  const sessao = lerSessao();
+  if (sessao?.token && !String(sessao.token).startsWith('demo-jwt-')) {
+    try {
+      return await requisicaoHttp(`${API_JAVA_BASE_URL}/viagens/sugerir-preco?tipoPropulsaoId=${prop.id}`, {
+        method: 'POST',
+      });
+    } catch {
+      // Fallback para o motor ou cálculo local
+    }
+  }
   try {
     return await requisicaoHttp(`${API_MOTOR_BASE_URL}/precos/sugerir`, {
       method: 'POST',
@@ -31,7 +44,7 @@ export async function sugerirPrecoPorPropulsao(propulsaoId) {
     return {
       precoBaseSugerido: prop.precoBaseReferencia,
       custoAnoLuzSugerido: prop.custoAnoLuzReferencia,
-      custoPorParada: 2000.0,
+      custoPorParada: 50_000_000.0,
     };
   }
 }
@@ -58,6 +71,7 @@ export function publicarOuAtualizarViagem(dados) {
         ...dados,
         onibusId: nave?.id || estado.viagens[idx].onibusId,
         onibusNome: nave?.identificacao || estado.viagens[idx].onibusNome,
+        totalAssentos: nave?.totalAssentos || estado.viagens[idx].totalAssentos || 24,
         propulsaoNome: prop.nome,
         velocidadeC: nave?.velocidadeC || prop.velocidadeCruzeiroC,
         autonomiaAl: nave?.autonomiaAl || prop.autonomiaAnosLuz,
@@ -89,6 +103,7 @@ export function publicarOuAtualizarViagem(dados) {
       sistemaDestino: planetaDestino?.sistemaNome || 'Proxima Centauri',
       onibusId: nave?.id || 1,
       onibusNome: nave?.identificacao || 'NABUUS Odyssey',
+      totalAssentos: nave?.totalAssentos || 24,
       propulsaoNome: prop.nome,
       velocidadeC: nave?.velocidadeC || prop.velocidadeCruzeiroC,
       autonomiaAl: nave?.autonomiaAl || prop.autonomiaAnosLuz,
@@ -109,6 +124,17 @@ export function publicarOuAtualizarViagem(dados) {
     novaViagem.comLumica = opAtual.comLumica;
     novaViagem.chegadaTexto = opAtual.semLumica.chegadaTexto;
     estado.viagens.push(novaViagem);
+    void sincronizarApiJava('/viagens/publicar', {
+      method: 'POST',
+      body: JSON.stringify({
+        onibusEspacialId: novaViagem.onibusId,
+        planetaEmbarqueId: 3,
+        planetaDesembarqueId: novaViagem.destinoPlanetaId,
+        dataPartida: new Date().toISOString(),
+        precoBase: prop.precoBaseReferencia,
+        custoAnoLuz: prop.custoAnoLuzReferencia,
+      }),
+    });
   }
   salvarEstado(estado);
 }

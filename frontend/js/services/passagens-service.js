@@ -1,14 +1,79 @@
-import { construirOpcoesPropulsaoViagem, lerEstado, lerSessao, salvarEstado } from './api-client.js';
+import {
+  construirOpcoesPropulsaoViagem,
+  lerEstado,
+  lerSessao,
+  salvarEstado,
+  sincronizarApiJava,
+} from './api-client.js';
 
 const PERFIS_CO_PASSAGEIROS = {
   '01B': { nome: 'Dr. Aris Thorne', ocupacao: 'Físico Teórico' },
   '02A': { nome: 'Cmdte. Elena Rostova', ocupacao: 'Piloto de Prospecção' },
   '02D': { nome: 'Kaelen Vex', ocupacao: 'Engenheiro de Fusão' },
   '03C': { nome: 'Dra. Maya Lin', ocupacao: 'Astrobióloga' },
+  '04A': { nome: 'Mateus Orlov', ocupacao: 'Navegador Orbital' },
   '04B': { nome: 'Lucas Vance', ocupacao: 'Cartógrafo Estelar' },
   '05D': { nome: 'Soraia Al-Mansoor', ocupacao: 'Técnica de Criogenia' },
   '06A': { nome: 'Breno Solis', ocupacao: 'Especialista em Suporte de Vida' },
+  '06C': { nome: 'Íris Takahashi', ocupacao: 'Oficial de Telemetria' },
+  '07B': { nome: 'Dante Korolev', ocupacao: 'Geólogo Planetário' },
+  '08B': { nome: 'Nadia Bell', ocupacao: 'Astrônoma de Rádio' },
+  '10D': { nome: 'Rafaela Mercer', ocupacao: 'Engenheira de Propulsão' },
+  '11A': { nome: 'Henrique Solari', ocupacao: 'Pesquisador Exoplanetário' },
 };
+
+export function obterTotalAssentosViagem(viagem) {
+  if (viagem?.totalAssentos) {
+    return Number(viagem.totalAssentos);
+  }
+  const estado = lerEstado();
+  const nave = (estado.onibusFrota || []).find((n) => n.id === viagem?.onibusId);
+  return Number(nave?.totalAssentos || 24);
+}
+
+export function construirFileirasCabine(totalAssentos = 24) {
+  const capacidade = Number(totalAssentos) || 24;
+  const qtdFileiras = Math.max(6, Math.ceil(capacidade / 4));
+  const fimLuxo = qtdFileiras >= 12 ? 2 : 1;
+  const fimPrimeira = qtdFileiras >= 12 ? 5 : qtdFileiras >= 8 ? 3 : 2;
+  const assentosLuxo = fimLuxo * 4;
+  const assentosPrimeira = (fimPrimeira - fimLuxo) * 4;
+  const assentosExecutiva = (qtdFileiras - fimPrimeira) * 4;
+
+  const fileiras = [];
+  for (let i = 1; i <= qtdFileiras; i += 1) {
+    const num = String(i).padStart(2, '0');
+    if (i <= fimLuxo) {
+      fileiras.push({
+        num,
+        classeNome: 'Luxo',
+        zona: i === 1 ? `LUXO · ${assentosLuxo} poltronas` : null,
+        classeCss: 'poltrona--luxo',
+      });
+    } else if (i <= fimPrimeira) {
+      fileiras.push({
+        num,
+        classeNome: 'Primeira classe',
+        zona: i === fimLuxo + 1 ? `PRIMEIRA CLASSE · ${assentosPrimeira} poltronas` : null,
+        classeCss: 'poltrona--primeira',
+      });
+    } else {
+      fileiras.push({
+        num,
+        classeNome: 'Executiva',
+        zona: i === fimPrimeira + 1 ? `EXECUTIVA · ${assentosExecutiva} poltronas` : null,
+        classeCss: '',
+      });
+    }
+  }
+  return fileiras;
+}
+
+export function obterClassePorPoltrona(codigo, totalAssentos = 24) {
+  const num = Number(String(codigo || '01').slice(0, 2));
+  const fileira = construirFileirasCabine(totalAssentos).find((f) => Number(f.num) === num);
+  return fileira ? fileira.classeNome : 'Executiva';
+}
 
 export function obterPerfilPoltronaOcupada(poltrona) {
   return PERFIS_CO_PASSAGEIROS[poltrona] || {
@@ -93,11 +158,8 @@ export function confirmarPassagem() {
   const poltrona = estado.selecaoAtual.poltrona || '01A';
   const resumoAtivo = obterCenarioAtivoDaViagem(viagem, estado.selecaoAtual);
 
-  const classeAssento = poltrona.startsWith('01')
-    ? 'Luxo'
-    : poltrona.startsWith('02')
-      ? 'Primeira classe'
-      : 'Executiva';
+  const totalAssentos = obterTotalAssentosViagem(viagem);
+  const classeAssento = obterClassePorPoltrona(poltrona, totalAssentos);
   const classeFinal = (viagem.classes || []).includes(classeAssento) ? classeAssento : resumoAtivo.classe;
   const emCriogeniaFinal = classeFinal === 'Luxo';
   const duracaoBordoFinal = emCriogeniaFinal
@@ -124,6 +186,16 @@ export function confirmarPassagem() {
   estado.minhasPassagens.unshift(novaPassagem);
   estado.selecaoAtual.ultimaConfirmadaId = novaPassagem.id;
   salvarEstado(estado);
+
+  void sincronizarApiJava('/passagens/comprar', {
+    method: 'POST',
+    body: JSON.stringify({
+      viagemId: viagem.id,
+      assentoEscolhido: poltrona,
+      usaRotaLumica: resumoAtivo.usaLumica,
+    }),
+  });
+
   return novaPassagem;
 }
 
@@ -138,4 +210,5 @@ export function excluirPassagem(id) {
   const estado = lerEstado();
   estado.minhasPassagens = estado.minhasPassagens.filter((p) => p.id !== id);
   salvarEstado(estado);
+  void sincronizarApiJava(`/passagens/${id}`, { method: 'DELETE' });
 }

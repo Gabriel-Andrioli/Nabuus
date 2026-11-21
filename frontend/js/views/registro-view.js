@@ -1,4 +1,4 @@
-import { realizarLogin } from '../services/auth-service.js';
+import { registrarUsuario } from '../services/auth-service.js';
 import { validarFormularioRegistro } from '../utils/validadores.js';
 
 function inicializarRegistro() {
@@ -15,6 +15,7 @@ function inicializarRegistro() {
   const erroDoc1 = document.getElementById('erro-reg-doc-1');
   const erroDoc2 = document.getElementById('erro-reg-doc-2');
   const alerta = document.getElementById('alerta-registro');
+  const btnSubmit = document.getElementById('btn-submit-registro');
   const form = document.getElementById('form-registro');
 
   function limparErros() {
@@ -70,7 +71,7 @@ function inicializarRegistro() {
     atualizarCamposPerfil();
   });
 
-  form.addEventListener('submit', (evento) => {
+  form.addEventListener('submit', async (evento) => {
     evento.preventDefault();
     limparErros();
 
@@ -100,13 +101,31 @@ function inicializarRegistro() {
       return;
     }
 
-    realizarLogin({ nome: nome.trim(), email: email.trim(), perfil });
-    const rotas = {
-      VIAJANTE: '../index.html',
-      FRETISTA: 'fretista-area.html',
-      ASTRONOMO: 'astronomo-area.html',
-    };
-    window.location.href = rotas[perfil] || '../index.html';
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = 'Criando conta...';
+
+    try {
+      await registrarUsuario({
+        nome: nome.trim(),
+        email: email.trim(),
+        senha,
+        perfil,
+        doc1: doc1.trim(),
+        doc2: doc2.trim(),
+      });
+      const rotas = {
+        VIAJANTE: '../index.html',
+        FRETISTA: 'fretista-area.html',
+        ASTRONOMO: 'astronomo-area.html',
+      };
+      window.location.href = rotas[perfil] || '../index.html';
+    } catch (erro) {
+      alerta.textContent = erro.message;
+      alerta.classList.remove('oculto');
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = 'Criar conta';
+    }
   });
 }
 
