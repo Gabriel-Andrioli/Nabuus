@@ -36,7 +36,35 @@ export function validarEmail(email) {
 }
 
 export function validarSenha(senha) {
-  return typeof senha === 'string' && senha.trim().length >= 6;
+  if (typeof senha !== 'string') {
+    return false;
+  }
+  const tamanho = senha.trim().length;
+  return tamanho >= 6 && tamanho <= 72;
+}
+
+export function validarCpf(cpf) {
+  if (typeof cpf !== 'string') {
+    return false;
+  }
+  const limpo = cpf.trim();
+  if (!/^(\d{11}|\d{3}\.\d{3}\.\d{3}-\d{2})$/.test(limpo)) {
+    return false;
+  }
+  return limpo.replace(/\D/g, '').length === 11;
+}
+
+export function validarDataNascimento(dataIso, hoje = new Date()) {
+  if (typeof dataIso !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dataIso.trim())) {
+    return false;
+  }
+  const [ano, mes, dia] = dataIso.trim().split('-').map(Number);
+  const data = new Date(ano, mes - 1, dia);
+  if (data.getFullYear() !== ano || data.getMonth() !== mes - 1 || data.getDate() !== dia) {
+    return false;
+  }
+  const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  return data < inicioHoje;
 }
 
 export function validarCampoObrigatorio(valor) {
@@ -87,7 +115,7 @@ export function validarFormularioRegistro({ nome, email, senha, perfil, doc1, do
     erros.email = 'Informe um e-mail válido.';
   }
   if (!validarSenha(senha)) {
-    erros.senha = 'A senha deve ter no mínimo 6 caracteres.';
+    erros.senha = 'A senha deve ter entre 6 e 72 caracteres.';
   }
 
   if (perfil === 'ASTRONOMO') {
@@ -108,9 +136,13 @@ export function validarFormularioRegistro({ nome, email, senha, perfil, doc1, do
   } else {
     if (!validarCampoObrigatorio(doc1)) {
       erros.doc1 = 'Informe o CPF.';
+    } else if (!validarCpf(doc1)) {
+      erros.doc1 = 'Informe um CPF válido com 11 dígitos.';
     }
     if (!validarCampoObrigatorio(doc2)) {
       erros.doc2 = 'Informe a data de nascimento.';
+    } else if (!validarDataNascimento(doc2)) {
+      erros.doc2 = 'A data de nascimento deve estar no passado.';
     }
   }
 

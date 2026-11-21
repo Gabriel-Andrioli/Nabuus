@@ -28,6 +28,15 @@ function inicializarRegistro() {
     alerta.classList.add('oculto');
   }
 
+  function obterDataMaximaNascimento() {
+    const ontem = new Date();
+    ontem.setDate(ontem.getDate() - 1);
+    const ano = ontem.getFullYear();
+    const mes = String(ontem.getMonth() + 1).padStart(2, '0');
+    const dia = String(ontem.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
   function atualizarCamposPerfil() {
     limparErros();
     if (perfil === 'VIAJANTE') {
@@ -36,8 +45,9 @@ function inicializarRegistro() {
       input1.value = '';
       label2.textContent = 'Data de nascimento *';
       input2.type = 'date';
+      input2.max = obterDataMaximaNascimento();
       input2.placeholder = '';
-      input2.value = '2075-04-12';
+      input2.value = '';
       grupo2.classList.remove('oculto');
     } else if (perfil === 'FRETISTA') {
       label1.textContent = 'CNPJ Intergaláctico *';
@@ -45,6 +55,7 @@ function inicializarRegistro() {
       input1.value = '';
       label2.textContent = 'Razão Social *';
       input2.type = 'text';
+      input2.removeAttribute('max');
       input2.placeholder = 'Ex.: Odyssey Linhas Estelares';
       input2.value = '';
       grupo2.classList.remove('oculto');
@@ -52,10 +63,13 @@ function inicializarRegistro() {
       label1.textContent = 'Credencial Científica *';
       input1.placeholder = 'IAU-2100-001';
       input1.value = '';
+      input2.removeAttribute('max');
       input2.value = '';
       grupo2.classList.add('oculto');
     }
   }
+
+  input2.max = obterDataMaximaNascimento();
 
   grupoPerfis.addEventListener('click', (evento) => {
     const botao = evento.target.closest('[data-perfil]');

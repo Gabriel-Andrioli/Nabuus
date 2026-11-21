@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   validarCnpjFretista,
+  validarCpf,
   validarCredencialAstronomo,
+  validarDataNascimento,
   validarEmail,
   validarFormularioLogin,
   validarFormularioRegistro,
   validarNumeroPositivo,
+  validarSenha,
   validarVelocidadeNave,
 } from '../js/utils/validadores.js';
 
@@ -94,4 +97,34 @@ test('deveAceitarApenasCredenciaisECnpjsHomologados_quandoValidarRegistro', () =
     doc2: '1998-04-12',
   });
   assert.equal(viajanteValido.valido, true);
+});
+
+test('deveValidarCpfDataNascimentoESenha_noCadastroDeViajante', () => {
+  assert.equal(validarCpf('123.456.789-00'), true);
+  assert.equal(validarCpf('12345678900'), true);
+  assert.equal(validarCpf('1234567890'), false);
+  assert.equal(validarCpf('abc.def.ghi-jk'), false);
+
+  const hojeFixo = new Date(2026, 10, 21);
+  assert.equal(validarDataNascimento('1998-04-12', hojeFixo), true);
+  assert.equal(validarDataNascimento('2026-11-21', hojeFixo), false);
+  assert.equal(validarDataNascimento('2075-04-12', hojeFixo), false);
+  assert.equal(validarDataNascimento('2026-02-30', hojeFixo), false);
+
+  assert.equal(validarSenha('123456'), true);
+  assert.equal(validarSenha('a'.repeat(72)), true);
+  assert.equal(validarSenha('a'.repeat(73)), false);
+
+  const viajanteInvalido = validarFormularioRegistro({
+    nome: 'Aurora',
+    email: 'aurora3@nabuus.space',
+    senha: 'a'.repeat(73),
+    perfil: 'VIAJANTE',
+    doc1: '12345',
+    doc2: '2099-01-01',
+  });
+  assert.equal(viajanteInvalido.valido, false);
+  assert.ok(viajanteInvalido.erros.senha);
+  assert.ok(viajanteInvalido.erros.doc1);
+  assert.ok(viajanteInvalido.erros.doc2);
 });

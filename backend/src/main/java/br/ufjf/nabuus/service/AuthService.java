@@ -15,6 +15,7 @@ import br.ufjf.nabuus.repository.FretistaRepository;
 import br.ufjf.nabuus.repository.PassageiroRepository;
 import br.ufjf.nabuus.repository.UsuarioRepository;
 import br.ufjf.nabuus.security.JwtService;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Set;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -133,14 +134,28 @@ public class AuthService {
             String razaoSocial = exigirCampo(dto.razaoSocial(), "Razão social");
             return new Fretista(dto.nome(), dto.email(), hash, cnpj, razaoSocial);
         }
-        String cpf = exigirCampo(dto.cpf(), "CPF");
-        if (passageiroRepository.existsByCpf(cpf)) {
+        String cpfNormalizado = validarENormalizarCpf(exigirCampo(dto.cpf(), "CPF"));
+        if (passageiroRepository.existsByCpf(cpfNormalizado)) {
             throw new ConflitoDeEstadoException("Este CPF já está vinculado a outra conta.");
         }
         if (dto.dataNascimento() == null) {
             throw new RegraDeNegocioException("Data de nascimento é obrigatória para passageiros.");
         }
-        return new Passageiro(dto.nome(), dto.email(), hash, cpf, dto.dataNascimento());
+        if (!dto.dataNascimento().isBefore(LocalDate.now())) {
+            throw new RegraDeNegocioException("Data de nascimento deve estar no passado.");
+        }
+        return new Passageiro(dto.nome(), dto.email(), hash, cpfNormalizado, dto.dataNascimento());
+    }
+
+    private String validarENormalizarCpf(String cpf) {
+        String digitos = cpf.replaceAll("\\D", "");
+        if (digitos.length() != 11) {
+            throw new RegraDeNegocioException("CPF inválido. Informe 11 dígitos.");
+        }
+        return digitos.substring(0, 3) + "."
+            + digitos.substring(3, 6) + "."
+            + digitos.substring(6, 9) + "-"
+            + digitos.substring(9, 11);
     }
 
     private String exigirCampo(String valor, String nomeCampo) {

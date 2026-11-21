@@ -6,7 +6,12 @@ import {
   salvarEstado,
   salvarSessao,
 } from './api-client.js';
-import { validarCnpjFretista, validarCredencialAstronomo } from '../utils/validadores.js';
+import {
+  validarCnpjFretista,
+  validarCpf,
+  validarCredencialAstronomo,
+  validarDataNascimento,
+} from '../utils/validadores.js';
 
 function paraRoleBackend(perfil) {
   if (perfil === 'ASTRONOMO' || perfil === 'FRETISTA') {
@@ -88,6 +93,14 @@ export async function registrarUsuario({ nome, email, senha, perfil, doc1, doc2 
   }
   if (perfil === 'FRETISTA' && !validarCnpjFretista(doc1Limpo)) {
     throw new Error('CNPJ intergaláctico inválido ou não homologado.');
+  }
+  if (perfil === 'VIAJANTE') {
+    if (!validarCpf(doc1Limpo)) {
+      throw new Error('Informe um CPF válido com 11 dígitos.');
+    }
+    if (!validarDataNascimento(doc2Limpo)) {
+      throw new Error('A data de nascimento deve estar no passado.');
+    }
   }
 
   const estado = lerEstado();
