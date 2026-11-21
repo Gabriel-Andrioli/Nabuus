@@ -26,7 +26,7 @@ export function obterUsuarioLogado() {
   return lerSessao();
 }
 
-export function realizarLogin({ id = null, nome, email, perfil, token = null }) {
+function realizarLogin({ id = null, nome, email, perfil, token = null }) {
   const sessao = {
     id,
     nome: nome || email.split('@')[0],
@@ -50,7 +50,7 @@ export async function autenticarUsuario({ email, senha, perfil }) {
       throw new Error(`Esta conta pertence ao perfil ${perfilConta}. Selecione o perfil correto para entrar.`);
     }
     return realizarLogin({
-      id: resp.usuarioId,
+      id: resp.id ?? resp.usuarioId ?? null,
       nome: resp.nome,
       email: resp.email,
       perfil: perfilConta,
@@ -141,7 +141,7 @@ export async function registrarUsuario({ nome, email, senha, perfil, doc1, doc2 
   salvarEstado(estado);
 
   return realizarLogin({
-    id: resp?.usuarioId || null,
+    id: resp?.id ?? resp?.usuarioId ?? null,
     nome: resp?.nome || nome.trim(),
     email: resp?.email || emailNormalizado,
     perfil,
