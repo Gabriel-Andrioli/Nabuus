@@ -174,7 +174,7 @@ CREATE TABLE passagem (
     codigo_comprovante VARCHAR(40) NOT NULL,
     CONSTRAINT pk_passagem PRIMARY KEY (id),
     CONSTRAINT uk_passagem_comprovante UNIQUE (codigo_comprovante),
-    CONSTRAINT uk_passagem_viagem_assento UNIQUE (viagem_id, assento_escolhido),
+    CONSTRAINT uk_passagem_viagem_passageiro_assento UNIQUE (viagem_id, passageiro_id, assento_escolhido),
     CONSTRAINT fk_passagem_viagem FOREIGN KEY (viagem_id) REFERENCES viagem (id) ON DELETE RESTRICT,
     CONSTRAINT fk_passagem_passageiro FOREIGN KEY (passageiro_id) REFERENCES passageiro (usuario_id) ON DELETE RESTRICT,
     CONSTRAINT ck_passagem_valor_positivo CHECK (valor_pago >= 0)

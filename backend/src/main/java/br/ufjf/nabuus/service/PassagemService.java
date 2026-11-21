@@ -60,17 +60,14 @@ public class PassagemService {
 
         List<String> ocupados = lerAssentosOcupados(viagem.getAssentosOcupadosJson());
         if (ocupados.contains(dto.assentoEscolhido())
-            || passagemRepository.existsByViagemIdAndAssentoEscolhido(viagem.getId(), dto.assentoEscolhido())) {
-            throw new ConflitoDeEstadoException("Assento " + dto.assentoEscolhido() + " já está ocupado.");
+            || passagemRepository.existsByViagemIdAndPassageiroIdAndAssentoEscolhido(
+                viagem.getId(), passageiroId, dto.assentoEscolhido())) {
+            throw new ConflitoDeEstadoException("Assento " + dto.assentoEscolhido() + " já está reservado.");
         }
 
         BigDecimal valorPago = (Boolean.TRUE.equals(dto.usaRotaLumica())
             ? viagem.getPrecoComLumica()
             : viagem.getPrecoSemLumica()).setScale(2, RoundingMode.HALF_UP);
-
-        ocupados.add(dto.assentoEscolhido());
-        viagem.setAssentosOcupadosJson(serializarAssentos(ocupados));
-        viagemRepository.save(viagem);
 
         String comprovante = "NB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         Passagem passagem = new Passagem(
@@ -100,12 +97,6 @@ public class PassagemService {
             throw new RegraDeNegocioException("Você só pode remover suas próprias passagens.");
         }
 
-        Viagem viagem = passagem.getViagem();
-        List<String> ocupados = lerAssentosOcupados(viagem.getAssentosOcupadosJson());
-        ocupados.remove(passagem.getAssentoEscolhido());
-        viagem.setAssentosOcupadosJson(serializarAssentos(ocupados));
-        viagemRepository.save(viagem);
-
         passagemRepository.delete(passagem);
     }
 
@@ -114,14 +105,6 @@ public class PassagemService {
             return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (JsonProcessingException ex) {
             throw new RegraDeNegocioException("Mapa de assentos corrompido.");
-        }
-    }
-
-    private String serializarAssentos(List<String> assentos) {
-        try {
-            return objectMapper.writeValueAsString(assentos);
-        } catch (JsonProcessingException ex) {
-            throw new RegraDeNegocioException("Falha ao atualizar mapa de assentos.");
         }
     }
 

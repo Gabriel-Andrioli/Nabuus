@@ -11,6 +11,8 @@ public interface PassagemRepository extends JpaRepository<Passagem, Long> {
 
     boolean existsByViagemIdAndAssentoEscolhido(Long viagemId, String assentoEscolhido);
 
+    boolean existsByViagemIdAndPassageiroIdAndAssentoEscolhido(Long viagemId, UUID passageiroId, String assentoEscolhido);
+
     @Query(
         "SELECT p FROM Passagem p "
             + "JOIN FETCH p.viagem v "

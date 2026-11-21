@@ -1,4 +1,4 @@
-import { construirOpcoesPropulsaoViagem, lerEstado, salvarEstado } from './api-client.js';
+import { construirOpcoesPropulsaoViagem, lerEstado, lerSessao, salvarEstado } from './api-client.js';
 
 const PERFIS_CO_PASSAGEIROS = {
   '01B': { nome: 'Dr. Aris Thorne', ocupacao: 'Físico Teórico' },
@@ -118,11 +118,9 @@ export function confirmarPassagem() {
     duracaoBordoAnos: duracaoBordoFinal,
     usaRotaLumica: resumoAtivo.usaLumica,
     valorPago: resumoAtivo.precoFinal,
+    usuarioEmail: lerSessao()?.email || null,
   };
 
-  if (!viagem.assentosOcupados.includes(poltrona)) {
-    viagem.assentosOcupados.push(poltrona);
-  }
   estado.minhasPassagens.unshift(novaPassagem);
   estado.selecaoAtual.ultimaConfirmadaId = novaPassagem.id;
   salvarEstado(estado);
@@ -130,7 +128,10 @@ export function confirmarPassagem() {
 }
 
 export function listarMinhasPassagens() {
-  return lerEstado().minhasPassagens;
+  const email = lerSessao()?.email || null;
+  return lerEstado().minhasPassagens.filter(
+    (p) => !p.usuarioEmail || (email && p.usuarioEmail === email)
+  );
 }
 
 export function excluirPassagem(id) {
