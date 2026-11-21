@@ -2,6 +2,7 @@ import { lerUltimaBusca } from '../services/api-client.js';
 import {
   atualizarSelecaoAtual,
   obterCenarioAtivoDaViagem,
+  obterMultiplicadorClasse,
   obterSelecaoAtual,
   obterViagemSelecionada,
 } from '../services/passagens-service.js';
@@ -55,7 +56,7 @@ function inicializarDetalhes() {
     document.getElementById('resumo-custo').textContent = formatarCreditos(resumo.precoFinal);
     document.getElementById('resumo-poltrona').textContent = sel.poltrona || 'Nenhuma poltrona selecionada';
     document.getElementById('resumo-sub').textContent =
-      `1 viajante · ${viagem.partidaTexto} · Classe ${resumo.classe}`;
+      `1 viajante · ${viagem.partidaTexto} · Classe ${resumo.classe} · ${resumo.usaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'}`;
 
     const crioTexto = resumo.emCriogenia
       ? 'Criogenia incluída na classe Luxo: 90% descontado direto do tempo a bordo.'
@@ -81,11 +82,13 @@ function inicializarDetalhes() {
     limparElemento(grupoClasseEl);
     for (const cl of viagem.classes || ['Executiva', 'Primeira classe', 'Luxo']) {
       const ativo = cl === resumo.classe;
+      const fator = obterMultiplicadorClasse(cl);
+      const fatorTexto = Number.isInteger(fator) ? `${fator}x` : `${String(fator).replace('.', ',')}x`;
       grupoClasseEl.appendChild(
         criarElemento('button', {
           type: 'button',
           className: `botao${ativo ? ' botao--ativo' : ''}`,
-          text: cl,
+          text: `${cl} (${fatorTexto})`,
           dataset: { classe: cl },
         })
       );

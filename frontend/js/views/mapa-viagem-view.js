@@ -1,5 +1,6 @@
 import {
   atualizarSelecaoAtual,
+  calcularPrecoPorClasse,
   obterCenarioAtivoDaViagem,
   obterSelecaoAtual,
   obterViagemSelecionada,
@@ -76,7 +77,7 @@ function inicializarMapa() {
     document.getElementById('mapa-resumo-tecnico').textContent =
       `${formatarDistanciaAnosLuz(viagem.distanciaAl)} · ${resumo.opcao.propulsaoNome} (${formatarVelocidadeC(resumo.opcao.velocidadeC)}) · ${gama} γ · Autonomia: ${resumo.opcao.autonomiaAl.toFixed(2).replace('.', ',')} al`;
     document.getElementById('status-modalidade-mapa').textContent =
-      `Modalidade selecionada: ${resumo.usaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'}`;
+      `Modalidade selecionada: ${resumo.usaLumica ? 'Com Rota Lúmica' : 'Sem Rota Lúmica'} · Classe ${resumo.classe}`;
 
     desenharMapa2D(document.getElementById('svg-mapa-2d'), viagem, resumo.usaLumica, resumo.opcao.semLumica.paradas);
 
@@ -87,6 +88,7 @@ function inicializarMapa() {
       const duracao = cenarioItem
         ? (resumo.emCriogenia ? cenarioItem.duracaoBordoAnos * 0.1 : cenarioItem.duracaoBordoAnos)
         : 0;
+      const precoCard = cenarioItem ? calcularPrecoPorClasse(cenarioItem.precoFinal, resumo.classe) : 0;
       const card = criarElemento('article', {
         className: `card${ativo ? ' card--destaque' : ''}`,
       });
@@ -95,7 +97,7 @@ function inicializarMapa() {
         criarElemento('p', {
           className: 'card__titulo',
           text: cenarioItem
-            ? `${formatarCreditos(cenarioItem.precoFinal)} · A bordo: ${formatarAnos(duracao)} · Dívida: ${formatarAnos(cenarioItem.dividaTemporalAnos)}`
+            ? `${formatarCreditos(precoCard)} · A bordo: ${formatarAnos(duracao)} · Dívida: ${formatarAnos(cenarioItem.dividaTemporalAnos)}`
             : 'Rota Lúmica indisponível para este sistema',
         })
       );

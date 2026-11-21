@@ -31,6 +31,31 @@ export function obterTotalAssentosViagem(viagem) {
   return Number(nave?.totalAssentos || 24);
 }
 
+export const MULTIPLICADOR_PRECO_CLASSE = Object.freeze({
+  Executiva: 1.0,
+  'Primeira classe': 1.5,
+  Luxo: 2.0,
+});
+
+export function obterMultiplicadorClasse(classe) {
+  const chave = String(classe || '').trim().toLowerCase();
+  if (chave === 'primeira classe' || chave === 'primeira_classe') {
+    return 1.5;
+  }
+  if (chave === 'luxo') {
+    return 2.0;
+  }
+  return 1.0;
+}
+
+export function calcularPrecoPorClasse(precoBaseExecutiva, classe) {
+  const base = Number(precoBaseExecutiva);
+  if (!Number.isFinite(base) || base < 0) {
+    return 0;
+  }
+  return Math.round(base * obterMultiplicadorClasse(classe));
+}
+
 export function construirFileirasCabine(totalAssentos = 24) {
   const capacidade = Number(totalAssentos) || 24;
   const qtdFileiras = Math.max(6, Math.ceil(capacidade / 4));
@@ -47,21 +72,21 @@ export function construirFileirasCabine(totalAssentos = 24) {
       fileiras.push({
         num,
         classeNome: 'Luxo',
-        zona: i === 1 ? `LUXO · ${assentosLuxo} poltronas` : null,
+        zona: i === 1 ? `LUXO (2x) · ${assentosLuxo} poltronas` : null,
         classeCss: 'poltrona--luxo',
       });
     } else if (i <= fimPrimeira) {
       fileiras.push({
         num,
         classeNome: 'Primeira classe',
-        zona: i === fimLuxo + 1 ? `PRIMEIRA CLASSE · ${assentosPrimeira} poltronas` : null,
+        zona: i === fimLuxo + 1 ? `PRIMEIRA CLASSE (1,5x) · ${assentosPrimeira} poltronas` : null,
         classeCss: 'poltrona--primeira',
       });
     } else {
       fileiras.push({
         num,
         classeNome: 'Executiva',
-        zona: i === fimPrimeira + 1 ? `EXECUTIVA · ${assentosExecutiva} poltronas` : null,
+        zona: i === fimPrimeira + 1 ? `EXECUTIVA (1x) · ${assentosExecutiva} poltronas` : null,
         classeCss: '',
       });
     }
@@ -129,10 +154,13 @@ export function obterCenarioAtivoDaViagem(viagem, sel = {}) {
 
   const classes = viagem.classes || ['Executiva', 'Primeira classe', 'Luxo'];
   const classe = sel.classe && classes.includes(sel.classe) ? sel.classe : (classes[0] || 'Executiva');
+  const multiplicadorClasse = obterMultiplicadorClasse(classe);
   const emCriogenia = classe === 'Luxo';
   const duracaoBordoAnos = emCriogenia
     ? Number((cenarioBase.duracaoBordoAnos * 0.1).toFixed(4))
     : cenarioBase.duracaoBordoAnos;
+  const precoBaseCenario = cenarioBase.precoFinal;
+  const precoFinal = calcularPrecoPorClasse(precoBaseCenario, classe);
 
   return {
     opcoes,
@@ -141,11 +169,13 @@ export function obterCenarioAtivoDaViagem(viagem, sel = {}) {
     canalAtivo,
     usaLumica,
     classe,
+    multiplicadorClasse,
     emCriogenia,
     duracaoBordoAnos,
     tempoTerraAnos: cenarioBase.tempoTerraAnos,
     dividaTemporalAnos: cenarioBase.dividaTemporalAnos,
-    precoFinal: cenarioBase.precoFinal,
+    precoBaseCenario,
+    precoFinal,
     chegadaTexto: cenarioBase.chegadaTexto || viagem.chegadaTexto,
     paradas: cenarioBase.paradas || 0,
     pedagio: cenarioBase.pedagio || 0,
@@ -165,6 +195,7 @@ export function confirmarPassagem() {
   const duracaoBordoFinal = emCriogeniaFinal
     ? Number((resumoAtivo.cenarioBase.duracaoBordoAnos * 0.1).toFixed(4))
     : resumoAtivo.cenarioBase.duracaoBordoAnos;
+  const valorPagoFinal = calcularPrecoPorClasse(resumoAtivo.cenarioBase.precoFinal, classeFinal);
 
   const novaPassagem = {
     id: Date.now(),
@@ -179,7 +210,7 @@ export function confirmarPassagem() {
     emCriogenia: emCriogeniaFinal,
     duracaoBordoAnos: duracaoBordoFinal,
     usaRotaLumica: resumoAtivo.usaLumica,
-    valorPago: resumoAtivo.precoFinal,
+    valorPago: valorPagoFinal,
     usuarioEmail: lerSessao()?.email || null,
   };
 

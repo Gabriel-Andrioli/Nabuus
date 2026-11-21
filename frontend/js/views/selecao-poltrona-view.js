@@ -35,6 +35,8 @@ function inicializarSelecaoPoltrona() {
 
   function renderizarPlanta() {
     sel = obterSelecaoAtual();
+    const resumoAtual = obterCenarioAtivoDaViagem(viagem, sel);
+    document.getElementById('poltrona-custo').textContent = formatarCreditos(resumoAtual.precoFinal);
     limparElemento(plantaEl);
 
     plantaEl.appendChild(criarElemento('p', { className: 'cabine__proa', text: 'FRENTE DA NAVE ↑' }));
@@ -97,7 +99,7 @@ function inicializarSelecaoPoltrona() {
       btnConfirmar.disabled = false;
     } else {
       atualEl.textContent = 'Escolha uma poltrona no mapa';
-      classeEl.textContent = `Convés 01 · Classe ${resumo.classe}`;
+      classeEl.textContent = `Convés 01 · Classe ${resumoAtual.classe}`;
       btnConfirmar.disabled = true;
     }
   }

@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { lerEstado } from '../js/services/api-client.js';
 import {
+  MULTIPLICADOR_PRECO_CLASSE,
   atualizarSelecaoAtual,
+  calcularPrecoPorClasse,
   confirmarPassagem,
   construirFileirasCabine,
   obterCenarioAtivoDaViagem,
+  obterMultiplicadorClasse,
 } from '../js/services/passagens-service.js';
 import { filtrarViagens, ordenarViagens } from '../js/utils/filtros-viagem.js';
 
@@ -112,6 +115,79 @@ test('deveGerarMapaDinamicoEConfirmarPassagemSemBloquearAssentoGlobal', () => {
     assert.equal(passagem.assento, '05A');
     assert.equal(viagemAtualizada.assentosOcupados.includes('05A'), false);
     assert.deepEqual(viagemAtualizada.assentosOcupados, ocupadosAntes);
+  } finally {
+    if (storageOriginal === undefined) {
+      delete globalThis.localStorage;
+    } else {
+      globalThis.localStorage = storageOriginal;
+    }
+  }
+});
+
+test('deveAplicarMultiplicadoresDeClasseEPreservarRotaLumica_quandoCalcularValorDaViagem', () => {
+  assert.equal(MULTIPLICADOR_PRECO_CLASSE.Executiva, 1.0);
+  assert.equal(MULTIPLICADOR_PRECO_CLASSE['Primeira classe'], 1.5);
+  assert.equal(MULTIPLICADOR_PRECO_CLASSE.Luxo, 2.0);
+  assert.equal(obterMultiplicadorClasse('Executiva'), 1.0);
+  assert.equal(obterMultiplicadorClasse('Primeira classe'), 1.5);
+  assert.equal(obterMultiplicadorClasse('Luxo'), 2.0);
+  assert.equal(calcularPrecoPorClasse(1000, 'Primeira classe'), 1500);
+  assert.equal(calcularPrecoPorClasse(1000, 'Luxo'), 2000);
+
+  const estado = lerEstado();
+  const viagem = estado.viagens.find((v) => v.destinoNome === 'Proxima Centauri b');
+
+  for (const usaRotaLumica of [false, true]) {
+    const exec = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Executiva', usaRotaLumica });
+    const prim = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Primeira classe', usaRotaLumica });
+    const luxo = obterCenarioAtivoDaViagem(viagem, { propulsaoNome: 'Antimatéria', classe: 'Luxo', usaRotaLumica });
+
+    assert.equal(exec.precoFinal, exec.cenarioBase.precoFinal);
+    assert.equal(prim.precoFinal, Math.round(exec.precoFinal * 1.5));
+    assert.equal(luxo.precoFinal, exec.precoFinal * 2);
+  }
+
+  const storageOriginal = globalThis.localStorage;
+  const mapaMemoria = new Map();
+  globalThis.localStorage = {
+    getItem: (chave) => (mapaMemoria.has(chave) ? mapaMemoria.get(chave) : null),
+    setItem: (chave, valor) => mapaMemoria.set(chave, String(valor)),
+    removeItem: (chave) => mapaMemoria.delete(chave),
+  };
+
+  try {
+    atualizarSelecaoAtual({
+      viagemId: viagem.id,
+      propulsaoNome: 'Antimatéria',
+      usaRotaLumica: false,
+      poltrona: '05A',
+      classe: 'Executiva',
+    });
+    const passExec = confirmarPassagem();
+
+    atualizarSelecaoAtual({
+      viagemId: viagem.id,
+      propulsaoNome: 'Antimatéria',
+      usaRotaLumica: false,
+      poltrona: '02C',
+      classe: 'Primeira classe',
+    });
+    const passPrim = confirmarPassagem();
+
+    atualizarSelecaoAtual({
+      viagemId: viagem.id,
+      propulsaoNome: 'Antimatéria',
+      usaRotaLumica: false,
+      poltrona: '01A',
+      classe: 'Luxo',
+    });
+    const passLuxo = confirmarPassagem();
+
+    assert.equal(passExec.classe, 'Executiva');
+    assert.equal(passPrim.classe, 'Primeira classe');
+    assert.equal(passLuxo.classe, 'Luxo');
+    assert.equal(passPrim.valorPago, Math.round(passExec.valorPago * 1.5));
+    assert.equal(passLuxo.valorPago, passExec.valorPago * 2);
   } finally {
     if (storageOriginal === undefined) {
       delete globalThis.localStorage;

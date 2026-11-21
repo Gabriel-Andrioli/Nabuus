@@ -3,6 +3,7 @@ package br.ufjf.nabuus.service;
 import br.ufjf.nabuus.domain.entity.Passagem;
 import br.ufjf.nabuus.domain.entity.Passageiro;
 import br.ufjf.nabuus.domain.entity.Viagem;
+import br.ufjf.nabuus.domain.enums.ClasseCabine;
 import br.ufjf.nabuus.domain.enums.StatusViagem;
 import br.ufjf.nabuus.dto.logistica.PassagemComprarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.PassagemResponseDTO;
@@ -65,9 +66,16 @@ public class PassagemService {
             throw new ConflitoDeEstadoException("Assento " + dto.assentoEscolhido() + " já está reservado.");
         }
 
-        BigDecimal valorPago = (Boolean.TRUE.equals(dto.usaRotaLumica())
+        BigDecimal precoBaseCenario = Boolean.TRUE.equals(dto.usaRotaLumica())
             ? viagem.getPrecoComLumica()
-            : viagem.getPrecoSemLumica()).setScale(2, RoundingMode.HALF_UP);
+            : viagem.getPrecoSemLumica();
+        ClasseCabine classeCabine = ClasseCabine.porAssento(
+            dto.assentoEscolhido(),
+            viagem.getOnibusEspacial().getTotalAssentos()
+        );
+        BigDecimal valorPago = precoBaseCenario
+            .multiply(classeCabine.getMultiplicadorPreco())
+            .setScale(2, RoundingMode.HALF_UP);
 
         String comprovante = "NB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         Passagem passagem = new Passagem(

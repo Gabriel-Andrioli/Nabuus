@@ -15,6 +15,7 @@ import br.ufjf.nabuus.domain.entity.SistemaSolar;
 import br.ufjf.nabuus.domain.entity.TipoPropulsao;
 import br.ufjf.nabuus.domain.entity.Viagem;
 import br.ufjf.nabuus.domain.enums.CategoriaConforto;
+import br.ufjf.nabuus.domain.enums.ClasseCabine;
 import br.ufjf.nabuus.domain.enums.StatusViagem;
 import br.ufjf.nabuus.dto.logistica.PassagemComprarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.PassagemResponseDTO;
@@ -88,18 +89,59 @@ class PassagemServiceTest {
     void deveEmitirPassagem_quandoAssentoEstiverLivre() {
         when(viagemRepository.findDetalhadaPorId(1L)).thenReturn(Optional.of(viagem));
         when(passageiroRepository.findById(passageiroId)).thenReturn(Optional.of(passageiro));
-        when(passagemRepository.existsByViagemIdAndPassageiroIdAndAssentoEscolhido(1L, passageiroId, "01A"))
+        when(passagemRepository.existsByViagemIdAndPassageiroIdAndAssentoEscolhido(1L, passageiroId, "03A"))
             .thenReturn(false);
         when(passagemRepository.save(any(Passagem.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PassagemResponseDTO resp = passagemService.comprar(
-            new PassagemComprarRequestDTO(1L, "01A", false),
+            new PassagemComprarRequestDTO(1L, "03A", false),
             passageiroId
         );
 
-        assertThat(resp.assentoEscolhido()).isEqualTo("01A");
+        assertThat(resp.assentoEscolhido()).isEqualTo("03A");
         assertThat(resp.valorPago()).isEqualByComparingTo("25600.00");
-        assertThat(viagem.getAssentosOcupadosJson()).doesNotContain("01A");
+        assertThat(viagem.getAssentosOcupadosJson()).doesNotContain("03A");
+    }
+
+    @Test
+    void deveAplicarMultiplicadoresDeClasseSemESemComLumica_quandoComprarPassagem() {
+        when(viagemRepository.findDetalhadaPorId(1L)).thenReturn(Optional.of(viagem));
+        when(passageiroRepository.findById(passageiroId)).thenReturn(Optional.of(passageiro));
+        when(passagemRepository.existsByViagemIdAndPassageiroIdAndAssentoEscolhido(any(), any(), any()))
+            .thenReturn(false);
+        when(passagemRepository.save(any(Passagem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // 24 assentos -> fileira 01 = Luxo (2.0x), fileira 02 = Primeira classe (1.5x), fileira 03+ = Executiva (1.0x)
+        PassagemResponseDTO execSem = passagemService.comprar(new PassagemComprarRequestDTO(1L, "03A", false), passageiroId);
+        PassagemResponseDTO primSem = passagemService.comprar(new PassagemComprarRequestDTO(1L, "02B", false), passageiroId);
+        PassagemResponseDTO luxoSem = passagemService.comprar(new PassagemComprarRequestDTO(1L, "01A", false), passageiroId);
+
+        assertThat(execSem.valorPago()).isEqualByComparingTo("25600.00");
+        assertThat(primSem.valorPago()).isEqualByComparingTo("38400.00");
+        assertThat(luxoSem.valorPago()).isEqualByComparingTo("51200.00");
+
+        PassagemResponseDTO execCom = passagemService.comprar(new PassagemComprarRequestDTO(1L, "03A", true), passageiroId);
+        PassagemResponseDTO primCom = passagemService.comprar(new PassagemComprarRequestDTO(1L, "02B", true), passageiroId);
+        PassagemResponseDTO luxoCom = passagemService.comprar(new PassagemComprarRequestDTO(1L, "01A", true), passageiroId);
+
+        assertThat(execCom.valorPago()).isEqualByComparingTo("75600.00");
+        assertThat(primCom.valorPago()).isEqualByComparingTo("113400.00");
+        assertThat(luxoCom.valorPago()).isEqualByComparingTo("151200.00");
+    }
+
+    @Test
+    void deveMapearClassePorAssentoConformeCapacidadeDaNave() {
+        assertThat(ClasseCabine.porAssento("01A", 24)).isEqualTo(ClasseCabine.LUXO);
+        assertThat(ClasseCabine.porAssento("02B", 24)).isEqualTo(ClasseCabine.PRIMEIRA_CLASSE);
+        assertThat(ClasseCabine.porAssento("03A", 24)).isEqualTo(ClasseCabine.EXECUTIVA);
+
+        assertThat(ClasseCabine.porAssento("02B", 32)).isEqualTo(ClasseCabine.PRIMEIRA_CLASSE);
+        assertThat(ClasseCabine.porAssento("03C", 32)).isEqualTo(ClasseCabine.PRIMEIRA_CLASSE);
+        assertThat(ClasseCabine.porAssento("04A", 32)).isEqualTo(ClasseCabine.EXECUTIVA);
+
+        assertThat(ClasseCabine.porAssento("02A", 48)).isEqualTo(ClasseCabine.LUXO);
+        assertThat(ClasseCabine.porAssento("05D", 48)).isEqualTo(ClasseCabine.PRIMEIRA_CLASSE);
+        assertThat(ClasseCabine.porAssento("06A", 48)).isEqualTo(ClasseCabine.EXECUTIVA);
     }
 
     @Test

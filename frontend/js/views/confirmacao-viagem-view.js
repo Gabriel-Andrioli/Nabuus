@@ -1,7 +1,9 @@
 import {
   confirmarPassagem,
   obterCenarioAtivoDaViagem,
+  obterClassePorPoltrona,
   obterSelecaoAtual,
+  obterTotalAssentosViagem,
   obterViagemSelecionada,
 } from '../services/passagens-service.js';
 import { formatarAnos, formatarCreditos, formatarDistanciaAnosLuz, formatarVelocidadeC } from '../utils/formatadores.js';
@@ -12,7 +14,10 @@ function inicializarConfirmacao() {
 
   const viagem = obterViagemSelecionada();
   const sel = obterSelecaoAtual();
-  const resumo = obterCenarioAtivoDaViagem(viagem, sel);
+  const poltrona = sel.poltrona || '01A';
+  const classeAssento = obterClassePorPoltrona(poltrona, obterTotalAssentosViagem(viagem));
+  const classeFinal = (viagem.classes || []).includes(classeAssento) ? classeAssento : sel.classe;
+  const resumo = obterCenarioAtivoDaViagem(viagem, { ...sel, classe: classeFinal });
   const techTexto = `${resumo.opcao.propulsaoNome} · ${formatarVelocidadeC(resumo.opcao.velocidadeC)}`;
 
   document.getElementById('rev-tecnologia').textContent = techTexto;
@@ -25,7 +30,7 @@ function inicializarConfirmacao() {
   document.getElementById('rev-divida').textContent = formatarAnos(resumo.dividaTemporalAnos);
   document.getElementById('rev-distancia').textContent = formatarDistanciaAnosLuz(viagem.distanciaAl);
   document.getElementById('rev-resumo-destino').textContent = viagem.destinoNome;
-  document.getElementById('rev-poltrona').textContent = sel.poltrona || '01A';
+  document.getElementById('rev-poltrona').textContent = poltrona;
   document.getElementById('rev-custo').textContent = formatarCreditos(resumo.precoFinal);
 
   document.getElementById('btn-confirmar-viagem').addEventListener('click', () => {
