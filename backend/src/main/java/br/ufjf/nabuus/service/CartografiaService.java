@@ -11,6 +11,7 @@ import br.ufjf.nabuus.dto.cartografia.RotaLumicaDTO;
 import br.ufjf.nabuus.dto.cartografia.SistemaSolarDTO;
 import br.ufjf.nabuus.dto.cartografia.TipoPropulsaoDTO;
 import br.ufjf.nabuus.exception.RecursoNaoEncontradoException;
+import br.ufjf.nabuus.exception.RegraDeNegocioException;
 import br.ufjf.nabuus.repository.AstronomoRepository;
 import br.ufjf.nabuus.repository.PlanetaRepository;
 import br.ufjf.nabuus.repository.RotaLumicaRepository;
@@ -129,6 +130,9 @@ public class CartografiaService {
 
     @Transactional
     public RotaLumicaDTO cadastrarRotaLumica(RotaLumicaDTO dto, UUID astronomoId) {
+        if (dto.sistemaOrigemId().equals(dto.sistemaDestinoId())) {
+            throw new RegraDeNegocioException("Sistema de origem e destino devem ser diferentes.");
+        }
         Astronomo astronomo = buscarAstronomo(astronomoId);
         SistemaSolar origem = sistemaSolarRepository.findById(dto.sistemaOrigemId())
             .orElseThrow(() -> new RecursoNaoEncontradoException("Sistema de origem não encontrado."));

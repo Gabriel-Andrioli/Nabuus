@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   validarCnpjFretista,
+  validarCoordenadasAstronomicas,
   validarCpf,
   validarCredencialAstronomo,
   validarDataNascimento,
@@ -10,6 +11,7 @@ import {
   validarFormularioRegistro,
   validarNumeroPositivo,
   validarSenha,
+  validarTotalAssentos,
   validarVelocidadeNave,
 } from '../js/utils/validadores.js';
 
@@ -34,8 +36,18 @@ test('deveRespeitarLimitesFisicos_quandoValidarVelocidadeENumeros', () => {
   assert.equal(validarEmail('astro@ufjf.br'), true);
   assert.equal(validarNumeroPositivo(4.5), true);
   assert.equal(validarNumeroPositivo(-1), false);
-  assert.equal(validarVelocidadeNave(0.8), true);
+  assert.equal(validarVelocidadeNave(0.4), true);
+  assert.equal(validarVelocidadeNave(0.8), false);
   assert.equal(validarVelocidadeNave(1.2), false);
+
+  assert.equal(validarCoordenadasAstronomicas(217.43, -62.68), true);
+  assert.equal(validarCoordenadasAstronomicas(361, 0), false);
+  assert.equal(validarCoordenadasAstronomicas(100, -95), false);
+
+  assert.equal(validarTotalAssentos(24), true);
+  assert.equal(validarTotalAssentos(0), false);
+  assert.equal(validarTotalAssentos(201), false);
+  assert.equal(validarTotalAssentos(24.5), false);
 });
 
 test('deveAceitarApenasCredenciaisECnpjsHomologados_quandoValidarRegistro', () => {

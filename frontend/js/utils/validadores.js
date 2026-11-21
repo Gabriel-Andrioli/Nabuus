@@ -92,7 +92,23 @@ export function validarNumeroPositivo(valor) {
 
 export function validarVelocidadeNave(velocidadeC) {
   const num = Number(velocidadeC);
-  return Number.isFinite(num) && num > 0 && num <= 0.8;
+  return Number.isFinite(num) && num > 0 && num <= 0.4;
+}
+
+export function validarCoordenadasAstronomicas(ra, dec) {
+  const numRa = Number(ra);
+  const numDec = Number(dec);
+  return Number.isFinite(numRa)
+    && Number.isFinite(numDec)
+    && numRa >= 0
+    && numRa <= 360
+    && numDec >= -90
+    && numDec <= 90;
+}
+
+export function validarTotalAssentos(total) {
+  const num = Number(total);
+  return Number.isInteger(num) && num >= 1 && num <= 200;
 }
 
 export function validarFormularioLogin({ email, senha }) {

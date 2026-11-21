@@ -52,7 +52,7 @@ public class OnibusEspacial {
             tipoPropulsao,
             identificacao,
             totalAssentos,
-            tipoPropulsao != null ? tipoPropulsao.getVelocidadeCruzeiroC() : 0.5
+            tipoPropulsao != null ? tipoPropulsao.getVelocidadeCruzeiroC() : 0.4
         );
     }
 
