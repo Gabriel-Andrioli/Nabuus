@@ -141,8 +141,10 @@ public class AuthService {
         if (dto.dataNascimento() == null) {
             throw new RegraDeNegocioException("Data de nascimento é obrigatória para passageiros.");
         }
-        if (!dto.dataNascimento().isBefore(LocalDate.now())) {
-            throw new RegraDeNegocioException("Data de nascimento deve estar no passado.");
+        LocalDate hoje = LocalDate.now();
+        LocalDate dataMinima = hoje.minusYears(120);
+        if (!dto.dataNascimento().isBefore(hoje) || dto.dataNascimento().isBefore(dataMinima)) {
+            throw new RegraDeNegocioException("Informe uma data de nascimento válida.");
         }
         return new Passageiro(dto.nome(), dto.email(), hash, cpfNormalizado, dto.dataNascimento());
     }

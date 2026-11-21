@@ -132,6 +132,9 @@ test('deveValidarCpfDataNascimentoESenha_noCadastroDeViajante', () => {
 
   assert.equal(validarDataNascimento('1998-04-12', hojeFixo), true);
   assert.equal(validarDataNascimento('12/04/1998', hojeFixo), true);
+  assert.equal(validarDataNascimento('21/11/1906', hojeFixo), true);
+  assert.equal(validarDataNascimento('20/11/1906', hojeFixo), false);
+  assert.equal(validarDataNascimento('18/03/1000', hojeFixo), false);
   assert.equal(validarDataNascimento('2026-11-21', hojeFixo), false);
   assert.equal(validarDataNascimento('21/11/2026', hojeFixo), false);
   assert.equal(validarDataNascimento('2075-04-12', hojeFixo), false);
@@ -158,7 +161,18 @@ test('deveValidarCpfDataNascimentoESenha_noCadastroDeViajante', () => {
     doc2: '20/03/20',
   });
   assert.equal(viajanteDataIncompleta.valido, false);
-  assert.equal(viajanteDataIncompleta.erros.doc2, 'Informe uma data válida no formato dd/mm/aaaa.');
+  assert.equal(viajanteDataIncompleta.erros.doc2, 'Informe uma data de nascimento válida.');
+
+  const viajanteAnoImpossivel = validarFormularioRegistro({
+    nome: 'Aurora',
+    email: 'aurora6@nabuus.space',
+    senha: 'segredo123',
+    perfil: 'VIAJANTE',
+    doc1: '123.456.789-00',
+    doc2: '18/03/1000',
+  });
+  assert.equal(viajanteAnoImpossivel.valido, false);
+  assert.equal(viajanteAnoImpossivel.erros.doc2, 'Informe uma data de nascimento válida.');
 
   assert.equal(validarSenha('123456'), true);
   assert.equal(validarSenha('a'.repeat(20)), true);

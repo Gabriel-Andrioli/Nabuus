@@ -105,11 +105,8 @@ export async function registrarUsuario({ nome, email, senha, perfil, doc1, doc2 
       throw new Error('Informe um CPF válido com 11 dígitos.');
     }
     dataNascimentoIso = normalizarDataNascimentoParaIso(doc2Limpo);
-    if (!dataNascimentoIso) {
-      throw new Error('Informe uma data válida no formato dd/mm/aaaa.');
-    }
-    if (!validarDataNascimento(dataNascimentoIso)) {
-      throw new Error('A data de nascimento deve estar no passado.');
+    if (!dataNascimentoIso || !validarDataNascimento(dataNascimentoIso)) {
+      throw new Error('Informe uma data de nascimento válida.');
     }
   }
 

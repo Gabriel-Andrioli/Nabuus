@@ -110,6 +110,8 @@ export function formatarIsoParaDataBr(dataIso) {
   return `${dia}/${mes}/${ano}`;
 }
 
+export const IDADE_MAXIMA_ANOS = 120;
+
 export function validarDataNascimento(dataInformada, hoje = new Date()) {
   const iso = normalizarDataNascimentoParaIso(dataInformada);
   if (!iso) {
@@ -119,7 +121,12 @@ export function validarDataNascimento(dataInformada, hoje = new Date()) {
   const data = new Date(ano, mes - 1, dia);
   data.setFullYear(ano);
   const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-  return data < inicioHoje;
+  const dataMinima = new Date(
+    hoje.getFullYear() - IDADE_MAXIMA_ANOS,
+    hoje.getMonth(),
+    hoje.getDate()
+  );
+  return data >= dataMinima && data < inicioHoje;
 }
 
 export function validarCampoObrigatorio(valor) {
@@ -212,10 +219,8 @@ export function validarFormularioRegistro({ nome, email, senha, perfil, doc1, do
     }
     if (!validarCampoObrigatorio(doc2)) {
       erros.doc2 = 'Informe a data de nascimento.';
-    } else if (!normalizarDataNascimentoParaIso(doc2)) {
-      erros.doc2 = 'Informe uma data válida no formato dd/mm/aaaa.';
     } else if (!validarDataNascimento(doc2)) {
-      erros.doc2 = 'A data de nascimento deve estar no passado.';
+      erros.doc2 = 'Informe uma data de nascimento válida.';
     }
   }
 

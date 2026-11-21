@@ -1,5 +1,6 @@
 import { registrarUsuario } from '../services/auth-service.js';
 import {
+  IDADE_MAXIMA_ANOS,
   formatarDataNascimentoDigitada,
   formatarIsoParaDataBr,
   normalizarDataNascimentoParaIso,
@@ -35,13 +36,23 @@ function inicializarRegistro() {
     alerta.classList.add('oculto');
   }
 
+  function formatarDateParaIso(data) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
   function obterDataMaximaNascimento() {
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);
-    const ano = ontem.getFullYear();
-    const mes = String(ontem.getMonth() + 1).padStart(2, '0');
-    const dia = String(ontem.getDate()).padStart(2, '0');
-    return `${ano}-${mes}-${dia}`;
+    return formatarDateParaIso(ontem);
+  }
+
+  function obterDataMinimaNascimento() {
+    const limite = new Date();
+    limite.setFullYear(limite.getFullYear() - IDADE_MAXIMA_ANOS);
+    return formatarDateParaIso(limite);
   }
 
   function calcularPosicaoCursorData(digitosAntes) {
@@ -85,6 +96,7 @@ function inicializarRegistro() {
       input2.value = '';
       input2.classList.add('campo-data__input');
       btnCalendario.classList.remove('oculto');
+      pickerNascimento.min = obterDataMinimaNascimento();
       pickerNascimento.max = obterDataMaximaNascimento();
       pickerNascimento.value = '';
       grupo2.classList.remove('oculto');
@@ -116,6 +128,7 @@ function inicializarRegistro() {
     }
   }
 
+  pickerNascimento.min = obterDataMinimaNascimento();
   pickerNascimento.max = obterDataMaximaNascimento();
 
   input2.addEventListener('keydown', (evento) => {
@@ -159,6 +172,7 @@ function inicializarRegistro() {
       return;
     }
     const isoAtual = normalizarDataNascimentoParaIso(input2.value);
+    pickerNascimento.min = obterDataMinimaNascimento();
     pickerNascimento.max = obterDataMaximaNascimento();
     pickerNascimento.value = isoAtual || '';
     if (typeof pickerNascimento.showPicker === 'function') {

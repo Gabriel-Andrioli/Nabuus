@@ -137,10 +137,33 @@ class AuthServiceTest {
 
         assertThatThrownBy(() -> authService.registrar(dtoFuturo))
             .isInstanceOf(RegraDeNegocioException.class)
-            .hasMessageContaining("Data de nascimento");
+            .hasMessageContaining("data de nascimento válida");
 
         Set<ConstraintViolation<RegistroRequestDTO>> violacoes = validator.validate(dtoFuturo);
         assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("dataNascimento"));
+    }
+
+    @Test
+    void deveRejeitarPassageiro_quandoDataNascimentoForAnteriorA120Anos() {
+        RegistroRequestDTO dtoAntigo = new RegistroRequestDTO(
+            "Viajante Medieval",
+            "antigo@nabuus.space",
+            "segredo123",
+            Role.PASSAGEIRO,
+            null,
+            null,
+            null,
+            "111.222.333-44",
+            LocalDate.of(1000, 3, 18)
+        );
+
+        when(usuarioRepository.existsByEmail(dtoAntigo.email())).thenReturn(false);
+        when(passwordEncoder.encode(dtoAntigo.senha())).thenReturn("hash");
+        when(passageiroRepository.existsByCpf("111.222.333-44")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.registrar(dtoAntigo))
+            .isInstanceOf(RegraDeNegocioException.class)
+            .hasMessageContaining("data de nascimento válida");
     }
 
     @Test

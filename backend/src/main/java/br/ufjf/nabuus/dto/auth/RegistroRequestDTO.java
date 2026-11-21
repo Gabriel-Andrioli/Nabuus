@@ -17,6 +17,6 @@ public record RegistroRequestDTO(
     String cnpjIntergalactico,
     @Size(max = 120) String razaoSocial,
     String cpf,
-    @Past(message = "Data de nascimento deve estar no passado.") LocalDate dataNascimento
+    @Past(message = "Informe uma data de nascimento válida.") LocalDate dataNascimento
 ) {
 }
