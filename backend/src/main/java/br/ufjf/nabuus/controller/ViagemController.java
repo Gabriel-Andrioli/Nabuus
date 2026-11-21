@@ -3,7 +3,7 @@ package br.ufjf.nabuus.controller;
 import br.ufjf.nabuus.dto.logistica.ViagemPublicarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.ViagemResponseDTO;
 import br.ufjf.nabuus.dto.motor.SugestaoPrecoResponseDTO;
-import br.ufjf.nabuus.security.UsuarioAutenticado;
+import br.ufjf.nabuus.security.JwtService;
 import br.ufjf.nabuus.service.ViagemService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -50,7 +50,7 @@ public class ViagemController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        return viagemService.listarDoFretista(UsuarioAutenticado.resolverId(authentication, headerUserId));
+        return viagemService.listarDoFretista(JwtService.resolverUsuarioId(authentication, headerUserId));
     }
 
     @PostMapping("/sugerir-preco")
@@ -66,7 +66,7 @@ public class ViagemController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        UUID fretistaId = UsuarioAutenticado.resolverId(authentication, headerUserId);
+        UUID fretistaId = JwtService.resolverUsuarioId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(viagemService.publicar(dto, fretistaId));
     }
 }

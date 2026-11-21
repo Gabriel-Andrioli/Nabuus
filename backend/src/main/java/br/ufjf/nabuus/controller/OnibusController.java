@@ -1,7 +1,7 @@
 package br.ufjf.nabuus.controller;
 
 import br.ufjf.nabuus.dto.logistica.OnibusEspacialDTO;
-import br.ufjf.nabuus.security.UsuarioAutenticado;
+import br.ufjf.nabuus.security.JwtService;
 import br.ufjf.nabuus.service.FrotaService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -35,7 +35,7 @@ public class OnibusController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        return frotaService.listarPorFretista(UsuarioAutenticado.resolverId(authentication, headerUserId));
+        return frotaService.listarPorFretista(JwtService.resolverUsuarioId(authentication, headerUserId));
     }
 
     @PostMapping
@@ -44,7 +44,7 @@ public class OnibusController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        UUID fretistaId = UsuarioAutenticado.resolverId(authentication, headerUserId);
+        UUID fretistaId = JwtService.resolverUsuarioId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(frotaService.cadastrar(dto, fretistaId));
     }
 
@@ -54,7 +54,7 @@ public class OnibusController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        frotaService.inativar(id, UsuarioAutenticado.resolverId(authentication, headerUserId));
+        frotaService.inativar(id, JwtService.resolverUsuarioId(authentication, headerUserId));
         return ResponseEntity.noContent().build();
     }
 }

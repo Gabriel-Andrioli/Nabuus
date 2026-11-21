@@ -4,7 +4,7 @@ import br.ufjf.nabuus.dto.cartografia.PlanetaDTO;
 import br.ufjf.nabuus.dto.cartografia.RotaLumicaDTO;
 import br.ufjf.nabuus.dto.cartografia.SistemaSolarDTO;
 import br.ufjf.nabuus.dto.cartografia.TipoPropulsaoDTO;
-import br.ufjf.nabuus.security.UsuarioAutenticado;
+import br.ufjf.nabuus.security.JwtService;
 import br.ufjf.nabuus.service.CartografiaService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -45,7 +45,7 @@ public class CartografiaController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        UUID astronomoId = UsuarioAutenticado.resolverId(authentication, headerUserId);
+        UUID astronomoId = JwtService.resolverUsuarioId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartografiaService.cadastrarSistema(dto, astronomoId));
     }
 
@@ -72,7 +72,7 @@ public class CartografiaController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        UUID astronomoId = UsuarioAutenticado.resolverId(authentication, headerUserId);
+        UUID astronomoId = JwtService.resolverUsuarioId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartografiaService.cadastrarPropulsao(dto, astronomoId));
     }
 
@@ -88,7 +88,7 @@ public class CartografiaController {
         Authentication authentication,
         @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        UUID astronomoId = UsuarioAutenticado.resolverId(authentication, headerUserId);
+        UUID astronomoId = JwtService.resolverUsuarioId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartografiaService.cadastrarRotaLumica(dto, astronomoId));
     }
 

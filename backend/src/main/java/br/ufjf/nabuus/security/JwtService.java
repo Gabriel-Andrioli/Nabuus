@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,6 +47,16 @@ public class JwtService {
     public UUID extrairUserId(String token) {
         String userId = extrairClaims(token).get("userId", String.class);
         return userId != null ? UUID.fromString(userId) : null;
+    }
+
+    public static UUID resolverUsuarioId(Authentication auth, UUID headerFallback) {
+        if (auth != null && auth.getCredentials() instanceof UUID id) {
+            return id;
+        }
+        if (headerFallback != null) {
+            return headerFallback;
+        }
+        throw new BadCredentialsException("Usuário autenticado não identificado.");
     }
 
     public boolean tokenValido(String token) {
