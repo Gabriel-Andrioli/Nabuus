@@ -42,6 +42,17 @@ docker compose down -v
 
 > Variáveis de ambiente opcionais (`NABUUS_DB_NAME`, `NABUUS_DB_USER`, `NABUUS_DB_PASSWORD`, `NABUUS_JWT_SECRET`, `NABUUS_JWT_EXPIRATION_MS`) possuem valores padrão configurados no [docker-compose.yml](docker-compose.yml).
 
+### Contas de Demonstração (Seed V2)
+O banco de dados já inicializa com contas prontas para teste de cada perfil. A senha padrão para todas é **`123456`**:
+
+| Perfil | E-mail | Senha | Identificador Homologado |
+|---|---|---|---|
+| **Passageiro** | `viajante@nabuus.space` | `123456` | CPF: `123.456.789-00` |
+| **Fretista** | `fretista@nabuus.space` | `123456` | CNPJ: `12.345.678/0001-99` |
+| **Astrônomo** | `astronomo@nabuus.space` | `123456` | Credencial: `IAU-2100-BR` |
+
+> Para cadastrar novos Astrônomos ou Fretistas, consulte os códigos oficiais homologados em [context/credenciais_homologadas.txt](context/credenciais_homologadas.txt).
+
 ---
 
 ## Estrutura do Repositório
@@ -71,6 +82,11 @@ Nabuus/
 │   ├── requirements.txt
 │   └── Dockerfile
 └── context/
+    ├── credenciais_homologadas.txt  # Contas seed e códigos homologados (IAU e CNPJs) para novos registros
+    ├── Nabuus.fig                   # Arquivo de design e protótipo interativo no Figma
+    ├── padroes_backend_java.txt     # Padrões e convenções de código do Back-end
+    ├── padroes_frontend_web.txt     # Padrões e convenções da Interface Web
+    ├── padroes_persistencia_postgresql.txt # Padrões de banco, Flyway e modelagem relacional
     ├── gerar_diagrama.py            # Gerador automático de diagramas PlantUML (.txt -> .pdf vetorial e .png)
     ├── c4_diagram/                  # Diagramas C4 Nível 1 (Contexto) e Nível 2 (Contêineres)
     ├── use_case_diagram/            # Diagrama de Casos de Uso
@@ -138,7 +154,11 @@ Acesse `http://localhost:3000` no navegador.
 
 Testes do front-end (Node 20+):
 ```powershell
-node --test frontend/tests/*.test.js
+# No PowerShell (Windows):
+node --test (Get-ChildItem frontend/tests/*.test.js)
+
+# Ou executando a partir do diretório frontend/:
+cd frontend; node --test tests/*.test.js
 ```
 
 ---
