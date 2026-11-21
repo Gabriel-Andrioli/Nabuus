@@ -52,10 +52,10 @@ public class Viagem {
     @Column(nullable = false, length = 20)
     private StatusViagem status;
 
-    @Column(name = "preco_base", nullable = false, precision = 14, scale = 2)
+    @Column(name = "preco_base", nullable = false, precision = 18, scale = 2)
     private BigDecimal precoBase;
 
-    @Column(name = "custo_ano_luz", nullable = false, precision = 14, scale = 2)
+    @Column(name = "custo_ano_luz", nullable = false, precision = 18, scale = 2)
     private BigDecimal custoAnoLuz;
 
     @Column(name = "viavel_sem_lumica", nullable = false)
@@ -67,7 +67,7 @@ public class Viagem {
     @Column(name = "divida_temporal_anos_sem_lumica")
     private Double dividaTemporalAnosSemLumica;
 
-    @Column(name = "preco_sem_lumica", precision = 14, scale = 2)
+    @Column(name = "preco_sem_lumica", precision = 18, scale = 2)
     private BigDecimal precoSemLumica;
 
     @Column(name = "paradas_reabastecimento", nullable = false)
@@ -82,7 +82,7 @@ public class Viagem {
     @Column(name = "divida_temporal_anos_com_lumica")
     private Double dividaTemporalAnosComLumica;
 
-    @Column(name = "preco_com_lumica", precision = 14, scale = 2)
+    @Column(name = "preco_com_lumica", precision = 18, scale = 2)
     private BigDecimal precoComLumica;
 
     @JdbcTypeCode(SqlTypes.JSON)

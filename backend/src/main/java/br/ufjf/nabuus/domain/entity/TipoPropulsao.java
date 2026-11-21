@@ -45,26 +45,25 @@ public class TipoPropulsao {
     @Column(name = "categoria_conforto", nullable = false, length = 20)
     private CategoriaConforto categoriaConforto;
 
-    @Column(name = "preco_base_referencia", nullable = false, precision = 14, scale = 2)
+    @Column(name = "preco_base_referencia", nullable = false, precision = 18, scale = 2)
     private BigDecimal precoBaseReferencia;
 
-    @Column(name = "custo_ano_luz_referencia", nullable = false, precision = 14, scale = 2)
+    @Column(name = "custo_ano_luz_referencia", nullable = false, precision = 18, scale = 2)
     private BigDecimal custoAnoLuzReferencia;
 
     protected TipoPropulsao() {
     }
 
     public TipoPropulsao(
-        Astronomo astronomo,
-        String codigo,
-        String nome,
-        Double aceleracaoG,
-        Double velocidadeCruzeiroC,
-        Double autonomiaAnosLuz,
-        CategoriaConforto categoriaConforto,
-        BigDecimal precoBaseReferencia,
-        BigDecimal custoAnoLuzReferencia
-    ) {
+            Astronomo astronomo,
+            String codigo,
+            String nome,
+            Double aceleracaoG,
+            Double velocidadeCruzeiroC,
+            Double autonomiaAnosLuz,
+            CategoriaConforto categoriaConforto,
+            BigDecimal precoBaseReferencia,
+            BigDecimal custoAnoLuzReferencia) {
         this.astronomo = astronomo;
         this.codigo = codigo;
         this.nome = nome;

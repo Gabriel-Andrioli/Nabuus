@@ -111,8 +111,8 @@ CATALOGO_PROPULSAO = [
         "velocidadeCruzeiroC": 0.0001,
         "autonomiaAnosLuz": 0.5,
         "categoriaConforto": "ECONOMICA",
-        "precoBaseReferencia": 500.0,
-        "custoAnoLuzReferencia": 150.0,
+        "precoBaseReferencia": 15_000_000.0,
+        "custoAnoLuzReferencia": 300_000_000.0,
     },
     {
         "codigo": "VELA_SOLAR",
@@ -122,8 +122,8 @@ CATALOGO_PROPULSAO = [
         "velocidadeCruzeiroC": 0.002,
         "autonomiaAnosLuz": 2.0,
         "categoriaConforto": "ECONOMICA",
-        "precoBaseReferencia": 800.0,
-        "custoAnoLuzReferencia": 100.0,
+        "precoBaseReferencia": 30_000_000.0,
+        "custoAnoLuzReferencia": 600_000_000.0,
     },
     {
         "codigo": "VELA_LASER",
@@ -133,8 +133,8 @@ CATALOGO_PROPULSAO = [
         "velocidadeCruzeiroC": 0.20,
         "autonomiaAnosLuz": 4.5,
         "categoriaConforto": "EXECUTIVA",
-        "precoBaseReferencia": 3500.0,
-        "custoAnoLuzReferencia": 600.0,
+        "precoBaseReferencia": 60_000_000.0,
+        "custoAnoLuzReferencia": 1_000_000_000.0,
     },
     {
         "codigo": "FISSAO_PULSADA",
@@ -144,8 +144,8 @@ CATALOGO_PROPULSAO = [
         "velocidadeCruzeiroC": 0.03,
         "autonomiaAnosLuz": 5.0,
         "categoriaConforto": "ECONOMICA",
-        "precoBaseReferencia": 1800.0,
-        "custoAnoLuzReferencia": 300.0,
+        "precoBaseReferencia": 45_000_000.0,
+        "custoAnoLuzReferencia": 800_000_000.0,
     },
     {
         "codigo": "FUSAO",
@@ -155,8 +155,8 @@ CATALOGO_PROPULSAO = [
         "velocidadeCruzeiroC": 0.12,
         "autonomiaAnosLuz": 8.0,
         "categoriaConforto": "EXECUTIVA",
-        "precoBaseReferencia": 4200.0,
-        "custoAnoLuzReferencia": 750.0,
+        "precoBaseReferencia": 80_000_000.0,
+        "custoAnoLuzReferencia": 1_200_000_000.0,
     },
     {
         "codigo": "ANTIMATERIA",
@@ -166,8 +166,8 @@ CATALOGO_PROPULSAO = [
         "velocidadeCruzeiroC": 0.40,
         "autonomiaAnosLuz": 15.0,
         "categoriaConforto": "LUXO",
-        "precoBaseReferencia": 15000.0,
-        "custoAnoLuzReferencia": 2500.0,
+        "precoBaseReferencia": 120_000_000.0,
+        "custoAnoLuzReferencia": 2_000_000_000.0,
     },
 ]
 

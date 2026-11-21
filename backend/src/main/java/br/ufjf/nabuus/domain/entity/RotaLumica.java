@@ -34,7 +34,7 @@ public class RotaLumica {
     @Column(name = "velocidade_c", nullable = false)
     private Double velocidadeC;
 
-    @Column(nullable = false, precision = 14, scale = 2)
+    @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal pedagio;
 
     @Column(nullable = false)

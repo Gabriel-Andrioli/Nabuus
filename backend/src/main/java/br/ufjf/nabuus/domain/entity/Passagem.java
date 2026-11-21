@@ -17,7 +17,10 @@ import java.time.OffsetDateTime;
 @Table(
     name = "passagem",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_passagem_viagem_assento", columnNames = {"viagem_id", "assento_escolhido"})
+        @UniqueConstraint(
+            name = "uk_passagem_viagem_passageiro_assento",
+            columnNames = {"viagem_id", "passageiro_id", "assento_escolhido"}
+        )
     }
 )
 public class Passagem {
@@ -40,7 +43,7 @@ public class Passagem {
     @Column(name = "usa_rota_lumica", nullable = false)
     private Boolean usaRotaLumica;
 
-    @Column(name = "valor_pago", nullable = false, precision = 14, scale = 2)
+    @Column(name = "valor_pago", nullable = false, precision = 18, scale = 2)
     private BigDecimal valorPago;
 
     @Column(name = "data_compra", nullable = false)
