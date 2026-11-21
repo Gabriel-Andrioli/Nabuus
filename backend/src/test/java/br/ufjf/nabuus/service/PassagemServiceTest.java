@@ -88,7 +88,8 @@ class PassagemServiceTest {
     void deveEmitirPassagem_quandoAssentoEstiverLivre() {
         when(viagemRepository.findDetalhadaPorId(1L)).thenReturn(Optional.of(viagem));
         when(passageiroRepository.findById(passageiroId)).thenReturn(Optional.of(passageiro));
-        when(passagemRepository.existsByViagemIdAndAssentoEscolhido(1L, "01A")).thenReturn(false);
+        when(passagemRepository.existsByViagemIdAndPassageiroIdAndAssentoEscolhido(1L, passageiroId, "01A"))
+            .thenReturn(false);
         when(passagemRepository.save(any(Passagem.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PassagemResponseDTO resp = passagemService.comprar(
@@ -98,7 +99,21 @@ class PassagemServiceTest {
 
         assertThat(resp.assentoEscolhido()).isEqualTo("01A");
         assertThat(resp.valorPago()).isEqualByComparingTo("25600.00");
-        assertThat(viagem.getAssentosOcupadosJson()).contains("01A");
+        assertThat(viagem.getAssentosOcupadosJson()).doesNotContain("01A");
+    }
+
+    @Test
+    void deveLancarConflito_quandoMesmoPassageiroReservarAssentoDuplicado() {
+        when(viagemRepository.findDetalhadaPorId(1L)).thenReturn(Optional.of(viagem));
+        when(passageiroRepository.findById(passageiroId)).thenReturn(Optional.of(passageiro));
+        when(passagemRepository.existsByViagemIdAndPassageiroIdAndAssentoEscolhido(1L, passageiroId, "01A"))
+            .thenReturn(true);
+
+        assertThatThrownBy(() -> passagemService.comprar(
+            new PassagemComprarRequestDTO(1L, "01A", false),
+            passageiroId
+        )).isInstanceOf(ConflitoDeEstadoException.class)
+          .hasMessageContaining("01A");
     }
 
     @Test

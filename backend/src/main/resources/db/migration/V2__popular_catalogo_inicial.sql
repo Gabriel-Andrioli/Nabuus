@@ -1,11 +1,11 @@
 -- V2: Catálogo completo de 36 sistemas, 50 planetas (CSV data/nabuus_planetas.csv),
 -- 12 naves espaciais com velocidades distintas e múltiplas viagens por sistema.
--- Senha padrão de demonstração (BCrypt para "123456"): $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+-- Senha padrão de demonstração (BCrypt para "123456"): $2a$10$4QjVq8FYPsAotCdQeKBS2.H2If00ePcrMwnYf6MqOprLOo3BV6UUO
 
 INSERT INTO usuario (id, nome, email, hash_senha, role) VALUES
-    ('11111111-1111-1111-1111-111111111111', 'Dr. Carl Sagan', 'astronomo@nabuus.space', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'ASTRONOMO'),
-    ('22222222-2222-2222-2222-222222222222', 'Odyssey Linhas Estelares', 'fretista@nabuus.space', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'FRETISTA'),
-    ('33333333-3333-3333-3333-333333333333', 'Aurora Vance', 'viajante@nabuus.space', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'PASSAGEIRO');
+    ('11111111-1111-1111-1111-111111111111', 'Dr. Carl Sagan', 'astronomo@nabuus.space', '$2a$10$4QjVq8FYPsAotCdQeKBS2.H2If00ePcrMwnYf6MqOprLOo3BV6UUO', 'ASTRONOMO'),
+    ('22222222-2222-2222-2222-222222222222', 'Odyssey Linhas Estelares', 'fretista@nabuus.space', '$2a$10$4QjVq8FYPsAotCdQeKBS2.H2If00ePcrMwnYf6MqOprLOo3BV6UUO', 'FRETISTA'),
+    ('33333333-3333-3333-3333-333333333333', 'Aurora Vance', 'viajante@nabuus.space', '$2a$10$4QjVq8FYPsAotCdQeKBS2.H2If00ePcrMwnYf6MqOprLOo3BV6UUO', 'PASSAGEIRO');
 
 INSERT INTO astronomo (usuario_id, credencial_cientifica) VALUES
     ('11111111-1111-1111-1111-111111111111', 'IAU-2100-BR');

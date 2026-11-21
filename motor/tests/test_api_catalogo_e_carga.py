@@ -41,7 +41,13 @@ class _ClienteLocal:
         return _Resposta(200, res.model_dump() if isinstance(res, BaseModel) else res)
 
 
-client = _ClienteLocal(app)
+if hasattr(app, "_rotas_sync"):
+    client = _ClienteLocal(app)
+else:
+    from fastapi.testclient import TestClient
+
+    client = TestClient(app)
+
 CSV_PATH = Path(__file__).resolve().parents[2] / "data" / "nabuus_planetas.csv"
 
 
@@ -77,6 +83,7 @@ def test_endpoints_basicos_e_validacao():
     prop = client.get("/v1/propulsoes")
     assert prop.status_code == 200
     assert len(prop.json()) >= 6
+    assert all(item["precoBaseReferencia"] >= 15_000_000.0 for item in prop.json())
 
     sug = client.post(
         "/v1/precos/sugerir",

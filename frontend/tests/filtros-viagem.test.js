@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { lerEstado } from '../js/services/api-client.js';
-import { obterCenarioAtivoDaViagem } from '../js/services/passagens-service.js';
+import {
+  atualizarSelecaoAtual,
+  confirmarPassagem,
+  construirFileirasCabine,
+  obterCenarioAtivoDaViagem,
+} from '../js/services/passagens-service.js';
 import { filtrarViagens, ordenarViagens } from '../js/utils/filtros-viagem.js';
 
 test('deveFiltrarViagensPorDestinoEPropulsao_quandoCriteriosInformados', () => {
@@ -76,4 +81,42 @@ test('deveDescontar90PorCentoDoTempoABordo_quandoSelecionarClasseLuxoECompararPr
   assert.ok(lumica.precoFinal >= executiva.precoFinal * 5);
   assert.ok(lumica.dividaTemporalAnos >= executiva.dividaTemporalAnos * 10);
   assert.ok(lumica.duracaoBordoAnos < executiva.duracaoBordoAnos);
+});
+
+test('deveGerarMapaDinamicoEConfirmarPassagemSemBloquearAssentoGlobal', () => {
+  assert.equal(construirFileirasCabine(24).length, 6);
+  assert.equal(construirFileirasCabine(32).length, 8);
+  assert.equal(construirFileirasCabine(48).length, 12);
+
+  const storageOriginal = globalThis.localStorage;
+  const mapaMemoria = new Map();
+  globalThis.localStorage = {
+    getItem: (chave) => (mapaMemoria.has(chave) ? mapaMemoria.get(chave) : null),
+    setItem: (chave, valor) => mapaMemoria.set(chave, String(valor)),
+    removeItem: (chave) => mapaMemoria.delete(chave),
+  };
+
+  try {
+    const ocupadosAntes = [...lerEstado().viagens.find((v) => v.id === 1).assentosOcupados];
+    atualizarSelecaoAtual({
+      viagemId: 1,
+      poltrona: '05A',
+      usaRotaLumica: false,
+      classe: 'Executiva',
+      propulsaoNome: 'Antimatéria',
+    });
+
+    const passagem = confirmarPassagem();
+    const viagemAtualizada = lerEstado().viagens.find((v) => v.id === 1);
+
+    assert.equal(passagem.assento, '05A');
+    assert.equal(viagemAtualizada.assentosOcupados.includes('05A'), false);
+    assert.deepEqual(viagemAtualizada.assentosOcupados, ocupadosAntes);
+  } finally {
+    if (storageOriginal === undefined) {
+      delete globalThis.localStorage;
+    } else {
+      globalThis.localStorage = storageOriginal;
+    }
+  }
 });
