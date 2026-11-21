@@ -110,8 +110,6 @@ function inicializarRegistro() {
       erroSenha.textContent = erros.senha || '';
       erroDoc1.textContent = erros.doc1 || '';
       erroDoc2.textContent = erros.doc2 || '';
-      alerta.textContent = erros.doc1 || erros.doc2 || 'Verifique os campos destacados antes de continuar.';
-      alerta.classList.remove('oculto');
       return;
     }
 

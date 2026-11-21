@@ -39,8 +39,7 @@ export function validarSenha(senha) {
   if (typeof senha !== 'string') {
     return false;
   }
-  const tamanho = senha.trim().length;
-  return tamanho >= 6 && tamanho <= 72;
+  return senha.trim().length >= 6 && senha.length <= 20;
 }
 
 export function validarCpf(cpf) {
@@ -117,7 +116,7 @@ export function validarFormularioLogin({ email, senha }) {
     erros.email = 'Informe um e-mail válido.';
   }
   if (!validarSenha(senha)) {
-    erros.senha = 'A senha deve ter no mínimo 6 caracteres.';
+    erros.senha = 'A senha deve ter entre 6 e 20 caracteres.';
   }
   return { valido: Object.keys(erros).length === 0, erros };
 }
@@ -131,7 +130,7 @@ export function validarFormularioRegistro({ nome, email, senha, perfil, doc1, do
     erros.email = 'Informe um e-mail válido.';
   }
   if (!validarSenha(senha)) {
-    erros.senha = 'A senha deve ter entre 6 e 72 caracteres.';
+    erros.senha = 'A senha deve ter entre 6 e 20 caracteres.';
   }
 
   if (perfil === 'ASTRONOMO') {

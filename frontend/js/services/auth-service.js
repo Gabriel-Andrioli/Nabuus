@@ -11,6 +11,7 @@ import {
   validarCpf,
   validarCredencialAstronomo,
   validarDataNascimento,
+  validarSenha,
 } from '../utils/validadores.js';
 
 function paraRoleBackend(perfil) {
@@ -88,6 +89,9 @@ export async function registrarUsuario({ nome, email, senha, perfil, doc1, doc2 
   const doc1Limpo = String(doc1 || '').trim();
   const doc2Limpo = String(doc2 || '').trim();
 
+  if (!validarSenha(senha)) {
+    throw new Error('A senha deve ter entre 6 e 20 caracteres.');
+  }
   if (perfil === 'ASTRONOMO' && !validarCredencialAstronomo(doc1Limpo)) {
     throw new Error('Credencial científica inválida ou não homologada.');
   }

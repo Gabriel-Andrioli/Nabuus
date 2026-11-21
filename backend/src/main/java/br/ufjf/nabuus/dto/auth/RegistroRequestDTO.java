@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public record RegistroRequestDTO(
     @NotBlank @Size(max = 120) String nome,
     @NotBlank @Email String email,
-    @NotBlank @Size(min = 6, max = 72) String senha,
+    @NotBlank @Size(min = 6, max = 20, message = "A senha deve ter entre 6 e 20 caracteres.") String senha,
     @NotNull Role role,
     String credencialCientifica,
     String cnpjIntergalactico,

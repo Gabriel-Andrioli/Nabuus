@@ -144,11 +144,25 @@ class AuthServiceTest {
     }
 
     @Test
-    void deveRejeitarRegistroDTO_quandoSenhaExceder72Caracteres() {
-        RegistroRequestDTO dto = new RegistroRequestDTO(
+    void deveRejeitarRegistroDTO_quandoSenhaExceder20Caracteres() {
+        RegistroRequestDTO dtoValido = new RegistroRequestDTO(
+            "Viajante",
+            "viajante1@nabuus.space",
+            "a".repeat(20),
+            Role.PASSAGEIRO,
+            null,
+            null,
+            null,
+            "111.222.333-44",
+            LocalDate.now().minusYears(20)
+        );
+        Set<ConstraintViolation<RegistroRequestDTO>> violacoesValido = validator.validate(dtoValido);
+        assertThat(violacoesValido).noneMatch(v -> v.getPropertyPath().toString().equals("senha"));
+
+        RegistroRequestDTO dtoInvalido = new RegistroRequestDTO(
             "Viajante",
             "viajante2@nabuus.space",
-            "a".repeat(73),
+            "a".repeat(21),
             Role.PASSAGEIRO,
             null,
             null,
@@ -157,7 +171,7 @@ class AuthServiceTest {
             LocalDate.now().minusYears(20)
         );
 
-        Set<ConstraintViolation<RegistroRequestDTO>> violacoes = validator.validate(dto);
+        Set<ConstraintViolation<RegistroRequestDTO>> violacoes = validator.validate(dtoInvalido);
         assertThat(violacoes).anyMatch(v -> v.getPropertyPath().toString().equals("senha"));
     }
 }

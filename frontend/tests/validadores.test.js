@@ -124,13 +124,20 @@ test('deveValidarCpfDataNascimentoESenha_noCadastroDeViajante', () => {
   assert.equal(validarDataNascimento('2026-02-30', hojeFixo), false);
 
   assert.equal(validarSenha('123456'), true);
-  assert.equal(validarSenha('a'.repeat(72)), true);
-  assert.equal(validarSenha('a'.repeat(73)), false);
+  assert.equal(validarSenha('a'.repeat(20)), true);
+  assert.equal(validarSenha('a'.repeat(21)), false);
+
+  const loginSenhaLonga = validarFormularioLogin({
+    email: 'piloto@nabuus.space',
+    senha: 'a'.repeat(21),
+  });
+  assert.equal(loginSenhaLonga.valido, false);
+  assert.ok(loginSenhaLonga.erros.senha);
 
   const viajanteInvalido = validarFormularioRegistro({
     nome: 'Aurora',
     email: 'aurora3@nabuus.space',
-    senha: 'a'.repeat(73),
+    senha: 'a'.repeat(21),
     perfil: 'VIAJANTE',
     doc1: '12345',
     doc2: '2099-01-01',
