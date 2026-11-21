@@ -1,5 +1,5 @@
 import { realizarLogin } from '../services/auth-service.js';
-import { validarCampoObrigatorio, validarEmail, validarSenha } from '../utils/validadores.js';
+import { validarFormularioRegistro } from '../utils/validadores.js';
 
 function inicializarRegistro() {
   let perfil = 'VIAJANTE';
@@ -9,26 +9,49 @@ function inicializarRegistro() {
   const grupo2 = document.getElementById('grupo-doc-2');
   const label2 = document.getElementById('label-doc-2');
   const input2 = document.getElementById('reg-doc-2');
+  const erroNome = document.getElementById('erro-reg-nome');
+  const erroEmail = document.getElementById('erro-reg-email');
+  const erroSenha = document.getElementById('erro-reg-senha');
+  const erroDoc1 = document.getElementById('erro-reg-doc-1');
+  const erroDoc2 = document.getElementById('erro-reg-doc-2');
+  const alerta = document.getElementById('alerta-registro');
   const form = document.getElementById('form-registro');
 
+  function limparErros() {
+    erroNome.textContent = '';
+    erroEmail.textContent = '';
+    erroSenha.textContent = '';
+    erroDoc1.textContent = '';
+    erroDoc2.textContent = '';
+    alerta.textContent = '';
+    alerta.classList.add('oculto');
+  }
+
   function atualizarCamposPerfil() {
+    limparErros();
     if (perfil === 'VIAJANTE') {
       label1.textContent = 'CPF *';
       input1.placeholder = '000.000.000-00';
+      input1.value = '';
       label2.textContent = 'Data de nascimento *';
       input2.type = 'date';
+      input2.placeholder = '';
       input2.value = '2075-04-12';
       grupo2.classList.remove('oculto');
     } else if (perfil === 'FRETISTA') {
       label1.textContent = 'CNPJ Intergaláctico *';
-      input1.placeholder = '00.000.000/0001-00';
+      input1.placeholder = '10.100.001/0001-01';
+      input1.value = '';
       label2.textContent = 'Razão Social *';
       input2.type = 'text';
-      input2.value = 'Odyssey Linhas Estelares';
+      input2.placeholder = 'Ex.: Odyssey Linhas Estelares';
+      input2.value = '';
       grupo2.classList.remove('oculto');
     } else {
       label1.textContent = 'Credencial Científica *';
-      input1.placeholder = 'IAU-2100-BR';
+      input1.placeholder = 'IAU-2100-001';
+      input1.value = '';
+      input2.value = '';
       grupo2.classList.add('oculto');
     }
   }
@@ -49,18 +72,31 @@ function inicializarRegistro() {
 
   form.addEventListener('submit', (evento) => {
     evento.preventDefault();
+    limparErros();
+
     const nome = document.getElementById('reg-nome').value;
     const email = document.getElementById('reg-email').value;
     const senha = document.getElementById('reg-senha').value;
+    const doc1 = input1.value;
+    const doc2 = input2.value;
 
-    const erroNome = document.getElementById('erro-reg-nome');
-    const erroEmail = document.getElementById('erro-reg-email');
-    const erroSenha = document.getElementById('erro-reg-senha');
-    erroNome.textContent = validarCampoObrigatorio(nome) ? '' : 'Informe seu nome.';
-    erroEmail.textContent = validarEmail(email) ? '' : 'Informe um e-mail válido.';
-    erroSenha.textContent = validarSenha(senha) ? '' : 'Mínimo 6 caracteres.';
+    const { valido, erros } = validarFormularioRegistro({
+      nome,
+      email,
+      senha,
+      perfil,
+      doc1,
+      doc2,
+    });
 
-    if (erroNome.textContent || erroEmail.textContent || erroSenha.textContent) {
+    if (!valido) {
+      erroNome.textContent = erros.nome || '';
+      erroEmail.textContent = erros.email || '';
+      erroSenha.textContent = erros.senha || '';
+      erroDoc1.textContent = erros.doc1 || '';
+      erroDoc2.textContent = erros.doc2 || '';
+      alerta.textContent = erros.doc1 || erros.doc2 || 'Verifique os campos destacados antes de continuar.';
+      alerta.classList.remove('oculto');
       return;
     }
 

@@ -73,12 +73,16 @@
             <div class="campo">
               <label id="label-doc-1" class="campo__rotulo" for="reg-doc-1">CPF *</label>
               <input id="reg-doc-1" class="campo__controle" type="text" placeholder="000.000.000-00" required>
+              <span id="erro-reg-doc-1" class="campo__erro"></span>
             </div>
             <div id="grupo-doc-2" class="campo">
               <label id="label-doc-2" class="campo__rotulo" for="reg-doc-2">Data de nascimento *</label>
               <input id="reg-doc-2" class="campo__controle" type="date" value="2075-04-12" required>
+              <span id="erro-reg-doc-2" class="campo__erro"></span>
             </div>
           </div>
+
+          <p id="alerta-registro" class="campo__erro oculto" role="alert"></p>
 
           <button id="btn-submit-registro" type="submit" class="botao botao--primario botao--grande botao--bloco">
             Criar conta

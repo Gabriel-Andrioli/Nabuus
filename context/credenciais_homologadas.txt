@@ -1,0 +1,55 @@
+================================================================================
+NABUUS — CREDENCIAIS DE ACESSO E CÓDIGOS HOMOLOGADOS PARA REGISTRO
+================================================================================
+Este documento lista as contas prontas para demonstração e os códigos oficiais
+homologados aceitos no cadastro de novos Astrônomos e Fretistas.
+
+--------------------------------------------------------------------------------
+1. CONTAS PRÉ-CADASTRADAS NO BANCO DE DADOS (SEED V2)
+--------------------------------------------------------------------------------
+Todas as contas iniciais utilizam a mesma senha padrão: 123456
+
+- Astrônomo : astronomo@nabuus.space  | Senha: 123456 | Credencial: IAU-2100-BR
+- Fretista  : fretista@nabuus.space   | Senha: 123456 | CNPJ: 12.345.678/0001-99
+- Passageiro: viajante@nabuus.space   | Senha: 123456 | CPF: 123.456.789-00
+
+--------------------------------------------------------------------------------
+2. CREDENCIAIS CIENTÍFICAS HOMOLOGADAS (NOVOS ASTRÔNOMOS)
+--------------------------------------------------------------------------------
+O registro de um novo usuário no perfil ASTRONOMO exige uma das 10 credenciais
+abaixo (e que ainda não esteja vinculada a outra conta):
+
+ 1. IAU-2100-BR   (já vinculada à conta seed astronomo@nabuus.space)
+ 2. IAU-2100-001
+ 3. IAU-2100-002
+ 4. IAU-2100-003
+ 5. IAU-2100-004
+ 6. IAU-2100-005
+ 7. IAU-2100-006
+ 8. IAU-2100-007
+ 9. IAU-2100-008
+10. IAU-2100-009
+
+--------------------------------------------------------------------------------
+3. CNPJS INTERGALÁCTICOS HOMOLOGADOS (NOVOS FRETISTAS)
+--------------------------------------------------------------------------------
+O registro de um novo usuário no perfil FRETISTA exige um dos 10 CNPJs abaixo
+(e que ainda não esteja vinculado a outra conta):
+
+ 1. 12.345.678/0001-99   (já vinculado à conta seed fretista@nabuus.space)
+ 2. 10.100.001/0001-01
+ 3. 10.100.002/0001-02
+ 4. 10.100.003/0001-03
+ 5. 10.100.004/0001-04
+ 6. 10.100.005/0001-05
+ 7. 10.100.006/0001-06
+ 8. 10.100.007/0001-07
+ 9. 10.100.008/0001-08
+10. 10.100.009/0001-09
+
+--------------------------------------------------------------------------------
+4. REGISTRO DE PASSAGEIROS (VIAJANTES)
+--------------------------------------------------------------------------------
+- Aberto a qualquer visitante, bastando informar nome completo, e-mail válido,
+  senha (mínimo 6 caracteres), CPF único e data de nascimento.
+================================================================================

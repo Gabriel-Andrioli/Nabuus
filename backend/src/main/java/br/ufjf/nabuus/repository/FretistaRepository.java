@@ -5,4 +5,6 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FretistaRepository extends JpaRepository<Fretista, UUID> {
+
+    boolean existsByCnpjIntergalactico(String cnpjIntergalactico);
 }

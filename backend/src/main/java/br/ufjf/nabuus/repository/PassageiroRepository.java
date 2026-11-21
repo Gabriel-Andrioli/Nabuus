@@ -5,4 +5,6 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PassageiroRepository extends JpaRepository<Passageiro, UUID> {
+
+    boolean existsByCpf(String cpf);
 }
