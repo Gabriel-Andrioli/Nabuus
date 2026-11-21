@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.UUID;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +40,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (jwtService.tokenValido(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
             String email = jwtService.extrairEmail(token);
             UserDetails details = usuarioDetailsService.loadUserByUsername(email);
+            if (!(details instanceof UsuarioAutenticado)) {
+                UUID userId = jwtService.extrairUserId(token);
+                if (userId != null) {
+                    String senha = details.getPassword() != null ? details.getPassword() : "";
+                    details = new UsuarioAutenticado(userId, details.getUsername(), senha, details.getAuthorities());
+                }
+            }
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 details,
                 null,

@@ -1,6 +1,7 @@
 package br.ufjf.nabuus.controller;
 
 import br.ufjf.nabuus.dto.logistica.OnibusEspacialDTO;
+import br.ufjf.nabuus.security.UsuarioAutenticado;
 import br.ufjf.nabuus.service.FrotaService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,24 +31,30 @@ public class OnibusController {
     }
 
     @GetMapping
-    public List<OnibusEspacialDTO> listar(@RequestHeader("X-User-Id") UUID fretistaId) {
-        return frotaService.listarPorFretista(fretistaId);
+    public List<OnibusEspacialDTO> listar(
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
+    ) {
+        return frotaService.listarPorFretista(UsuarioAutenticado.resolverId(authentication, headerUserId));
     }
 
     @PostMapping
     public ResponseEntity<OnibusEspacialDTO> cadastrar(
         @Valid @RequestBody OnibusEspacialDTO dto,
-        @RequestHeader("X-User-Id") UUID fretistaId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
+        UUID fretistaId = UsuarioAutenticado.resolverId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(frotaService.cadastrar(dto, fretistaId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> remover(
         @PathVariable Long id,
-        @RequestHeader("X-User-Id") UUID fretistaId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        frotaService.inativar(id, fretistaId);
+        frotaService.inativar(id, UsuarioAutenticado.resolverId(authentication, headerUserId));
         return ResponseEntity.noContent().build();
     }
 }

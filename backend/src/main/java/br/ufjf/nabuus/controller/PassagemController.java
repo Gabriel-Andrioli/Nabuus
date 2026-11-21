@@ -2,6 +2,7 @@ package br.ufjf.nabuus.controller;
 
 import br.ufjf.nabuus.dto.logistica.PassagemComprarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.PassagemResponseDTO;
+import br.ufjf.nabuus.security.UsuarioAutenticado;
 import br.ufjf.nabuus.service.PassagemService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,24 +32,30 @@ public class PassagemController {
     }
 
     @GetMapping("/minhas")
-    public List<PassagemResponseDTO> listarMinhas(@RequestHeader("X-User-Id") UUID passageiroId) {
-        return passagemService.listarMinhas(passageiroId);
+    public List<PassagemResponseDTO> listarMinhas(
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
+    ) {
+        return passagemService.listarMinhas(UsuarioAutenticado.resolverId(authentication, headerUserId));
     }
 
     @PostMapping("/comprar")
     public ResponseEntity<PassagemResponseDTO> comprar(
         @Valid @RequestBody PassagemComprarRequestDTO dto,
-        @RequestHeader("X-User-Id") UUID passageiroId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
+        UUID passageiroId = UsuarioAutenticado.resolverId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(passagemService.comprar(dto, passageiroId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> remover(
         @PathVariable Long id,
-        @RequestHeader("X-User-Id") UUID passageiroId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
-        passagemService.excluir(id, passageiroId);
+        passagemService.excluir(id, UsuarioAutenticado.resolverId(authentication, headerUserId));
         return ResponseEntity.noContent().build();
     }
 }

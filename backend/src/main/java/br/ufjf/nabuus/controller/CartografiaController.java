@@ -4,6 +4,7 @@ import br.ufjf.nabuus.dto.cartografia.PlanetaDTO;
 import br.ufjf.nabuus.dto.cartografia.RotaLumicaDTO;
 import br.ufjf.nabuus.dto.cartografia.SistemaSolarDTO;
 import br.ufjf.nabuus.dto.cartografia.TipoPropulsaoDTO;
+import br.ufjf.nabuus.security.UsuarioAutenticado;
 import br.ufjf.nabuus.service.CartografiaService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,8 +42,10 @@ public class CartografiaController {
     @PreAuthorize("hasRole('ASTRONOMO')")
     public ResponseEntity<SistemaSolarDTO> cadastrarSistema(
         @Valid @RequestBody SistemaSolarDTO dto,
-        @RequestHeader("X-User-Id") UUID astronomoId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
+        UUID astronomoId = UsuarioAutenticado.resolverId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartografiaService.cadastrarSistema(dto, astronomoId));
     }
 
@@ -65,8 +69,10 @@ public class CartografiaController {
     @PreAuthorize("hasRole('ASTRONOMO')")
     public ResponseEntity<TipoPropulsaoDTO> cadastrarPropulsao(
         @Valid @RequestBody TipoPropulsaoDTO dto,
-        @RequestHeader("X-User-Id") UUID astronomoId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
+        UUID astronomoId = UsuarioAutenticado.resolverId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartografiaService.cadastrarPropulsao(dto, astronomoId));
     }
 
@@ -79,8 +85,10 @@ public class CartografiaController {
     @PreAuthorize("hasRole('ASTRONOMO')")
     public ResponseEntity<RotaLumicaDTO> cadastrarRotaLumica(
         @Valid @RequestBody RotaLumicaDTO dto,
-        @RequestHeader("X-User-Id") UUID astronomoId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
+        UUID astronomoId = UsuarioAutenticado.resolverId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartografiaService.cadastrarRotaLumica(dto, astronomoId));
     }
 

@@ -3,6 +3,7 @@ package br.ufjf.nabuus.controller;
 import br.ufjf.nabuus.dto.logistica.ViagemPublicarRequestDTO;
 import br.ufjf.nabuus.dto.logistica.ViagemResponseDTO;
 import br.ufjf.nabuus.dto.motor.SugestaoPrecoResponseDTO;
+import br.ufjf.nabuus.security.UsuarioAutenticado;
 import br.ufjf.nabuus.service.ViagemService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,8 +46,11 @@ public class ViagemController {
 
     @GetMapping("/fretista")
     @PreAuthorize("hasRole('FRETISTA')")
-    public List<ViagemResponseDTO> listarDoFretista(@RequestHeader("X-User-Id") UUID fretistaId) {
-        return viagemService.listarDoFretista(fretistaId);
+    public List<ViagemResponseDTO> listarDoFretista(
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
+    ) {
+        return viagemService.listarDoFretista(UsuarioAutenticado.resolverId(authentication, headerUserId));
     }
 
     @PostMapping("/sugerir-preco")
@@ -58,8 +63,10 @@ public class ViagemController {
     @PreAuthorize("hasRole('FRETISTA')")
     public ResponseEntity<ViagemResponseDTO> publicar(
         @Valid @RequestBody ViagemPublicarRequestDTO dto,
-        @RequestHeader("X-User-Id") UUID fretistaId
+        Authentication authentication,
+        @RequestHeader(value = "X-User-Id", required = false) UUID headerUserId
     ) {
+        UUID fretistaId = UsuarioAutenticado.resolverId(authentication, headerUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(viagemService.publicar(dto, fretistaId));
     }
 }

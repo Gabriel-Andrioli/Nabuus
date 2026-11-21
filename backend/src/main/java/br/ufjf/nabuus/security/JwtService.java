@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,11 @@ public class JwtService {
 
     public String extrairEmail(String token) {
         return extrairClaims(token).getSubject();
+    }
+
+    public UUID extrairUserId(String token) {
+        String userId = extrairClaims(token).get("userId", String.class);
+        return userId != null ? UUID.fromString(userId) : null;
     }
 
     public boolean tokenValido(String token) {
