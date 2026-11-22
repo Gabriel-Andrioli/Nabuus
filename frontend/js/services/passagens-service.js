@@ -149,6 +149,16 @@ export function obterClassePorPoltrona(codigo, totalAssentos = 24) {
   return fileira ? fileira.classeNome : 'Executiva';
 }
 
+export function validarPoltronaParaClasse(poltrona, classeEscolhida, totalAssentos = 24) {
+  const classePoltrona = obterClassePorPoltrona(poltrona, totalAssentos);
+  const valida = classePoltrona === classeEscolhida;
+  return {
+    valida,
+    classePoltrona,
+    classeEscolhida,
+  };
+}
+
 export function obterPerfilPoltronaOcupada(poltrona) {
   return PERFIS_CO_PASSAGEIROS[poltrona] || {
     nome: 'Viajante Procedural',

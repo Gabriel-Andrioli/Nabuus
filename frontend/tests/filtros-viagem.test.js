@@ -15,6 +15,7 @@ import {
   obterCenarioAtivoDaViagem,
   obterMultiplicadorClasse,
   obterPercentualAlimentacao,
+  validarPoltronaParaClasse,
 } from '../js/services/passagens-service.js';
 import { filtrarViagens, ordenarViagens } from '../js/utils/filtros-viagem.js';
 
@@ -286,6 +287,22 @@ test('deveLimitarOfertaDeAssentosAte24EConstruirMapaDePoltronasCoerente', () => 
     const codigosValidos = listarCodigosPoltronasCabine(10);
     assert.ok(criada.assentosOcupados.every((c) => codigosValidos.includes(c)));
     assert.ok(criada.assentosOcupados.length < codigosValidos.length);
+
+    assert.deepEqual(validarPoltronaParaClasse('01A', 'Luxo', 24), {
+      valida: true,
+      classePoltrona: 'Luxo',
+      classeEscolhida: 'Luxo',
+    });
+    assert.deepEqual(validarPoltronaParaClasse('01A', 'Executiva', 24), {
+      valida: false,
+      classePoltrona: 'Luxo',
+      classeEscolhida: 'Executiva',
+    });
+    assert.deepEqual(validarPoltronaParaClasse('02C', 'Primeira classe', 24), {
+      valida: true,
+      classePoltrona: 'Primeira classe',
+      classeEscolhida: 'Primeira classe',
+    });
   } finally {
     if (storageOriginal === undefined) {
       delete globalThis.localStorage;

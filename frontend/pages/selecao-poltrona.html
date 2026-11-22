@@ -25,7 +25,7 @@
       <span>01 Viagem / 02 Poltrona</span>
     </div>
     <h1 class="titulo-pagina">Escolha sua poltrona</h1>
-    <p class="texto-secundario">A região da poltrona define a classe da viagem. Clique em uma poltrona ocupada para ver o perfil procedural.</p>
+    <p class="texto-secundario">Apenas poltronas da classe escolhida podem ser selecionadas. Clique em uma poltrona ocupada para ver o perfil procedural.</p>
 
     <div class="layout-duas-colunas">
       <section class="card lista-pilha" aria-label="Mapa de poltronas">
@@ -38,10 +38,13 @@
         </div>
 
         <div class="cabine__legenda">
-          <span>□ Disponível</span>
+          <span>□ Disponível (sua classe)</span>
+          <span>◌ Outra classe (livre)</span>
           <span>× Ocupada</span>
           <span class="texto-acento">■ Sua seleção</span>
         </div>
+
+        <div id="alerta-classe-poltrona" class="estado-painel estado-painel--erro cabine__alerta oculto" role="alert"></div>
 
         <div id="planta-cabine" class="cabine"></div>
       </section>

@@ -75,6 +75,26 @@
   color: var(--cor-texto-secundario);
 }
 
+.poltrona--outra-classe {
+  border-style: dashed;
+  border-color: var(--cor-borda-padrao);
+  background-color: transparent;
+  color: var(--cor-texto-mutado);
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.poltrona--outra-classe:hover {
+  border-color: var(--cor-borda-painel);
+}
+
+.cabine__alerta {
+  padding: var(--espaco-md);
+  text-align: left;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-primario);
+}
+
 .poltrona--selecionada {
   background-color: var(--cor-acento-lavanda);
   color: var(--cor-superficie-card);

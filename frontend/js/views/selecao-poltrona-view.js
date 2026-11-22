@@ -8,6 +8,7 @@ import {
   obterSelecaoAtual,
   obterTotalAssentosViagem,
   obterViagemSelecionada,
+  validarPoltronaParaClasse,
 } from '../services/passagens-service.js';
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
 import { formatarCreditos } from '../utils/formatadores.js';
@@ -19,23 +20,34 @@ function inicializarSelecaoPoltrona() {
   const viagem = obterViagemSelecionada();
   let sel = obterSelecaoAtual();
   const resumo = obterCenarioAtivoDaViagem(viagem, sel);
-  const classesDisponiveis = viagem.classes || ['Executiva', 'Primeira classe', 'Luxo'];
   const totalAssentos = obterTotalAssentosViagem(viagem);
   const fileiras = construirFileirasCabine(totalAssentos);
 
-  document.getElementById('cabine-capacidade-texto').textContent = `${totalAssentos} poltronas · 1 viajante`;
+  if (sel.poltrona && !validarPoltronaParaClasse(sel.poltrona, resumo.classe, totalAssentos).valida) {
+    sel = atualizarSelecaoAtual({ poltrona: null });
+  }
+
+  document.getElementById('cabine-capacidade-texto').textContent =
+    `${totalAssentos} poltronas · 1 viajante · Classe ${resumo.classe}`;
   document.getElementById('poltrona-destino').textContent = viagem.destinoNome;
   document.getElementById('poltrona-partida').textContent =
     `${viagem.origemNome} · ${viagem.partidaTexto} · ${resumo.opcao.propulsaoNome}`;
   document.getElementById('poltrona-custo').textContent = formatarCreditos(resumo.precoFinal);
 
   const plantaEl = document.getElementById('planta-cabine');
+  const alertaClasseEl = document.getElementById('alerta-classe-poltrona');
   const modalPerfil = document.getElementById('modal-perfil-procedural');
   const btnConfirmar = document.getElementById('btn-confirmar-poltrona');
+
+  function limparAlertaClasse() {
+    alertaClasseEl.textContent = '';
+    alertaClasseEl.classList.add('oculto');
+  }
 
   function renderizarPlanta() {
     sel = obterSelecaoAtual();
     const resumoAtual = obterCenarioAtivoDaViagem(viagem, sel);
+    const classeEscolhida = resumoAtual.classe;
     document.getElementById('poltrona-custo').textContent = formatarCreditos(resumoAtual.precoFinal);
     limparElemento(plantaEl);
 
@@ -50,7 +62,7 @@ function inicializarSelecaoPoltrona() {
       if (f.zona) {
         plantaEl.appendChild(criarElemento('p', { className: 'cabine__zona-titulo', text: f.zona }));
       }
-      const classeHabilitada = classesDisponiveis.includes(f.classeNome);
+      const classeCorresponde = f.classeNome === classeEscolhida;
       const linha = criarElemento('div', { className: 'cabine__fileira' });
 
       const addColuna = (letra) => {
@@ -60,15 +72,21 @@ function inicializarSelecaoPoltrona() {
         }
         const codigo = `${f.num}${letra}`;
         const ocupada = viagem.assentosOcupados.includes(codigo);
-        const selecionada = sel.poltrona === codigo;
+        const selecionada = !ocupada && classeCorresponde && sel.poltrona === codigo;
         let texto = codigo;
         let mod = '';
+        let estadoAria = 'disponível';
         if (ocupada) {
           texto = `${codigo} ×`;
           mod = ' poltrona--ocupada';
+          estadoAria = 'ocupada';
+        } else if (!classeCorresponde) {
+          mod = ' poltrona--outra-classe';
+          estadoAria = 'livre em outra classe';
         } else if (selecionada) {
           texto = `${codigo} ✓`;
           mod = ' poltrona--selecionada';
+          estadoAria = 'selecionada';
         }
 
         const btn = criarElemento('button', {
@@ -77,8 +95,7 @@ function inicializarSelecaoPoltrona() {
           text: texto,
           dataset: { poltrona: codigo, ocupada: String(ocupada), classe: f.classeNome },
           attrs: {
-            'aria-label': `Poltrona ${codigo} ${ocupada ? 'ocupada' : 'disponível'}`,
-            disabled: !ocupada && !classeHabilitada ? 'disabled' : null,
+            'aria-label': `Poltrona ${codigo} (${f.classeNome}) ${estadoAria}`,
           },
         });
         linha.appendChild(btn);
@@ -110,7 +127,7 @@ function inicializarSelecaoPoltrona() {
 
   plantaEl.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-poltrona]');
-    if (!btn || btn.disabled) {
+    if (!btn) {
       return;
     }
     const codigo = btn.dataset.poltrona;
@@ -122,7 +139,18 @@ function inicializarSelecaoPoltrona() {
       modalPerfil.classList.remove('oculto');
       return;
     }
-    atualizarSelecaoAtual({ poltrona: codigo, classe: btn.dataset.classe });
+
+    const resumoAtual = obterCenarioAtivoDaViagem(viagem, obterSelecaoAtual());
+    const checagem = validarPoltronaParaClasse(codigo, resumoAtual.classe, totalAssentos);
+    if (!checagem.valida) {
+      alertaClasseEl.textContent =
+        `Você escolheu a classe ${checagem.classeEscolhida}, mas a poltrona ${codigo} pertence à classe ${checagem.classePoltrona}. Selecione uma poltrona da classe ${checagem.classeEscolhida} ou volte aos detalhes para alterar a classe.`;
+      alertaClasseEl.classList.remove('oculto');
+      return;
+    }
+
+    limparAlertaClasse();
+    atualizarSelecaoAtual({ poltrona: codigo });
     renderizarPlanta();
   });
 
@@ -131,6 +159,7 @@ function inicializarSelecaoPoltrona() {
   });
 
   document.getElementById('btn-limpar-poltrona').addEventListener('click', () => {
+    limparAlertaClasse();
     atualizarSelecaoAtual({ poltrona: null });
     renderizarPlanta();
   });
