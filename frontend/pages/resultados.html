@@ -23,7 +23,7 @@
       <h1 id="titulo-resultados" class="titulo-pagina">Viagens</h1>
       <p class="texto-secundario">Consulte naves, datas de partida, classes, propulsões e disponibilidade de Rota Lúmica.</p>
 
-      <form id="form-busca-topo" class="barra-busca-topo">
+      <form id="form-busca-topo" class="barra-busca-topo" novalidate>
         <div class="campo">
           <label class="campo__rotulo" for="busca-origem">Origem</label>
           <input id="busca-origem" class="campo__controle" type="text" value="Terra · Sistema Solar" readonly>
@@ -36,10 +36,36 @@
         </div>
         <div class="campo">
           <label class="campo__rotulo" for="busca-partida">Partida</label>
-          <input id="busca-partida" class="campo__controle" type="text" value="Janeiro de 2100">
+          <div class="campo-data">
+            <input
+              id="busca-partida"
+              class="campo__controle campo-data__input"
+              type="text"
+              inputmode="numeric"
+              maxlength="10"
+              placeholder="dd/mm/aaaa"
+              value="15/01/2100"
+              required
+            >
+            <button
+              id="btn-calendario-busca-partida"
+              type="button"
+              class="campo-data__botao"
+              aria-label="Selecionar data de partida no calendário"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </button>
+            <input id="busca-partida-picker" class="campo-data__picker" type="date" tabindex="-1" aria-hidden="true">
+          </div>
         </div>
         <button type="submit" class="botao botao--secundario botao--grande">Atualizar busca →</button>
       </form>
+      <p id="erro-busca-partida" class="campo__erro oculto" role="alert"></p>
     </section>
 
     <div class="layout-resultados">

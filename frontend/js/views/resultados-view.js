@@ -3,6 +3,13 @@ import { atualizarSelecaoAtual } from '../services/passagens-service.js';
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
 import { filtrarViagens, ordenarViagens } from '../utils/filtros-viagem.js';
 import { formatarDistanciaAnosLuz, formatarVelocidadeC } from '../utils/formatadores.js';
+import {
+  converterPartidaTextoParaIso,
+  formatarDataNascimentoDigitada,
+  formatarIsoParaDataBr,
+  normalizarDataNascimentoParaIso,
+  validarDataPartida,
+} from '../utils/validadores.js';
 import { renderizarBarraNavegacao, renderizarEstado } from './navegacao-comum.js';
 
 function inicializarResultados() {
@@ -10,11 +17,120 @@ function inicializarResultados() {
 
   const selectDestino = document.getElementById('busca-destino');
   const inputPartida = document.getElementById('busca-partida');
+  const pickerPartida = document.getElementById('busca-partida-picker');
+  const btnCalendarioPartida = document.getElementById('btn-calendario-busca-partida');
+  const erroPartida = document.getElementById('erro-busca-partida');
   const listaViagensEl = document.getElementById('lista-viagens');
   const contadorEl = document.getElementById('contador-viagens');
   const chipsEl = document.getElementById('chips-filtros');
   const filtroDistancia = document.getElementById('filtro-distancia');
   const selectOrdenacao = document.getElementById('select-ordenacao');
+
+  function limparErroPartida() {
+    erroPartida.textContent = '';
+    erroPartida.classList.add('oculto');
+  }
+
+  function mostrarErroPartida(mensagem) {
+    erroPartida.textContent = mensagem;
+    erroPartida.classList.remove('oculto');
+  }
+
+  function obterDataMinimaPartida() {
+    const amanha = new Date();
+    amanha.setDate(amanha.getDate() + 1);
+    const ano = amanha.getFullYear();
+    const mes = String(amanha.getMonth() + 1).padStart(2, '0');
+    const dia = String(amanha.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  function normalizarPartidaBuscaParaDataBr(valor) {
+    const iso = converterPartidaTextoParaIso(valor);
+    return iso ? formatarIsoParaDataBr(iso) : '15/01/2100';
+  }
+
+  function calcularPosicaoCursorData(digitosAntes) {
+    if (digitosAntes <= 2) {
+      return digitosAntes;
+    }
+    if (digitosAntes <= 4) {
+      return digitosAntes + 1;
+    }
+    return digitosAntes + 2;
+  }
+
+  function aplicarMascaraDataPartida() {
+    const valorAnterior = inputPartida.value;
+    const inicioSelecao = inputPartida.selectionStart ?? valorAnterior.length;
+    const digitosAntes = Math.min(
+      valorAnterior.slice(0, inicioSelecao).replace(/\D/g, '').length,
+      8
+    );
+    const formatado = formatarDataNascimentoDigitada(valorAnterior);
+    inputPartida.value = formatado;
+    const novaPosicao = Math.min(calcularPosicaoCursorData(digitosAntes), formatado.length);
+    inputPartida.setSelectionRange(novaPosicao, novaPosicao);
+    limparErroPartida();
+  }
+
+  pickerPartida.min = obterDataMinimaPartida();
+  pickerPartida.max = '9999-12-31';
+
+  inputPartida.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Backspace') {
+      const inicio = inputPartida.selectionStart ?? 0;
+      const fim = inputPartida.selectionEnd ?? 0;
+      if (inicio === fim && inicio > 1 && inputPartida.value[inicio - 1] === '/') {
+        evento.preventDefault();
+        const semDigitoAnterior = inputPartida.value.slice(0, inicio - 2) + inputPartida.value.slice(inicio);
+        const digitosAntes = semDigitoAnterior.slice(0, inicio - 2).replace(/\D/g, '').length;
+        const formatado = formatarDataNascimentoDigitada(semDigitoAnterior);
+        inputPartida.value = formatado;
+        const novaPosicao = Math.min(calcularPosicaoCursorData(digitosAntes), formatado.length);
+        inputPartida.setSelectionRange(novaPosicao, novaPosicao);
+        limparErroPartida();
+      }
+      return;
+    }
+    if (evento.ctrlKey || evento.metaKey || evento.altKey || evento.key.length !== 1) {
+      return;
+    }
+    if (!/^\d$/.test(evento.key)) {
+      evento.preventDefault();
+      return;
+    }
+    const inicio = inputPartida.selectionStart ?? inputPartida.value.length;
+    const fim = inputPartida.selectionEnd ?? inputPartida.value.length;
+    const temSelecao = fim > inicio;
+    const totalDigitos = inputPartida.value.replace(/\D/g, '').length;
+    if (totalDigitos >= 8 && !temSelecao) {
+      evento.preventDefault();
+    }
+  });
+
+  inputPartida.addEventListener('input', aplicarMascaraDataPartida);
+
+  btnCalendarioPartida.addEventListener('click', () => {
+    const isoAtual = normalizarDataNascimentoParaIso(inputPartida.value);
+    pickerPartida.min = obterDataMinimaPartida();
+    pickerPartida.max = '9999-12-31';
+    pickerPartida.value = isoAtual || '';
+    if (typeof pickerPartida.showPicker === 'function') {
+      pickerPartida.showPicker();
+    } else {
+      pickerPartida.focus();
+      pickerPartida.click();
+    }
+  });
+
+  pickerPartida.addEventListener('change', () => {
+    if (!pickerPartida.value) {
+      return;
+    }
+    inputPartida.value = formatarIsoParaDataBr(pickerPartida.value);
+    limparErroPartida();
+  });
 
   const estado = lerEstado();
 
@@ -44,7 +160,7 @@ function inicializarResultados() {
 
   function aplicarEstadoNosControles(busca) {
     selectDestino.value = busca.destino || '';
-    inputPartida.value = busca.partida || 'Jan 2100';
+    inputPartida.value = normalizarPartidaBuscaParaDataBr(busca.partida);
     filtroDistancia.value = busca.distanciaMaximaAl || 'Infinity';
     selectOrdenacao.value = busca.ordenacao || 'relevancia';
     const propSelecionadas = busca.propulsoes || [];
@@ -65,7 +181,7 @@ function inicializarResultados() {
     const propParam = params.getAll('propulsao').filter(Boolean);
     const buscaInicial = {
       destino: params.get('destino') || '',
-      partida: params.get('partida') || 'Jan 2100',
+      partida: normalizarPartidaBuscaParaDataBr(params.get('partida')),
       propulsoes: propParam,
       distanciaMaximaAl: params.get('distancia') || 'Infinity',
       ordenacao: params.get('ordenacao') || 'relevancia',
@@ -230,10 +346,11 @@ function inicializarResultados() {
     filtroDistancia.value = 'Infinity';
     selectOrdenacao.value = 'relevancia';
     selectDestino.value = '';
-    inputPartida.value = 'Jan 2100';
+    inputPartida.value = '15/01/2100';
+    limparErroPartida();
     salvarUltimaBusca({
       destino: '',
-      partida: '',
+      partida: '15/01/2100',
       propulsoes: [],
       distanciaMaximaAl: 'Infinity',
       ordenacao: 'relevancia',
@@ -241,13 +358,22 @@ function inicializarResultados() {
     renderizar();
   }
 
-  document.getElementById('btn-aplicar-filtros').addEventListener('click', renderizar);
+  function validarPartidaEAtualizar() {
+    if (!validarDataPartida(inputPartida.value)) {
+      mostrarErroPartida('Informe uma data de partida válida no futuro (dd/mm/aaaa).');
+      return;
+    }
+    limparErroPartida();
+    renderizar();
+  }
+
+  document.getElementById('btn-aplicar-filtros').addEventListener('click', validarPartidaEAtualizar);
   document.getElementById('btn-limpar-filtros').addEventListener('click', limparFiltros);
-  selectOrdenacao.addEventListener('change', renderizar);
-  selectDestino.addEventListener('change', renderizar);
+  selectOrdenacao.addEventListener('change', validarPartidaEAtualizar);
+  selectDestino.addEventListener('change', validarPartidaEAtualizar);
   document.getElementById('form-busca-topo').addEventListener('submit', (e) => {
     e.preventDefault();
-    renderizar();
+    validarPartidaEAtualizar();
   });
 
   renderizar();

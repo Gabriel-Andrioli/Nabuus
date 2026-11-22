@@ -33,13 +33,40 @@
 
       <div class="campo">
         <label class="campo__rotulo" for="input-data">Data de partida</label>
-        <input id="input-data" class="campo__controle" type="date" name="data" value="2100-01-15">
+        <div class="campo-data">
+          <input
+            id="input-data"
+            class="campo__controle campo-data__input"
+            type="text"
+            name="data"
+            inputmode="numeric"
+            maxlength="10"
+            placeholder="dd/mm/aaaa"
+            value="15/01/2100"
+            required
+          >
+          <button
+            id="btn-calendario-home"
+            type="button"
+            class="campo-data__botao"
+            aria-label="Selecionar data de partida no calendário"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </button>
+          <input id="input-data-picker" class="campo-data__picker" type="date" tabindex="-1" aria-hidden="true">
+        </div>
       </div>
 
       <button type="submit" class="botao botao--primario botao--grande">
         Explorar viagens →
       </button>
     </form>
+    <p id="erro-input-data" class="campo__erro oculto" role="alert"></p>
   </main>
 
   <script type="module" src="js/views/home-view.js"></script>
