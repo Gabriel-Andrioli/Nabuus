@@ -10,41 +10,56 @@ actor "Passageiro" as Passageiro
 actor "Motor de Cálculo Físico" as MotorFisico <<Subsistema>>
 
 rectangle "Sistema Nabuus" {
-  package "UC1: Malha Cartográfica e Propulsões" {
-    usecase "UC1 — Gerenciar Malha Cartográfica\ne Tipos de Propulsão" as UC1
-    usecase "Cadastrar Sistemas, Planetas\n(com Postos de Recarga) e Rotas Lúmicas" as UC1_Malha
-    usecase "Cadastrar Tipos de Propulsão" as UC1_Prop
-    usecase "Editar/Remover Registros e\nSuspender Viagens Afetadas" as UC1_Manter
+  package "UC1: Malha Cartográfica, Propulsões e Naves" {
+    usecase "UC1 — Gerenciar Malha Cartográfica,\nPropulsões e Naves" as UC1
+    usecase "Cadastrar Sistemas Solares (RF-01)" as UC1_Sistemas
+    usecase "Cadastrar Planetas e Postos\nde Recarga (RF-02)" as UC1_Planetas
+    usecase "Definir Rotas Lúmicas (RF-03)" as UC1_Rotas
+    usecase "Cadastrar Tipos de Propulsão (RF-04)" as UC1_Prop
+    usecase "Editar/Remover Cadastros e\nSuspender Viagens (RF-05)" as UC1_Manter
+    usecase "Cadastrar e Gerenciar Ônibus Espaciais\n— 24/32/48 assentos (RF-06, RF-10)" as UC1_Nave
   }
 
-  package "UC2: Frota e Publicação (Cálculo Único)" {
-    usecase "Cadastrar e Gerenciar\nÔnibus Espacial" as UC2_Nave
-    usecase "UC2 — Publicar Viagem Espacial" as UC2
-    usecase "Sugerir Tarifação, Validar Autonomia,\nSimular Cenários e Ocupação" as UC2_Simular
-    usecase "Gerenciar Disponibilidade\nde Viagens" as UC2_Disp
+  package "UC2: Operação Comercial e Publicação (Cálculo Único)" {
+    usecase "UC2 — Criar e Publicar\nViagem Espacial (RF-07)" as UC2
+    usecase "Consultar/Aplicar Preço Sugerido\npor Destino e Nave (RF-08, RF-16)" as UC2_Preco
+    usecase "Gerenciar Disponibilidade\nde Viagens (RF-09)" as UC2_Disp
+    usecase "Validar Autonomia, Paradas\n(Regra Gulosa) e Rota 2D (RF-19)" as UC2_Rota
+    usecase "Calcular Duração, Dívida Temporal,\nPreços e Escalas (RF-17, RF-18, RF-20, RF-22)" as UC2_Calc
+    usecase "Gerar Ocupação Inicial\nde Assentos (RF-21)" as UC2_Ocup
   }
 
   package "UC3: Consulta de Viagens (Via Banco)" {
-    usecase "UC3 — Pesquisar Viagens\ne Comparar Com/Sem Lúmica" as UC3
-    usecase "Filtrar e Ordenar Viagens" as UC3_Filtro
-    usecase "Visualizar Rota no\nMapa Galáctico 2D" as UC3_Mapa
+    usecase "UC3 — Buscar Viagens e Comparar\nCenários Com/Sem Lúmica (RF-11, RF-13)" as UC3
+    usecase "Filtrar e Ordenar Viagens\n— Data/Localidade (RF-12)" as UC3_Filtro
+    usecase "Visualizar Rota no\nMapa Galáctico 2D (RF-15)" as UC3_Mapa
   }
 
   package "UC4: Reserva e Aquisição" {
-    usecase "UC4 — Comprar Passagem\nIntergaláctica" as UC4
+    usecase "UC4 — Escolher Propulsão, Classe/Criogenia,\nAlimentação, Assento e Comprar Passagem (RF-14)" as UC4
   }
 }
 
 Astronomo --> UC1
-UC1 <|-- UC1_Malha
+UC1 <|-- UC1_Sistemas
+UC1 <|-- UC1_Planetas
+UC1 <|-- UC1_Rotas
 UC1 <|-- UC1_Prop
 UC1 <|-- UC1_Manter
+UC1 <|-- UC1_Nave
 
-Fretista --> UC2_Nave
 Fretista --> UC2
 Fretista --> UC2_Disp
-UC2 ..> UC2_Simular : <<include>>
-UC2_Simular <-- MotorFisico
+UC2 ..> UC2_Preco : <<include>>
+UC2 ..> UC2_Rota : <<include>>
+UC2 ..> UC2_Calc : <<include>>
+UC2 ..> UC2_Ocup : <<include>>
+UC2 ..> UC1_Nave : <<include>>
+
+UC2_Preco <-- MotorFisico
+UC2_Rota <-- MotorFisico
+UC2_Calc <-- MotorFisico
+UC2_Ocup <-- MotorFisico
 
 Passageiro --> UC3
 UC3_Filtro ..> UC3 : <<extend>>
