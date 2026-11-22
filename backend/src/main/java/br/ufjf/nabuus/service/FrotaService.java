@@ -10,12 +10,15 @@ import br.ufjf.nabuus.repository.FretistaRepository;
 import br.ufjf.nabuus.repository.OnibusEspacialRepository;
 import br.ufjf.nabuus.repository.TipoPropulsaoRepository;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class FrotaService {
+
+    private static final Set<Integer> CAPACIDADES_PERMITIDAS = Set.of(24, 32, 48);
 
     private final OnibusEspacialRepository onibusRepository;
     private final FretistaRepository fretistaRepository;
@@ -40,6 +43,9 @@ public class FrotaService {
 
     @Transactional
     public OnibusEspacialDTO cadastrar(OnibusEspacialDTO dto, UUID fretistaId) {
+        if (dto.totalAssentos() == null || !CAPACIDADES_PERMITIDAS.contains(dto.totalAssentos())) {
+            throw new RegraDeNegocioException("A capacidade do ônibus espacial deve ser de 24, 32 ou 48 assentos.");
+        }
         Fretista fretista = fretistaRepository.findById(fretistaId)
             .orElseThrow(() -> new RecursoNaoEncontradoException("Fretista não encontrado."));
         TipoPropulsao propulsao = propulsaoRepository.findById(dto.tipoPropulsaoId())

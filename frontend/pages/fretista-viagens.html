@@ -87,13 +87,12 @@
               <span id="erro-fv-partida" class="campo__erro"></span>
             </div>
             <div class="campo">
-              <label class="campo__rotulo" for="fv-lugares">LUGARES OFERTADOS (MÁX. 24) *</label>
-              <input id="fv-lugares" class="campo__controle" type="number" value="24" min="1" max="24" step="1" required>
-              <span id="erro-fv-lugares" class="campo__erro"></span>
+              <label class="campo__rotulo" for="fv-lugares">ASSENTOS DA NAVE</label>
+              <input id="fv-lugares" class="campo__controle" type="text" value="24 poltronas" readonly>
             </div>
             <div class="campo">
               <label class="campo__rotulo" for="fv-preco">PREÇO POR VIAJANTE (CRÉDITOS)</label>
-              <input id="fv-preco" class="campo__controle" type="number" value="8600000000" min="0">
+              <input id="fv-preco" class="campo__controle" type="number" value="0" min="0">
               <span id="erro-fv-preco" class="campo__erro"></span>
             </div>
           </div>
@@ -105,10 +104,9 @@
 
         <aside class="card card--painel lista-pilha">
           <p class="card__eyebrow">PREÇO SUGERIDO</p>
-          <h2 class="card__titulo">Pelo Motor Físico</h2>
           <p id="sugestao-formula" class="texto-secundario">120 mi créditos (base) + 2 bi créditos/ano-luz</p>
-          <button id="btn-aplicar-sugestao" type="button" class="botao botao--primario">Consultar sugestão do Motor</button>
-          <p class="texto-mutado">O cálculo físico definitivo (tempos, dívida temporal, rota 2D e ocupação inicial) é executado uma única vez ao publicar.</p>
+          <button id="btn-aplicar-sugestao" type="button" class="botao botao--primario">Usar preço sugerido</button>
+          <p id="notificacao-preco-sugerido" class="notificacao-sucesso oculto" role="status" aria-live="polite"></p>
         </aside>
       </div>
     </section>

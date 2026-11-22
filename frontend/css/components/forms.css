@@ -122,3 +122,12 @@
   gap: var(--espaco-sm);
   margin-bottom: var(--espaco-lg);
 }
+
+.notificacao-sucesso {
+  font-size: var(--texto-xs);
+  color: var(--cor-acento-brilho);
+  background-color: var(--cor-superficie-destaque);
+  border: 1px solid var(--cor-borda-ativa);
+  border-radius: var(--raio-md);
+  padding: 0.5rem 0.75rem;
+}

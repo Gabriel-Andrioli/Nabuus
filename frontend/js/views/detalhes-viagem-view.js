@@ -30,7 +30,7 @@ function inicializarDetalhes() {
   if (buscaSalva.distanciaMaximaAl && buscaSalva.distanciaMaximaAl !== 'Infinity') {
     backParams.set('distancia', buscaSalva.distanciaMaximaAl);
   }
-  if (buscaSalva.ordenacao && buscaSalva.ordenacao !== 'relevancia') {
+  if (buscaSalva.ordenacao && buscaSalva.ordenacao !== 'relevancia' && buscaSalva.ordenacao !== 'data-mais-proxima') {
     backParams.set('ordenacao', buscaSalva.ordenacao);
   }
   const backQuery = backParams.toString();

@@ -158,11 +158,18 @@ function inicializarResultados() {
     );
   }
 
+  function normalizarOrdenacao(valor) {
+    if (valor === 'localidade-mais-proxima' || valor === 'menor-distancia') {
+      return 'localidade-mais-proxima';
+    }
+    return 'data-mais-proxima';
+  }
+
   function aplicarEstadoNosControles(busca) {
     selectDestino.value = busca.destino || '';
     inputPartida.value = normalizarPartidaBuscaParaDataBr(busca.partida);
     filtroDistancia.value = busca.distanciaMaximaAl || 'Infinity';
-    selectOrdenacao.value = busca.ordenacao || 'relevancia';
+    selectOrdenacao.value = normalizarOrdenacao(busca.ordenacao);
     const propSelecionadas = busca.propulsoes || [];
     for (const chk of document.querySelectorAll('input[name="propulsao"]')) {
       chk.checked = propSelecionadas.includes(chk.value);
@@ -184,7 +191,7 @@ function inicializarResultados() {
       partida: normalizarPartidaBuscaParaDataBr(params.get('partida')),
       propulsoes: propParam,
       distanciaMaximaAl: params.get('distancia') || 'Infinity',
-      ordenacao: params.get('ordenacao') || 'relevancia',
+      ordenacao: normalizarOrdenacao(params.get('ordenacao')),
     };
     aplicarEstadoNosControles(buscaInicial);
     salvarUltimaBusca(buscaInicial);
@@ -198,7 +205,7 @@ function inicializarResultados() {
       partida: inputPartida.value,
       propulsoes,
       distanciaMaximaAl: filtroDistancia.value,
-      ordenacao: selectOrdenacao.value,
+      ordenacao: normalizarOrdenacao(selectOrdenacao.value),
     };
     salvarUltimaBusca(buscaAtual);
 
@@ -215,7 +222,7 @@ function inicializarResultados() {
     if (buscaAtual.distanciaMaximaAl !== 'Infinity') {
       urlParams.set('distancia', buscaAtual.distanciaMaximaAl);
     }
-    if (buscaAtual.ordenacao !== 'relevancia') {
+    if (buscaAtual.ordenacao !== 'data-mais-proxima') {
       urlParams.set('ordenacao', buscaAtual.ordenacao);
     }
     const query = urlParams.toString();
@@ -235,7 +242,8 @@ function inicializarResultados() {
         propulsoes,
         distanciaMaximaAl,
       }),
-      selectOrdenacao.value
+      normalizarOrdenacao(selectOrdenacao.value),
+      { dataReferencia: inputPartida.value }
     );
 
     contadorEl.textContent = `${filtradas.length} viagens encontradas`;
@@ -344,7 +352,7 @@ function inicializarResultados() {
       chk.checked = false;
     }
     filtroDistancia.value = 'Infinity';
-    selectOrdenacao.value = 'relevancia';
+    selectOrdenacao.value = 'data-mais-proxima';
     selectDestino.value = '';
     inputPartida.value = '15/01/2100';
     limparErroPartida();
@@ -353,7 +361,7 @@ function inicializarResultados() {
       partida: '15/01/2100',
       propulsoes: [],
       distanciaMaximaAl: 'Infinity',
-      ordenacao: 'relevancia',
+      ordenacao: 'data-mais-proxima',
     });
     renderizar();
   }
@@ -369,7 +377,7 @@ function inicializarResultados() {
 
   document.getElementById('btn-aplicar-filtros').addEventListener('click', validarPartidaEAtualizar);
   document.getElementById('btn-limpar-filtros').addEventListener('click', limparFiltros);
-  selectOrdenacao.addEventListener('change', validarPartidaEAtualizar);
+  selectOrdenacao.addEventListener('change', renderizar);
   selectDestino.addEventListener('change', validarPartidaEAtualizar);
   document.getElementById('form-busca-topo').addEventListener('submit', (e) => {
     e.preventDefault();

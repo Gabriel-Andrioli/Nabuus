@@ -10,11 +10,22 @@ import {
 } from './api-client.js';
 import { construirFileirasCabine, listarCodigosPoltronasCabine } from './passagens-service.js';
 import {
-  MAX_ASSENTOS_VIAGEM,
   converterPartidaTextoParaIso,
   formatarIsoParaPartidaTexto,
-  validarAssentosOfertadosViagem,
+  validarTotalAssentos,
 } from '../utils/validadores.js';
+
+const UA_METROS = 1.496e11;
+const AL_METROS = 9.4607e15;
+
+const MAPA_ID_PROPULSAO_BACKEND = Object.freeze({
+  QUIMICA: 1,
+  VELA_SOLAR: 2,
+  VELA_LASER: 3,
+  FISSAO_PULSADA: 4,
+  FUSAO: 5,
+  ANTIMATERIA: 6,
+});
 
 export function listarFrota() {
   return lerEstado().onibusFrota;
@@ -24,14 +35,26 @@ export function listarViagensFretista() {
   return lerEstado().viagens;
 }
 
+export function calcularDistanciaDestinoAl(planetaDestino, sistemaDestino) {
+  if (sistemaDestino && Number(sistemaDestino.distanciaSolAl) > 0) {
+    return Number(sistemaDestino.distanciaSolAl);
+  }
+  if (planetaDestino) {
+    const distUa = Number(planetaDestino.distanciaEstrelaUA ?? 1.0);
+    return Number(Math.max(0.00001, (Math.abs(distUa - 1.0) * UA_METROS) / AL_METROS).toFixed(6));
+  }
+  return 4.24;
+}
+
 /** Aciona o Back-End Java (ou Motor Físico) quando disponível, com fallback local. */
 export async function sugerirPrecoPorPropulsao(propulsaoId) {
   const estado = lerEstado();
   const prop = estado.propulsoes.find((p) => p.id === Number(propulsaoId)) || estado.propulsoes[0];
+  const propBackendId = MAPA_ID_PROPULSAO_BACKEND[prop.codigo] || prop.id;
   const sessao = lerSessao();
   if (sessao?.token && !String(sessao.token).startsWith('demo-jwt-')) {
     try {
-      return await requisicaoHttp(`${API_JAVA_BASE_URL}/viagens/sugerir-preco?tipoPropulsaoId=${prop.id}`, {
+      return await requisicaoHttp(`${API_JAVA_BASE_URL}/viagens/sugerir-preco?tipoPropulsaoId=${propBackendId}`, {
         method: 'POST',
       });
     } catch {
@@ -56,11 +79,36 @@ export async function sugerirPrecoPorPropulsao(propulsaoId) {
   }
 }
 
-export function publicarOuAtualizarViagem(dados) {
-  if (dados.totalAssentos !== undefined && !validarAssentosOfertadosViagem(dados.totalAssentos)) {
-    throw new Error('Informe entre 1 e 24 assentos ofertados por viagem.');
-  }
+export function calcularPrecoSugeridoViagem({ destinoNome, onibusId, sugestaoBase } = {}) {
+  const estado = lerEstado();
+  const nave = estado.onibusFrota.find((o) => o.id === Number(onibusId)) || estado.onibusFrota[0];
+  const prop = estado.propulsoes.find((p) => p.id === nave?.tipoPropulsaoId || p.nome === nave?.propulsaoNome)
+    || estado.propulsoes[0];
+  const planetaDestino = estado.planetas.find((p) => p.nome === destinoNome)
+    || estado.planetas.find((p) => p.nome !== 'Terra');
+  const sistemaDestino = estado.sistemas.find((s) => s.id === planetaDestino?.sistemaId);
+  const distanciaAl = calcularDistanciaDestinoAl(planetaDestino, sistemaDestino);
 
+  const precoBaseSugerido = Number(sugestaoBase?.precoBaseSugerido ?? prop.precoBaseReferencia);
+  const custoAnoLuzSugerido = Number(sugestaoBase?.custoAnoLuzSugerido ?? prop.custoAnoLuzReferencia);
+  const custoPorParada = Number(sugestaoBase?.custoPorParada ?? 50_000_000);
+  const autonomiaAl = Math.max(0.1, Number(nave?.autonomiaAl || prop.autonomiaAnosLuz || 4));
+  const paradas = distanciaAl > autonomiaAl ? Math.max(0, Math.ceil(distanciaAl / autonomiaAl) - 1) : 0;
+  const precoSugerido = Math.round(precoBaseSugerido + custoAnoLuzSugerido * distanciaAl + paradas * custoPorParada);
+
+  return {
+    precoSugerido,
+    precoBaseSugerido,
+    custoAnoLuzSugerido,
+    custoPorParada,
+    distanciaAl,
+    paradas,
+    destinoNome: planetaDestino?.nome || destinoNome,
+    onibusId: nave?.id,
+  };
+}
+
+export function publicarOuAtualizarViagem(dados) {
   const estado = lerEstado();
   const nave = estado.onibusFrota.find((o) => o.id === Number(dados.onibusId)) || estado.onibusFrota[0];
   const prop = estado.propulsoes.find((p) => p.id === nave?.tipoPropulsaoId || p.nome === (nave?.propulsaoNome || dados.propulsaoNome))
@@ -68,12 +116,12 @@ export function publicarOuAtualizarViagem(dados) {
   const planetaDestino = estado.planetas.find((p) => p.nome === dados.destinoNome) || estado.planetas.find((p) => p.nome !== 'Terra');
   const sistemaDestino = estado.sistemas.find((s) => s.id === planetaDestino?.sistemaId);
   const rotaLumica = estado.rotasLumicas.find((r) => r.destinoSistemaId === planetaDestino?.sistemaId) || null;
-  const distanciaAl = dados.distanciaAl || (sistemaDestino?.distanciaSolAl > 0 ? sistemaDestino.distanciaSolAl : 4.24);
+  const distanciaAl = dados.distanciaAl !== undefined
+    ? Number(dados.distanciaAl)
+    : calcularDistanciaDestinoAl(planetaDestino, sistemaDestino);
   const dataPartidaIso = converterPartidaTextoParaIso(dados.dataPartidaIso || dados.partidaTexto) || '2100-01-15';
   const partidaTexto = formatarIsoParaPartidaTexto(dataPartidaIso) || '15 Jan 2100';
-  const totalAssentos = dados.totalAssentos !== undefined
-    ? Number(dados.totalAssentos)
-    : Math.min(MAX_ASSENTOS_VIAGEM, Math.max(1, Math.floor(Number(nave?.totalAssentos || MAX_ASSENTOS_VIAGEM))));
+  const totalAssentos = validarTotalAssentos(nave?.totalAssentos) ? Number(nave.totalAssentos) : 24;
   const classesPresentes = new Set(construirFileirasCabine(totalAssentos).map((f) => f.classeNome));
   const classesDisponiveis = ['Executiva', 'Primeira classe', 'Luxo'].filter((c) => classesPresentes.has(c));
   const codigosValidos = listarCodigosPoltronasCabine(totalAssentos);

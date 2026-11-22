@@ -1,5 +1,6 @@
 import { listarCatalogo } from '../services/cartografia-service.js';
 import {
+  calcularPrecoSugeridoViagem,
   excluirViagemFretista,
   listarFrota,
   listarViagensFretista,
@@ -9,7 +10,6 @@ import {
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
 import { formatarCreditos, formatarVelocidadeC } from '../utils/formatadores.js';
 import {
-  MAX_ASSENTOS_VIAGEM,
   converterPartidaTextoParaIso,
   formatarDataNascimentoDigitada,
   formatarIsoParaDataBr,
@@ -34,18 +34,78 @@ function inicializarFretistaViagens() {
   const inputLugares = document.getElementById('fv-lugares');
   const inputPreco = document.getElementById('fv-preco');
   const erroPartida = document.getElementById('erro-fv-partida');
-  const erroLugares = document.getElementById('erro-fv-lugares');
   const erroPreco = document.getElementById('erro-fv-preco');
+  const sugestaoFormulaEl = document.getElementById('sugestao-formula');
+  const notificacaoSugestao = document.getElementById('notificacao-preco-sugerido');
   const modal = document.getElementById('modal-excluir-viagem');
 
   let rascunho = null;
   let editandoId = null;
   let idParaExcluir = null;
+  let timeoutNotificacao = null;
+  let sequenciaSugestao = 0;
 
   function limparErrosFormulario() {
     erroPartida.textContent = '';
-    erroLugares.textContent = '';
     erroPreco.textContent = '';
+  }
+
+  function ocultarNotificacaoSugestao() {
+    if (timeoutNotificacao) {
+      clearTimeout(timeoutNotificacao);
+      timeoutNotificacao = null;
+    }
+    notificacaoSugestao.textContent = '';
+    notificacaoSugestao.classList.add('oculto');
+  }
+
+  function mostrarNotificacaoSugestao(mensagem) {
+    if (timeoutNotificacao) {
+      clearTimeout(timeoutNotificacao);
+    }
+    notificacaoSugestao.textContent = mensagem;
+    notificacaoSugestao.classList.remove('oculto');
+    timeoutNotificacao = setTimeout(() => {
+      notificacaoSugestao.classList.add('oculto');
+      timeoutNotificacao = null;
+    }, 4000);
+  }
+
+  function obterOnibusSelecionado() {
+    const frota = listarFrota();
+    return frota.find((o) => o.id === Number(selOnibus.value)) || frota[0];
+  }
+
+  function atualizarAssentosDaNaveSelecionada() {
+    const onibus = obterOnibusSelecionado();
+    const total = Number(onibus?.totalAssentos || 24);
+    inputLugares.value = `${total} poltronas`;
+  }
+
+  function formatarTextoFormulaSugestao(calculo) {
+    const baseFormula = `${formatarCreditos(calculo.precoBaseSugerido)} (base) + ${formatarCreditos(calculo.custoAnoLuzSugerido)}/ano-luz`;
+    if (calculo.paradas > 0) {
+      return `${baseFormula} + ${calculo.paradas} parada(s) (${formatarCreditos(calculo.paradas * calculo.custoPorParada)})`;
+    }
+    return baseFormula;
+  }
+
+  async function calcularEExibirFormulaSugestao() {
+    const token = ++sequenciaSugestao;
+    const onibus = obterOnibusSelecionado();
+    const destinoNome = selDestino.value;
+    const propId = onibus ? onibus.tipoPropulsaoId : 1;
+    const sugestaoBase = await sugerirPrecoPorPropulsao(propId);
+    const calculo = calcularPrecoSugeridoViagem({
+      destinoNome,
+      onibusId: onibus?.id,
+      sugestaoBase,
+    });
+    if (token !== sequenciaSugestao) {
+      return null;
+    }
+    sugestaoFormulaEl.textContent = formatarTextoFormulaSugestao(calculo);
+    return calculo;
   }
 
   function obterDataMinimaPartida() {
@@ -138,12 +198,19 @@ function inicializarFretistaViagens() {
     erroPartida.textContent = '';
   });
 
-  inputLugares.addEventListener('input', () => {
-    erroLugares.textContent = '';
-  });
-
   inputPreco.addEventListener('input', () => {
     erroPreco.textContent = '';
+  });
+
+  selDestino.addEventListener('change', () => {
+    ocultarNotificacaoSugestao();
+    void calcularEExibirFormulaSugestao();
+  });
+
+  selOnibus.addEventListener('change', () => {
+    atualizarAssentosDaNaveSelecionada();
+    ocultarNotificacaoSugestao();
+    void calcularEExibirFormulaSugestao();
   });
 
   for (const p of listarCatalogo('planetas')) {
@@ -159,7 +226,7 @@ function inicializarFretistaViagens() {
       : `${o.propulsaoNome} · ${formatarVelocidadeC(o.velocidadeC)}`;
     selOnibus.appendChild(
       criarElemento('option', {
-        text: `${o.identificacao} (${versoes})`,
+        text: `${o.identificacao} · ${o.totalAssentos || 24} poltronas (${versoes})`,
         attrs: { value: String(o.id) },
       })
     );
@@ -208,19 +275,20 @@ function inicializarFretistaViagens() {
 
   function abrirFormulario(viagem = null) {
     limparErrosFormulario();
+    ocultarNotificacaoSugestao();
     editandoId = viagem ? viagem.id : null;
     if (viagem) {
       selDestino.value = viagem.destinoNome;
       selOnibus.value = String(viagem.onibusId || 1);
       const isoPartida = viagem.dataPartidaIso || converterPartidaTextoParaIso(viagem.partidaTexto) || '2100-01-15';
       inputPartida.value = formatarIsoParaDataBr(isoPartida);
-      inputLugares.value = String(Math.min(MAX_ASSENTOS_VIAGEM, Math.max(1, Number(viagem.totalAssentos || MAX_ASSENTOS_VIAGEM))));
       inputPreco.value = String(viagem.semLumica.precoFinal);
     } else {
       inputPartida.value = '15/01/2100';
-      inputLugares.value = String(MAX_ASSENTOS_VIAGEM);
-      inputPreco.value = '8600000000';
+      inputPreco.value = '0';
     }
+    atualizarAssentosDaNaveSelecionada();
+    void calcularEExibirFormulaSugestao();
     alternarSecao(secConfig);
   }
 
@@ -228,14 +296,13 @@ function inicializarFretistaViagens() {
   document.getElementById('btn-cancelar-viagem').addEventListener('click', () => alternarSecao(secLista));
 
   document.getElementById('btn-aplicar-sugestao').addEventListener('click', async () => {
-    const onibus = listarFrota().find((o) => o.id === Number(selOnibus.value)) || listarFrota()[0];
-    const propId = onibus ? onibus.tipoPropulsaoId : 1;
-    const sugestao = await sugerirPrecoPorPropulsao(propId);
-    const precoSugerido = sugestao.precoBaseSugerido + sugestao.custoAnoLuzSugerido * 4.24;
-    inputPreco.value = String(Math.round(precoSugerido));
+    const calculo = await calcularEExibirFormulaSugestao();
+    if (!calculo) {
+      return;
+    }
+    inputPreco.value = String(calculo.precoSugerido);
     erroPreco.textContent = '';
-    document.getElementById('sugestao-formula').textContent =
-      `${formatarCreditos(sugestao.precoBaseSugerido)} (base) + ${formatarCreditos(sugestao.custoAnoLuzSugerido)}/ano-luz`;
+    mostrarNotificacaoSugestao('Preço sugerido aplicado!');
   });
 
   document.getElementById('form-viagem-fretista').addEventListener('submit', (e) => {
@@ -244,21 +311,19 @@ function inicializarFretistaViagens() {
 
     const { valido, erros } = validarFormularioViagemFretista({
       partida: inputPartida.value,
-      totalAssentos: inputLugares.value,
       precoFinal: inputPreco.value,
     });
 
     if (!valido) {
       erroPartida.textContent = erros.partida || '';
-      erroLugares.textContent = erros.totalAssentos || '';
       erroPreco.textContent = erros.precoFinal || '';
       return;
     }
 
-    const onibus = listarFrota().find((o) => o.id === Number(selOnibus.value)) || listarFrota()[0];
+    const onibus = obterOnibusSelecionado();
     const dataPartidaIso = normalizarDataNascimentoParaIso(inputPartida.value);
     const partidaTexto = formatarIsoParaPartidaTexto(dataPartidaIso);
-    const totalAssentos = Number(inputLugares.value);
+    const totalAssentos = Number(onibus?.totalAssentos || 24);
 
     rascunho = {
       id: editandoId,

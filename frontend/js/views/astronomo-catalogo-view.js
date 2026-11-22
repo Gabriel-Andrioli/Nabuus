@@ -10,6 +10,7 @@ import {
 } from '../services/cartografia-service.js';
 import { criarElemento, limparElemento } from '../utils/dom-seguro.js';
 import { formatarCreditos, formatarDistanciaAnosLuz, formatarVelocidadeC } from '../utils/formatadores.js';
+import { CAPACIDADES_ASSENTOS_NAVE } from '../utils/validadores.js';
 import { renderizarBarraNavegacao } from './navegacao-comum.js';
 
 function inicializarCatalogoAstronomo() {
@@ -171,7 +172,32 @@ function inicializarCatalogoAstronomo() {
       adicionarCampoTexto('ast-auto', '05 · AUTONOMIA MÁXIMA (ANOS-LUZ)', '10.0', 'number');
     } else if (abaAtual === 'naves') {
       adicionarCampoTexto('ast-nome', '01 · IDENTIFICAÇÃO DA NAVE', 'NABUUS Polaris');
-      adicionarCampoTexto('ast-assentos', '02 · CAPACIDADE DE POLTRONAS', '32', 'number');
+      const wrapAssentos = criarElemento('div', { className: 'campo' });
+      wrapAssentos.appendChild(
+        criarElemento('label', {
+          className: 'campo__rotulo',
+          for: 'ast-assentos',
+          text: '02 · CAPACIDADE DE POLTRONAS',
+        })
+      );
+      const selectAssentos = criarElemento('select', {
+        id: 'ast-assentos',
+        className: 'campo__select',
+        attrs: { required: 'required' },
+      });
+      for (const qtd of CAPACIDADES_ASSENTOS_NAVE) {
+        selectAssentos.appendChild(
+          criarElemento('option', {
+            text: `${qtd} poltronas`,
+            attrs: {
+              value: String(qtd),
+              selected: qtd === 32 ? 'selected' : null,
+            },
+          })
+        );
+      }
+      wrapAssentos.appendChild(selectAssentos);
+      camposEl.appendChild(wrapAssentos);
 
       const grupo = criarElemento('div', { className: 'lista-pilha' });
       grupo.appendChild(criarElemento('p', { className: 'campo__rotulo', text: '03 · VERSÕES DE PROPULSÃO E VELOCIDADES DA NAVE' }));
@@ -300,9 +326,11 @@ function inicializarCatalogoAstronomo() {
           autonomiaAl: padrao.autonomiaAnosLuz,
         });
       }
+      const assentosSelecionados = Number(document.getElementById('ast-assentos').value);
+      const totalAssentos = CAPACIDADES_ASSENTOS_NAVE.includes(assentosSelecionados) ? assentosSelecionados : 32;
       rascunho = {
         identificacao: document.getElementById('ast-nome').value.trim(),
-        totalAssentos: Number(document.getElementById('ast-assentos').value),
+        totalAssentos,
         versoesPropulsao: versoesSelecionadas,
       };
     } else if (abaAtual === 'rotas') {

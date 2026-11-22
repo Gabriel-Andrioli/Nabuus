@@ -10,7 +10,7 @@ const ehProxyFrontend = typeof globalThis !== 'undefined'
 export const API_JAVA_BASE_URL = ehProxyFrontend ? '/api' : 'http://localhost:8080/api';
 export const API_MOTOR_BASE_URL = 'http://localhost:8001/v1';
 
-const CHAVE_STORAGE = 'nabuus_estado_v3';
+const CHAVE_STORAGE = 'nabuus_estado_v4';
 const CHAVE_SESSAO = 'nabuus_sessao_v1';
 
 const C_MPS = 299_792_458;
@@ -255,12 +255,18 @@ export const NAVES_SEED = [
 ];
 
 const PARTIDAS_SEED = [
-  '15 Jan 2100',
-  '08 Mar 2100',
-  '22 Mai 2100',
-  '19 Jul 2100',
-  '11 Set 2100',
-  '27 Nov 2100',
+  { texto: '15 Jan 2100', iso: '2100-01-15' },
+  { texto: '08 Mar 2100', iso: '2100-03-08' },
+  { texto: '22 Mai 2100', iso: '2100-05-22' },
+  { texto: '19 Jul 2100', iso: '2100-07-19' },
+  { texto: '11 Set 2100', iso: '2100-09-11' },
+  { texto: '27 Nov 2100', iso: '2100-11-27' },
+  { texto: '18 Fev 2101', iso: '2101-02-18' },
+  { texto: '14 Abr 2101', iso: '2101-04-14' },
+  { texto: '09 Jun 2101', iso: '2101-06-09' },
+  { texto: '25 Ago 2101', iso: '2101-08-25' },
+  { texto: '12 Out 2101', iso: '2101-10-12' },
+  { texto: '05 Dez 2101', iso: '2101-12-05' },
 ];
 
 const CLASSES_CONJUNTOS = [
@@ -406,21 +412,16 @@ function construirViagensIniciais() {
 
     let paresNave;
     if (planeta.nome === 'Proxima Centauri b') {
-      paresNave = [NAVES_SEED[0], NAVES_SEED[4]]; // Odyssey (Antimatéria) + Horizon (Fusão nuclear)
+      paresNave = [NAVES_SEED[0], NAVES_SEED[4], NAVES_SEED[6], NAVES_SEED[9]]; // Odyssey (Antimatéria) + Horizon, Chronos e Helios
     } else if (planeta.nome === 'Proxima Centauri d') {
-      paresNave = [NAVES_SEED[5], NAVES_SEED[8]]; // Solaris (Fusão nuclear) + Photon (Vela solar)
+      paresNave = [NAVES_SEED[5], NAVES_SEED[7], NAVES_SEED[8], NAVES_SEED[10]]; // Solaris, Titan, Photon e Pioneer
     } else {
-      const n1 = NAVES_SEED[(pIdx * 2) % NAVES_SEED.length];
-      let n2 = NAVES_SEED[(pIdx * 2 + 5) % NAVES_SEED.length];
-      if (n1.id === n2.id) {
-        n2 = NAVES_SEED[(n1.id) % NAVES_SEED.length];
-      }
-      paresNave = [n1, n2];
+      paresNave = [0, 1, 2, 3].map((k) => NAVES_SEED[(pIdx + k * 3) % NAVES_SEED.length]);
     }
 
     paresNave.forEach((nave, slot) => {
       const id = viagens.length + 1;
-      const partidaTexto = PARTIDAS_SEED[(pIdx + slot * 3) % PARTIDAS_SEED.length];
+      const partida = PARTIDAS_SEED[(pIdx + slot * 3) % PARTIDAS_SEED.length];
       const classes = planeta.nome === 'Proxima Centauri b'
         ? ['Executiva', 'Primeira classe', 'Luxo']
         : CLASSES_CONJUNTOS[(id - 1) % CLASSES_CONJUNTOS.length];
@@ -440,7 +441,8 @@ function construirViagensIniciais() {
         velocidadeC: nave.velocidadeC,
         autonomiaAl: nave.autonomiaAl,
         distanciaAl,
-        partidaTexto,
+        dataPartidaIso: partida.iso,
+        partidaTexto: partida.texto,
         classes,
         status: 'PUBLICADA',
         rotaLumicaId: rota ? rota.id : null,
@@ -514,7 +516,7 @@ const ESTADO_INICIAL = {
     custoMaximoBi: '20',
     distanciaMaximaAl: 'Infinity',
     tempoTerraMaximoAnos: 'Infinity',
-    ordenacao: 'relevancia',
+    ordenacao: 'data-mais-proxima',
   },
   usuariosRegistrados: [
     {

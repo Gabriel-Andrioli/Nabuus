@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { lerEstado } from '../js/services/api-client.js';
-import { publicarOuAtualizarViagem } from '../js/services/frota-viagens-service.js';
+import { salvarNave } from '../js/services/cartografia-service.js';
+import { calcularPrecoSugeridoViagem, publicarOuAtualizarViagem } from '../js/services/frota-viagens-service.js';
 import {
   MULTIPLICADOR_PRECO_CLASSE,
   PERCENTUAL_PRECO_ALIMENTACAO,
@@ -48,19 +49,44 @@ test('deveOrdenarPorMenorCustoEMenorDivida_quandoSolicitado', () => {
   assert.ok(porDivida[0].semLumica.dividaTemporalAnos <= porDivida[1].semLumica.dividaTemporalAnos);
 });
 
+test('deveOrdenarPorDataMaisProximaELocalidadeMaisProxima_quandoSolicitado', () => {
+  const amostra = [
+    { id: 1, distanciaAl: 40.54, dataPartidaIso: '2100-01-15', partidaTexto: '15 Jan 2100' },
+    { id: 2, distanciaAl: 4.24, dataPartidaIso: '2101-10-12', partidaTexto: '12 Out 2101' },
+    { id: 3, distanciaAl: 12.5, dataPartidaIso: '2101-06-09', partidaTexto: '09 Jun 2101' },
+  ];
+
+  const porDataComRef = ordenarViagens(amostra, 'data-mais-proxima', { dataReferencia: '10/06/2101' });
+  assert.deepEqual(porDataComRef.map((v) => v.id), [3, 2, 1]);
+
+  const porDataCronologica = ordenarViagens(amostra, 'data-mais-proxima');
+  assert.deepEqual(porDataCronologica.map((v) => v.id), [1, 3, 2]);
+
+  const porLocalidade = ordenarViagens(amostra, 'localidade-mais-proxima');
+  assert.deepEqual(porLocalidade.map((v) => v.id), [2, 3, 1]);
+});
+
 test('deveGarantirMultiplasViagensPorSistemaEDistintasVelocidadesPorNave_quandoCarregarCatalogoCSV', () => {
   const estado = lerEstado();
   assert.equal(estado.sistemas.length, 36);
   assert.equal(estado.planetas.length, 50);
+  assert.equal(estado.viagens.length, 196);
 
   for (const sistema of estado.sistemas) {
     const viagensDoSistema = estado.viagens.filter((v) => v.sistemaDestino === sistema.nome);
-    assert.ok(viagensDoSistema.length >= 2, `Sistema ${sistema.nome} deve ter ao menos 2 viagens`);
+    assert.ok(viagensDoSistema.length >= 4, `Sistema ${sistema.nome} deve ter ao menos 4 viagens`);
 
     const datas = new Set(viagensDoSistema.map((v) => v.partidaTexto));
     const naves = new Set(viagensDoSistema.map((v) => v.onibusId));
-    assert.ok(datas.size >= 2, `Sistema ${sistema.nome} deve ter datas de saída diferentes`);
-    assert.ok(naves.size >= 2, `Sistema ${sistema.nome} deve usar naves diferentes`);
+    assert.ok(datas.size >= 4, `Sistema ${sistema.nome} deve ter datas de saída diferentes`);
+    assert.ok(naves.size >= 4, `Sistema ${sistema.nome} deve usar naves diferentes`);
+  }
+
+  for (const planeta of estado.planetas.filter((p) => p.nome !== 'Terra')) {
+    const viagensPlaneta = estado.viagens.filter((v) => v.destinoPlanetaId === planeta.id);
+    assert.equal(viagensPlaneta.length, 4, `Planeta ${planeta.nome} deve ter 4 viagens`);
+    assert.equal(new Set(viagensPlaneta.map((v) => v.partidaTexto)).size, 4);
+    assert.equal(new Set(viagensPlaneta.map((v) => v.onibusId)).size, 4);
   }
 
   const navesAntimateria = estado.onibusFrota.filter((n) => n.propulsaoNome === 'Antimatéria');
@@ -238,17 +264,16 @@ test('deveAplicarMultiplicadoresDeClasseEPreservarRotaLumica_quandoCalcularValor
   }
 });
 
-test('deveLimitarOfertaDeAssentosAte24EConstruirMapaDePoltronasCoerente', () => {
-  assert.equal(listarCodigosPoltronasCabine(1).length, 1);
-  assert.deepEqual(listarCodigosPoltronasCabine(1), ['01A']);
-  assert.equal(listarCodigosPoltronasCabine(4).length, 4);
-  assert.equal(listarCodigosPoltronasCabine(10).length, 10);
-  assert.equal(listarCodigosPoltronasCabine(16).length, 16);
+test('deveRestringirCapacidadeDaNavePara24Ou32Ou48EVincularAssentosDaViagemANave', () => {
   assert.equal(listarCodigosPoltronasCabine(24).length, 24);
+  assert.equal(listarCodigosPoltronasCabine(32).length, 32);
+  assert.equal(listarCodigosPoltronasCabine(48).length, 48);
 
-  const fileiras10 = construirFileirasCabine(10);
-  assert.equal(fileiras10.length, 3);
-  assert.deepEqual(fileiras10[2].colunas, ['A', 'B']);
+  const fileiras32 = construirFileirasCabine(32);
+  assert.equal(fileiras32.length, 8);
+  assert.equal(fileiras32[0].classeNome, 'Luxo');
+  assert.equal(fileiras32[2].classeNome, 'Primeira classe');
+  assert.equal(fileiras32[7].classeNome, 'Executiva');
 
   const storageOriginal = globalThis.localStorage;
   const mapaMemoria = new Map();
@@ -260,16 +285,22 @@ test('deveLimitarOfertaDeAssentosAte24EConstruirMapaDePoltronasCoerente', () => 
 
   try {
     assert.throws(
-      () => publicarOuAtualizarViagem({
-        destinoNome: 'Proxima Centauri b',
-        onibusId: 2,
-        partidaTexto: '15/01/2100',
-        totalAssentos: 25,
-        precoFinal: 8_600_000_000,
-      }),
-      /24/
+      () => salvarNave({ identificacao: 'Teste 10', tipoPropulsaoId: 1, totalAssentos: 10 }),
+      /24, 32 ou 48/
+    );
+    assert.throws(
+      () => salvarNave({ identificacao: 'Teste 25', tipoPropulsaoId: 1, totalAssentos: 25 }),
+      /24, 32 ou 48/
     );
 
+    const naveCriada = salvarNave({
+      identificacao: 'NABUUS Polaris',
+      tipoPropulsaoId: 1,
+      totalAssentos: 32,
+    });
+    assert.equal(naveCriada.totalAssentos, 32);
+
+    // Fretista publica informando nave 2 (48 poltronas): qualquer override de totalAssentos e ignorado
     publicarOuAtualizarViagem({
       destinoNome: 'Proxima Centauri b',
       onibusId: 2,
@@ -278,15 +309,32 @@ test('deveLimitarOfertaDeAssentosAte24EConstruirMapaDePoltronasCoerente', () => 
       precoFinal: 9_000_000_000,
     });
 
-    const viagens = lerEstado().viagens;
-    const criada = viagens[viagens.length - 1];
-    assert.equal(criada.totalAssentos, 10);
-    assert.equal(criada.dataPartidaIso, '2105-03-20');
-    assert.equal(criada.partidaTexto, '20 Mar 2105');
+    const criada48 = lerEstado().viagens[lerEstado().viagens.length - 1];
+    assert.equal(criada48.totalAssentos, 48);
+    assert.equal(criada48.dataPartidaIso, '2105-03-20');
+    assert.equal(criada48.partidaTexto, '20 Mar 2105');
 
-    const codigosValidos = listarCodigosPoltronasCabine(10);
-    assert.ok(criada.assentosOcupados.every((c) => codigosValidos.includes(c)));
-    assert.ok(criada.assentosOcupados.length < codigosValidos.length);
+    publicarOuAtualizarViagem({
+      destinoNome: 'Proxima Centauri b',
+      onibusId: 3,
+      partidaTexto: '22/03/2105',
+      precoFinal: 9_100_000_000,
+    });
+    const criada32 = lerEstado().viagens[lerEstado().viagens.length - 1];
+    assert.equal(criada32.totalAssentos, 32);
+
+    publicarOuAtualizarViagem({
+      destinoNome: 'Proxima Centauri b',
+      onibusId: 1,
+      partidaTexto: '25/03/2105',
+      precoFinal: 8_600_000_000,
+    });
+    const criada24 = lerEstado().viagens[lerEstado().viagens.length - 1];
+    assert.equal(criada24.totalAssentos, 24);
+
+    const codigosValidos = listarCodigosPoltronasCabine(48);
+    assert.ok(criada48.assentosOcupados.every((c) => codigosValidos.includes(c)));
+    assert.ok(criada48.assentosOcupados.length < codigosValidos.length);
 
     assert.deepEqual(validarPoltronaParaClasse('01A', 'Luxo', 24), {
       valida: true,
@@ -310,4 +358,20 @@ test('deveLimitarOfertaDeAssentosAte24EConstruirMapaDePoltronasCoerente', () => 
       globalThis.localStorage = storageOriginal;
     }
   }
+});
+
+test('deveRecalcularPrecoSugeridoAoTrocarDestinoOuNave_quandoCalcularSugestao', () => {
+  const prox = calcularPrecoSugeridoViagem({ destinoNome: 'Proxima Centauri b', onibusId: 1 });
+  assert.equal(prox.paradas, 0);
+  assert.equal(prox.precoSugerido, 8_600_000_000);
+
+  const trappist = calcularPrecoSugeridoViagem({ destinoNome: 'TRAPPIST-1 e', onibusId: 1 });
+  assert.equal(trappist.paradas, 2);
+  assert.equal(trappist.precoSugerido, 81_300_000_000);
+  assert.notEqual(trappist.precoSugerido, prox.precoSugerido);
+
+  const marte = calcularPrecoSugeridoViagem({ destinoNome: 'Marte', onibusId: 1 });
+  assert.equal(marte.paradas, 0);
+  assert.ok(marte.distanciaAl < 0.001);
+  assert.ok(marte.precoSugerido < prox.precoSugerido);
 });

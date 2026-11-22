@@ -168,21 +168,20 @@ export function validarCoordenadasAstronomicas(ra, dec) {
     && numDec <= 90;
 }
 
-export const MAX_ASSENTOS_VIAGEM = 24;
+export const CAPACIDADES_ASSENTOS_NAVE = Object.freeze([24, 32, 48]);
 
 const MESES_PARTIDA = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 export function validarTotalAssentos(total) {
-  const num = Number(total);
-  return Number.isInteger(num) && num >= 1 && num <= 200;
-}
-
-export function validarAssentosOfertadosViagem(total) {
   if (total === null || total === undefined || String(total).trim() === '') {
     return false;
   }
   const num = Number(total);
-  return Number.isInteger(num) && num >= 1 && num <= MAX_ASSENTOS_VIAGEM;
+  return Number.isInteger(num) && CAPACIDADES_ASSENTOS_NAVE.includes(num);
+}
+
+export function validarAssentosOfertadosViagem(total) {
+  return validarTotalAssentos(total);
 }
 
 export function validarDataPartida(dataInformada, hoje = new Date()) {
@@ -238,13 +237,10 @@ export function formatarIsoParaPartidaTexto(dataIso) {
   return `${dia} ${nomeMes} ${ano}`;
 }
 
-export function validarFormularioViagemFretista({ partida, totalAssentos, precoFinal }, hoje = new Date()) {
+export function validarFormularioViagemFretista({ partida, precoFinal }, hoje = new Date()) {
   const erros = {};
   if (!validarDataPartida(partida, hoje)) {
     erros.partida = 'Informe uma data de partida válida no futuro (dd/mm/aaaa).';
-  }
-  if (!validarAssentosOfertadosViagem(totalAssentos)) {
-    erros.totalAssentos = 'Informe entre 1 e 24 assentos ofertados por viagem.';
   }
   const preco = Number(precoFinal);
   if (precoFinal === null || precoFinal === undefined || String(precoFinal).trim() === '' || !Number.isFinite(preco) || preco < 0) {

@@ -1,4 +1,5 @@
 import { lerEstado, salvarEstado, sincronizarApiJava } from './api-client.js';
+import { validarTotalAssentos } from '../utils/validadores.js';
 
 export function listarCatalogo(aba) {
   const estado = lerEstado();
@@ -116,6 +117,11 @@ export function salvarRotaLumica(rota) {
 }
 
 export function salvarNave(nave) {
+  const totalAssentos = Number(nave.totalAssentos);
+  if (!validarTotalAssentos(totalAssentos)) {
+    throw new Error('A capacidade da nave deve ser de 24, 32 ou 48 assentos.');
+  }
+
   const estado = lerEstado();
   const proximoId = Math.max(0, ...estado.onibusFrota.map((n) => n.id)) + 1;
 
@@ -148,7 +154,7 @@ export function salvarNave(nave) {
     velocidadeC: principal.velocidadeC,
     autonomiaAl: principal.autonomiaAl,
     aceleracaoG: Number(propPrincipal?.aceleracaoG || 0.2),
-    totalAssentos: Number(nave.totalAssentos || 24),
+    totalAssentos,
     versoesPropulsao: versoesNormalizadas,
     ativo: true,
   };

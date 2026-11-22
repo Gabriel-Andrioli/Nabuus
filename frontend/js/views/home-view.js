@@ -162,7 +162,7 @@ function inicializarHome() {
       custoMaximoBi: '20',
       distanciaMaximaAl: 'Infinity',
       tempoTerraMaximoAnos: 'Infinity',
-      ordenacao: 'relevancia',
+      ordenacao: 'data-mais-proxima',
     });
 
     const params = new URLSearchParams();
