@@ -133,7 +133,8 @@ function inicializarCatalogoAstronomo() {
     }
   }
 
-  function adicionarCampoTexto(id, rotulo, valorPadrao = '', tipo = 'text') {
+  function adicionarCampoTexto(id, rotulo, valorPadrao = '', tipo = 'text', opcoes = {}) {
+    const { readonly = false, disabled = false } = opcoes;
     const wrap = criarElemento('div', { className: 'campo' });
     wrap.appendChild(criarElemento('label', { className: 'campo__rotulo', for: id, text: rotulo }));
     wrap.appendChild(
@@ -141,9 +142,53 @@ function inicializarCatalogoAstronomo() {
         id,
         type: tipo,
         className: 'campo__controle',
-        attrs: { value: valorPadrao, required: 'required', step: tipo === 'number' ? 'any' : null },
+        attrs: {
+          value: valorPadrao,
+          required: 'required',
+          step: tipo === 'number' ? 'any' : null,
+          readonly: readonly ? 'readonly' : null,
+          disabled: disabled ? 'disabled' : null,
+        },
       })
     );
+    camposEl.appendChild(wrap);
+  }
+
+  function adicionarCampoSelect(id, rotulo, opcoes, valorPadrao = '', mensagemVazio = 'Nenhum registro disponível') {
+    const wrap = criarElemento('div', { className: 'campo' });
+    wrap.appendChild(criarElemento('label', { className: 'campo__rotulo', for: id, text: rotulo }));
+    const selectEl = criarElemento('select', {
+      id,
+      className: 'campo__select',
+      attrs: {
+        required: 'required',
+        disabled: opcoes.length === 0 ? 'disabled' : null,
+      },
+    });
+    if (opcoes.length === 0) {
+      selectEl.appendChild(
+        criarElemento('option', {
+          text: mensagemVazio,
+          attrs: { value: '', disabled: 'disabled', selected: 'selected' },
+        })
+      );
+    } else {
+      const possuiPadrao = opcoes.some((op) => String(op.valor) === String(valorPadrao));
+      const valorSelecionado = possuiPadrao ? String(valorPadrao) : String(opcoes[0].valor);
+      for (const op of opcoes) {
+        selectEl.appendChild(
+          criarElemento('option', {
+            text: op.rotulo,
+            attrs: {
+              value: String(op.valor),
+              selected: String(op.valor) === valorSelecionado ? 'selected' : null,
+            },
+          })
+        );
+      }
+    }
+    wrap.appendChild(selectEl);
+    wrap.appendChild(criarElemento('span', { id: `erro-${id}`, className: 'campo__erro' }));
     camposEl.appendChild(wrap);
   }
 
@@ -151,7 +196,14 @@ function inicializarCatalogoAstronomo() {
     limparElemento(camposEl);
     if (abaAtual === 'planetas') {
       adicionarCampoTexto('ast-nome', '01 · NOME DO PLANETA', 'Aurora b');
-      adicionarCampoTexto('ast-sistema', '02 · SISTEMA DE LOCALIZAÇÃO', 'Proxima Centauri');
+      const sistemas = listarCatalogo('sistemas');
+      adicionarCampoSelect(
+        'ast-sistema',
+        '02 · SISTEMA DE LOCALIZAÇÃO',
+        sistemas.map((s) => ({ valor: String(s.id), rotulo: s.nome })),
+        '3',
+        'Nenhum sistema cadastrado'
+      );
       adicionarCampoTexto('ast-tipo', '03 · TIPO DO PLANETA', 'Rochoso');
       adicionarCampoTexto('ast-ua', '04 · DISTÂNCIA À ESTRELA (UA)', '0.08', 'number');
       const chkLabel = criarElemento('label', { className: 'check-item' });
@@ -246,8 +298,17 @@ function inicializarCatalogoAstronomo() {
       });
       camposEl.appendChild(grupo);
     } else if (abaAtual === 'rotas') {
-      adicionarCampoTexto('ast-origem', 'SISTEMA DE ORIGEM (FIXO)', 'Sol');
-      adicionarCampoTexto('ast-destino', 'SISTEMA DE DESTINO', 'TRAPPIST-1');
+      adicionarCampoTexto('ast-origem', 'SISTEMA DE ORIGEM (FIXO)', 'Sol', 'text', { readonly: true, disabled: true });
+      const sistemasDestino = listarCatalogo('sistemas').filter(
+        (s) => s.id !== 1 && s.nome !== 'Sistema Solar' && s.nome !== 'Sol'
+      );
+      adicionarCampoSelect(
+        'ast-destino',
+        'SISTEMA DE DESTINO',
+        sistemasDestino.map((s) => ({ valor: String(s.id), rotulo: s.nome })),
+        '2',
+        'Nenhum sistema de destino cadastrado'
+      );
       adicionarCampoTexto('ast-vel', 'VELOCIDADE SUPORTADA (FRAÇÃO DE C)', '0.996', 'number');
       adicionarCampoTexto('ast-pedagio', 'PEDÁGIO LÚMICO (US$)', '50000000000', 'number');
     }
@@ -270,10 +331,22 @@ function inicializarCatalogoAstronomo() {
   document.getElementById('form-astro-cadastro').addEventListener('submit', (e) => {
     e.preventDefault();
     if (abaAtual === 'planetas') {
+      const erroSistema = document.getElementById('erro-ast-sistema');
+      if (erroSistema) {
+        erroSistema.textContent = '';
+      }
+      const sistemaId = Number(document.getElementById('ast-sistema').value);
+      const sistema = listarCatalogo('sistemas').find((s) => s.id === sistemaId);
+      if (!sistema) {
+        if (erroSistema) {
+          erroSistema.textContent = 'Selecione um sistema já cadastrado.';
+        }
+        return;
+      }
       rascunho = {
         nome: document.getElementById('ast-nome').value,
-        sistemaNome: document.getElementById('ast-sistema').value,
-        sistemaId: 3,
+        sistemaNome: sistema.nome,
+        sistemaId: sistema.id,
         tipo: document.getElementById('ast-tipo').value,
         distanciaEstrelaUA: Number(document.getElementById('ast-ua').value),
         possuiPostoRecarga: document.getElementById('ast-posto').checked,
@@ -334,9 +407,24 @@ function inicializarCatalogoAstronomo() {
         versoesPropulsao: versoesSelecionadas,
       };
     } else if (abaAtual === 'rotas') {
+      const erroDestino = document.getElementById('erro-ast-destino');
+      if (erroDestino) {
+        erroDestino.textContent = '';
+      }
+      const destinoId = Number(document.getElementById('ast-destino').value);
+      const sistemaDestino = listarCatalogo('sistemas').find(
+        (s) => s.id === destinoId && s.id !== 1 && s.nome !== 'Sistema Solar' && s.nome !== 'Sol'
+      );
+      if (!sistemaDestino) {
+        if (erroDestino) {
+          erroDestino.textContent = 'Selecione um sistema de destino já cadastrado.';
+        }
+        return;
+      }
       rascunho = {
         origemSistema: 'Sol',
-        destinoSistemaNome: document.getElementById('ast-destino').value,
+        destinoSistemaId: sistemaDestino.id,
+        destinoSistemaNome: sistemaDestino.nome,
         velocidadeC: Number(document.getElementById('ast-vel').value),
         pedagio: Number(document.getElementById('ast-pedagio').value),
         fatorDilatacao: 18,

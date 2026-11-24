@@ -17,6 +17,10 @@ test('deveFormatarValorMonetarioEmBilhoes_quandoValorForPositivo', () => {
   // Assert
   assert.equal(resultado, 'US$ 8,6 bi');
   assert.equal(formatarCreditos(8_772_000_000), 'US$ 8,77 bi');
+  assert.equal(formatarCreditos(10_200_000_000_000), 'US$ 10,2 tri');
+  assert.equal(formatarCreditos(10_000_000_000_000), 'US$ 10 tri');
+  assert.equal(formatarCreditos(1_500_000_000_000_000), 'US$ 1,5 qua');
+  assert.equal(formatarCreditos(102_000_000_010_000_000_000), 'US$ 102 qui');
 });
 
 test('deveFormatarAnosEMeses_quandoDuracaoVariarDeFracaoABilhoes', () => {

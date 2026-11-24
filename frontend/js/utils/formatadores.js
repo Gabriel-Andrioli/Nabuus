@@ -2,9 +2,24 @@
  * Funções puras de formatação de grandezas astronômicas, temporais e monetárias (RF-22 / RF-23).
  */
 
+const ESCALAS_CREDITOS = [
+  { divisor: 1e24, sufixo: 'sep' },
+  { divisor: 1e21, sufixo: 'sex' },
+  { divisor: 1e18, sufixo: 'qui' },
+  { divisor: 1e15, sufixo: 'qua' },
+  { divisor: 1e12, sufixo: 'tri' },
+  { divisor: 1e9, sufixo: 'bi' },
+  { divisor: 1e6, sufixo: 'mi' },
+  { divisor: 1e3, sufixo: 'mil' },
+];
+
 function formatarEscala(numero, divisor, sufixo) {
   const escalado = numero / divisor;
-  const texto = escalado.toFixed(2).replace(/0$/, '').replace('.', ',');
+  if (escalado >= 1000) {
+    const texto = escalado.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+    return `US$ ${texto} ${sufixo}`;
+  }
+  const texto = escalado.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
   return `US$ ${texto} ${sufixo}`;
 }
 
@@ -13,17 +28,10 @@ export function formatarCreditos(valor) {
   if (!Number.isFinite(numero) || numero < 0) {
     return 'US$ 0';
   }
-  if (numero >= 1e12) {
-    return formatarEscala(numero, 1e12, 'tri');
-  }
-  if (numero >= 1e9) {
-    return formatarEscala(numero, 1e9, 'bi');
-  }
-  if (numero >= 1e6) {
-    return formatarEscala(numero, 1e6, 'mi');
-  }
-  if (numero >= 1e3) {
-    return formatarEscala(numero, 1e3, 'mil');
+  for (const escala of ESCALAS_CREDITOS) {
+    if (numero >= escala.divisor) {
+      return formatarEscala(numero, escala.divisor, escala.sufixo);
+    }
   }
   return `US$ ${numero.toFixed(0)}`;
 }

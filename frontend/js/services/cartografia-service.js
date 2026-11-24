@@ -23,8 +23,17 @@ export function listarCatalogo(aba) {
 
 export function salvarPlaneta(planeta) {
   const estado = lerEstado();
+  const sistema = estado.sistemas.find((s) => s.id === Number(planeta.sistemaId));
+  if (!sistema) {
+    throw new Error('Selecione um sistema solar já cadastrado.');
+  }
   const proximoId = Math.max(0, ...estado.planetas.map((p) => p.id)) + 1;
-  const registro = { ...planeta, id: planeta.id || proximoId };
+  const registro = {
+    ...planeta,
+    id: planeta.id || proximoId,
+    sistemaId: sistema.id,
+    sistemaNome: sistema.nome,
+  };
   const idx = estado.planetas.findIndex((p) => p.id === registro.id);
   if (idx >= 0) {
     estado.planetas[idx] = registro;
@@ -35,7 +44,7 @@ export function salvarPlaneta(planeta) {
   void sincronizarApiJava('/cartografia/planetas', {
     method: 'POST',
     body: JSON.stringify({
-      sistemaSolarId: registro.sistemaId || 1,
+      sistemaSolarId: sistema.id,
       nome: registro.nome,
       raioBase: 1.0,
       massaBase: 1.0,
@@ -99,15 +108,29 @@ export function salvarPropulsao(propulsao) {
 
 export function salvarRotaLumica(rota) {
   const estado = lerEstado();
+  const sistemaDestino = estado.sistemas.find((s) => s.id === Number(rota.destinoSistemaId));
+  if (!sistemaDestino) {
+    throw new Error('Selecione um sistema de destino já cadastrado.');
+  }
+  if (sistemaDestino.id === 1 || sistemaDestino.nome === 'Sistema Solar' || sistemaDestino.nome === 'Sol') {
+    throw new Error('O sistema de destino deve ser diferente do sistema de origem (Sol).');
+  }
   const proximoId = Math.max(0, ...estado.rotasLumicas.map((r) => r.id)) + 1;
-  const registro = { ...rota, id: rota.id || proximoId, origemSistema: 'Sol', fatorDilatacao: rota.fatorDilatacao || 18 };
+  const registro = {
+    ...rota,
+    id: rota.id || proximoId,
+    origemSistema: 'Sol',
+    destinoSistemaId: sistemaDestino.id,
+    destinoSistemaNome: sistemaDestino.nome,
+    fatorDilatacao: rota.fatorDilatacao || 18,
+  };
   estado.rotasLumicas.push(registro);
   salvarEstado(estado);
   void sincronizarApiJava('/cartografia/rotas-lumicas', {
     method: 'POST',
     body: JSON.stringify({
       sistemaOrigemId: 1,
-      sistemaDestinoId: registro.destinoSistemaId || 2,
+      sistemaDestinoId: sistemaDestino.id,
       velocidadeC: registro.velocidadeC,
       pedagio: registro.pedagio,
       ativa: registro.ativa !== false,

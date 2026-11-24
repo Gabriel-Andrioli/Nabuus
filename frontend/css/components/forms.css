@@ -34,6 +34,13 @@
   color: var(--cor-texto-primario);
 }
 
+.campo__controle:disabled,
+.campo__controle[readonly],
+.campo__select:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
 .campo-data {
   position: relative;
   display: flex;
